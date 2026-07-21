@@ -1,0 +1,49 @@
+@import 'tailwindcss';
+@plugin '@tailwindcss/typography';
+
+@theme {
+  /* Robopipe brand — extracted from the current site */
+  --color-brand-100: #e8f9f0;
+  --color-brand-200: #b9edd2;
+  --color-brand-300: #79dca3;
+  --color-brand-400: #56d08d;
+  --color-brand-500: #43c47d;
+  --color-brand-600: #35a868;
+  --color-brand-700: #2a8553;
+  --color-brand-800: #1f6440;
+
+  --color-ink-50: #fafafa;
+  --color-ink-100: #f0f0f2;
+  --color-ink-200: #dddde2;
+  --color-ink-300: #c8c8cf;
+  --color-ink-400: #9a9aa5;
+  --color-ink-500: #6e6e7c;
+  --color-ink-600: #4a4a58;
+  --color-ink-700: #33333f;
+  --color-ink-800: #232330;
+  --color-ink-900: #1b1b27;
+
+  --color-accent: #0050bd;
+
+  --font-sans: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-barlow), var(--font-space-grotesk), ui-sans-serif, sans-serif;
+}
+
+@layer base {
+  body {
+    @apply bg-white font-sans text-ink-800 antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-heading font-semibold text-ink-900;
+  }
+}
+
+@utility container-site {
+  @apply mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8;
+}

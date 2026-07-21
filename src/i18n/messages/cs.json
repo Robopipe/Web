@@ -1,0 +1,63 @@
+{
+  "common": {
+    "readMore": "Číst dál",
+    "loadMore": "Načíst další",
+    "minRead": "{minutes} min čtení",
+    "publishedOn": "Publikováno {date}",
+    "by": "Autor: {name}",
+    "language": "Jazyk",
+    "skipToContent": "Přeskočit na obsah"
+  },
+  "nav": {
+    "home": "Úvod",
+    "blog": "Blog",
+    "caseStudies": "Případové studie",
+    "menu": "Menu",
+    "closeMenu": "Zavřít menu"
+  },
+  "blog": {
+    "title": "Blog",
+    "description": "Novinky, návody a poznatky ze světa průmyslové strojové vize.",
+    "allPosts": "Všechny články",
+    "category": "Kategorie",
+    "relatedPosts": "Související články",
+    "noPosts": "Zatím zde nejsou žádné články.",
+    "backToBlog": "Zpět na blog"
+  },
+  "caseStudies": {
+    "title": "Případové studie",
+    "description": "Jak zákazníci nasazují Robopipe ve výrobě.",
+    "backToList": "Zpět na případové studie",
+    "industry": "Odvětví",
+    "customer": "Zákazník"
+  },
+  "contact": {
+    "name": "Jméno",
+    "email": "E-mail",
+    "company": "Společnost",
+    "message": "Zpráva",
+    "useCase": "Oblast použití",
+    "submit": "Odeslat poptávku",
+    "submitting": "Odesílám…",
+    "success": "Děkujeme! Ozveme se vám co nejdříve.",
+    "error": "Odeslání se nezdařilo. Zkuste to prosím znovu, nebo nám napište přímo.",
+    "validation": {
+      "nameRequired": "Zadejte prosím jméno",
+      "emailInvalid": "Zadejte prosím platný e-mail",
+      "messageRequired": "Napište nám prosím zprávu"
+    }
+  },
+  "footer": {
+    "rights": "Všechna práva vyhrazena."
+  },
+  "notFound": {
+    "title": "Stránka nenalezena",
+    "description": "Stránka, kterou hledáte, neexistuje nebo byla přesunuta.",
+    "backHome": "Zpět na úvodní stránku"
+  },
+  "pagination": {
+    "previous": "Předchozí",
+    "next": "Další",
+    "page": "Strana {page} z {total}"
+  }
+}

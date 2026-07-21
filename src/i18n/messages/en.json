@@ -1,0 +1,63 @@
+{
+  "common": {
+    "readMore": "Read more",
+    "loadMore": "Load more",
+    "minRead": "{minutes} min read",
+    "publishedOn": "Published {date}",
+    "by": "By {name}",
+    "language": "Language",
+    "skipToContent": "Skip to content"
+  },
+  "nav": {
+    "home": "Home",
+    "blog": "Blog",
+    "caseStudies": "Case studies",
+    "menu": "Menu",
+    "closeMenu": "Close menu"
+  },
+  "blog": {
+    "title": "Blog",
+    "description": "News, guides and insights from the world of industrial machine vision.",
+    "allPosts": "All posts",
+    "category": "Category",
+    "relatedPosts": "Related posts",
+    "noPosts": "No posts here yet.",
+    "backToBlog": "Back to blog"
+  },
+  "caseStudies": {
+    "title": "Case studies",
+    "description": "How customers deploy Robopipe in production.",
+    "backToList": "Back to case studies",
+    "industry": "Industry",
+    "customer": "Customer"
+  },
+  "contact": {
+    "name": "Name",
+    "email": "Email",
+    "company": "Company",
+    "message": "Message",
+    "useCase": "Use case",
+    "submit": "Send inquiry",
+    "submitting": "Sending…",
+    "success": "Thank you! We'll get back to you shortly.",
+    "error": "Submission failed. Please try again or email us directly.",
+    "validation": {
+      "nameRequired": "Please enter your name",
+      "emailInvalid": "Please enter a valid email",
+      "messageRequired": "Please write us a message"
+    }
+  },
+  "footer": {
+    "rights": "All rights reserved."
+  },
+  "notFound": {
+    "title": "Page not found",
+    "description": "The page you are looking for does not exist or has been moved.",
+    "backHome": "Back to homepage"
+  },
+  "pagination": {
+    "previous": "Previous",
+    "next": "Next",
+    "page": "Page {page} of {total}"
+  }
+}

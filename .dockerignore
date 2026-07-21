@@ -1,0 +1,16 @@
+node_modules
+.next
+.git
+.env
+.env.*
+!.env.example
+media
+Dockerfile
+docker-compose.yml
+cloudbuild.yaml
+README.md
+tests
+playwright.config.ts
+vitest.config.mts
+.claude
+.vscode
