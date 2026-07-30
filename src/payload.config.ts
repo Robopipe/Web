@@ -1,7 +1,7 @@
 import { postgresAdapter } from '@payloadcms/db-postgres'
 import { resendAdapter } from '@payloadcms/email-resend'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
-import { gcsStorage } from '@payloadcms/storage-gcs'
+import { vercelBlobStorage } from '@payloadcms/storage-vercel-blob'
 import path from 'path'
 import { buildConfig } from 'payload'
 import sharp from 'sharp'
@@ -13,6 +13,7 @@ import { Categories } from './collections/Categories'
 import { FAQs } from './collections/FAQs'
 import { Leads } from './collections/Leads'
 import { Media } from './collections/Media'
+import { NewsletterSubscribers } from './collections/NewsletterSubscribers'
 import { Pages } from './collections/Pages'
 import { Posts } from './collections/Posts'
 import { Redirects } from './collections/Redirects'
@@ -58,6 +59,7 @@ export default buildConfig({
     Testimonials,
     FAQs,
     Leads,
+    NewsletterSubscribers,
     Media,
     Redirects,
     Users,
@@ -84,14 +86,21 @@ export default buildConfig({
       }
     : {}),
   plugins: [
-    ...(process.env.GCS_BUCKET
+    ...(process.env.BLOB_READ_WRITE_TOKEN
       ? [
-          gcsStorage({
-            collections: { media: true },
-            bucket: process.env.GCS_BUCKET,
-            options: {
-              projectId: process.env.GCS_PROJECT_ID,
+          vercelBlobStorage({
+            collections: {
+              // Media read access is public, so serve files from the Blob CDN
+              // instead of streaming through /api/media/file/* functions.
+              media: { disablePayloadAccessControl: true },
             },
+            token: process.env.BLOB_READ_WRITE_TOKEN,
+            // Uploads go browser → Blob directly, bypassing Vercel's ~4.5 MB
+            // serverless request-body limit (Media accepts video/PDF).
+            clientUploads: true,
+            // One Blob store is shared by prod and previews; the suffix keeps
+            // preview uploads from overwriting same-named prod files.
+            addRandomSuffix: true,
           }),
         ]
       : []),

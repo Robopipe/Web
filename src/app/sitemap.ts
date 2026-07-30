@@ -2,7 +2,7 @@ import type { MetadataRoute } from 'next'
 
 import { locales } from '@/i18n/routing'
 import { pathFor, SERVER_URL, type PreviewCollection } from '@/lib/paths'
-import { getCaseStudies, getPayloadClient, getPosts } from '@/lib/queries'
+import { getPayloadClient, getPosts } from '@/lib/queries'
 
 type Entry = MetadataRoute.Sitemap[number]
 
@@ -54,24 +54,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     if (Object.keys(filtered).length) entries.push(...entriesFor('pages', filtered, page.updatedAt))
   }
 
-  // Posts and case studies — per-locale queries already exclude untranslated docs
-  for (const [collection, fetcher] of [
-    ['posts', (loc: (typeof locales)[number]) => getPosts(loc, { limit: 500 })],
-    ['case-studies', (loc: (typeof locales)[number]) => getCaseStudies(loc, 500)],
-  ] as const) {
-    const byId = new Map<number, { slugs: Record<string, string>; updatedAt: string }>()
-    for (const locale of locales) {
-      const result = await fetcher(locale)
-      for (const doc of result.docs) {
-        if (!doc.slug) continue
-        const entry = byId.get(doc.id) ?? { slugs: {}, updatedAt: doc.updatedAt }
-        entry.slugs[locale] = doc.slug
-        byId.set(doc.id, entry)
-      }
+  // Posts — per-locale queries already exclude untranslated docs.
+  // Case studies are listing-only (no detail pages), so only /case-studies is indexed.
+  const byId = new Map<number, { slugs: Record<string, string>; updatedAt: string }>()
+  for (const locale of locales) {
+    const result = await getPosts(locale, { limit: 500 })
+    for (const doc of result.docs) {
+      if (!doc.slug) continue
+      const entry = byId.get(doc.id) ?? { slugs: {}, updatedAt: doc.updatedAt }
+      entry.slugs[locale] = doc.slug
+      byId.set(doc.id, entry)
     }
-    for (const { slugs, updatedAt } of byId.values()) {
-      entries.push(...entriesFor(collection, slugs, updatedAt))
-    }
+  }
+  for (const { slugs, updatedAt } of byId.values()) {
+    entries.push(...entriesFor('posts', slugs, updatedAt))
   }
 
   return entries

@@ -4,7 +4,6 @@ import { authenticated, publishedOrLoggedIn } from '@/access'
 import { seoField } from '@/fields/seo'
 import { slugField } from '@/fields/slug'
 import { revalidateAfterChange, revalidateAfterDelete } from '@/hooks/revalidate'
-import { generatePreviewPath } from '@/lib/preview'
 
 export const CaseStudies: CollectionConfig = {
   slug: 'case-studies',
@@ -12,12 +11,6 @@ export const CaseStudies: CollectionConfig = {
     useAsTitle: 'title',
     defaultColumns: ['title', 'customer', '_status', 'updatedAt'],
     group: 'Content',
-    livePreview: {
-      url: ({ data, locale }) =>
-        generatePreviewPath({ collection: 'case-studies', slug: data?.slug, locale: locale.code }),
-    },
-    preview: (data, { locale }) =>
-      generatePreviewPath({ collection: 'case-studies', slug: data?.slug as string, locale }),
   },
   access: {
     read: publishedOrLoggedIn,
@@ -51,9 +44,23 @@ export const CaseStudies: CollectionConfig = {
     },
     {
       name: 'industry',
-      type: 'text',
-      localized: true,
-      admin: { position: 'sidebar', description: 'E.g. "Pharma", "Logistics".' },
+      type: 'select',
+      options: [
+        { label: 'Food processing', value: 'food' },
+        { label: 'Pharma & healthcare', value: 'pharma' },
+        { label: 'Retail & e-commerce', value: 'retail' },
+        { label: 'Logistics', value: 'logistics' },
+      ],
+      admin: { position: 'sidebar' },
+    },
+    {
+      name: 'featured',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: {
+        position: 'sidebar',
+        description: 'Featured study renders as the large two-column card on the listing.',
+      },
     },
     {
       name: 'customerLogo',
@@ -82,6 +89,7 @@ export const CaseStudies: CollectionConfig = {
           name: 'value',
           type: 'text',
           required: true,
+          localized: true,
         },
         {
           name: 'label',
@@ -94,8 +102,10 @@ export const CaseStudies: CollectionConfig = {
     {
       name: 'content',
       type: 'richText',
-      required: true,
       localized: true,
+      admin: {
+        description: 'Optional long-form body — case studies are listing-only in v1.',
+      },
     },
     seoField,
   ],

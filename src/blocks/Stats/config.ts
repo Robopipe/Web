@@ -10,17 +10,27 @@ export const Stats: Block = {
       localized: true,
     },
     {
+      name: 'background',
+      type: 'select',
+      defaultValue: 'light',
+      options: [
+        { label: 'Light', value: 'light' },
+        { label: 'Dark', value: 'dark' },
+      ],
+    },
+    {
       name: 'items',
       type: 'array',
       required: true,
       minRows: 2,
-      maxRows: 4,
+      maxRows: 5,
       fields: [
         {
           name: 'value',
           type: 'text',
           required: true,
-          admin: { description: 'E.g. "12MP", "4 TOPs", "99.7%".' },
+          localized: true,
+          admin: { description: 'E.g. "3,600", "99.5%", "< 1 day".' },
         },
         {
           name: 'label',

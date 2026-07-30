@@ -1,18 +1,25 @@
 import React from 'react'
 
 import { CMSLink } from '@/components/CMSLink'
+import { buttonClasses } from '@/components/ui'
 import type { CTABannerBlock } from '@/payload-types'
 
-export const CTABannerComponent: React.FC<CTABannerBlock> = ({ heading, text, link }) => (
-  <section className="container-site py-16">
-    <div className="rounded-xl bg-ink-900 px-8 py-14 text-center">
-      <h2 className="text-3xl font-bold text-white sm:text-4xl">{heading}</h2>
-      {text && <p className="mx-auto mt-4 max-w-2xl text-lg text-ink-300">{text}</p>}
-      {link?.label && (
-        <CMSLink
-          link={link}
-          className="mt-8 inline-block rounded-md bg-brand-500 px-6 py-3 text-sm font-semibold text-ink-900 transition-colors hover:bg-brand-400"
-        />
+const linkStyles = [
+  buttonClasses({ variant: 'filled', size: 'lg' }),
+  buttonClasses({ variant: 'outlined-dark', size: 'lg' }),
+]
+
+export const CTABannerComponent: React.FC<CTABannerBlock> = ({ heading, text, links }) => (
+  <section className="bg-surface-dark">
+    <div className="container-site flex flex-col items-center gap-6 py-16 text-center lg:py-20">
+      <h2 className="max-w-3xl text-text-invert">{heading}</h2>
+      {text && <p className="max-w-2xl text-lg text-text-invert-60">{text}</p>}
+      {!!links?.length && (
+        <div className="flex flex-wrap justify-center gap-3">
+          {links.map((row, i) => (
+            <CMSLink key={i} link={row.link} className={linkStyles[i] ?? linkStyles[1]} />
+          ))}
+        </div>
       )}
     </div>
   </section>

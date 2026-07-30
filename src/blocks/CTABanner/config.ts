@@ -17,6 +17,12 @@ export const CTABanner: Block = {
       type: 'textarea',
       localized: true,
     },
-    linkField(),
+    {
+      name: 'links',
+      type: 'array',
+      maxRows: 2,
+      admin: { description: 'First link renders filled, second outlined.' },
+      fields: [linkField()],
+    },
   ],
 }

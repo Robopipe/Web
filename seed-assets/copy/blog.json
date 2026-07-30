@@ -1,0 +1,84 @@
+{
+  "meta": {
+    "title": "Blog — Machine vision & quality control insights | Robopipe",
+    "description": "Practical articles on deep-learning inspection, cutting reject rates, live quality scoring, the capture-to-inference pipeline and automated product tagging."
+  },
+  "hero": {
+    "chip": "Blog",
+    "headline": "Machine vision notes from the factory floor.",
+    "subline": "Guides, stories and engineering notes on running machine vision in production."
+  },
+  "newsletter": {
+    "background": "dark",
+    "headline": "Get new posts in your inbox.",
+    "subline": "One email a month. Production stories, no marketing fluff.",
+    "emailPlaceholder": "you@company.com",
+    "submitLabel": "Subscribe"
+  },
+  "posts": [
+    {
+      "slug": "automated-product-tagging",
+      "title": "Automated product tagging: let computer vision manage your catalog metadata",
+      "category": "Guide",
+      "date": "Jul 22, 2026",
+      "readingTime": "6 min read",
+      "excerpt": "Tagging thousands of product images by hand is slow, inconsistent and error-prone — and bad metadata buries products in search. AI image labeling fixes all three.",
+      "lede": "Tagging thousands of product images by hand is slow, inconsistent and error-prone — and bad metadata buries products in search. AI image labeling fixes all three.",
+      "heroImage": "product-classification-screen.jpeg",
+      "heroStyle": "photo",
+      "ctaHeadline": "Put your catalog on autopilot.",
+      "seo": {
+        "title": "Automated product tagging with computer vision | Robopipe",
+        "description": "How AI image labeling replaces slow, error-prone manual product tagging — extracting color, material and style attributes to improve e-commerce search and SEO at scale."
+      }
+    },
+    {
+      "slug": "cut-reject-rates",
+      "title": "Cut reject rates without slowing production",
+      "category": "Guide",
+      "date": "Jun 12, 2026",
+      "readingTime": "6 min read",
+      "excerpt": "How self-service inspection pays back in the first month — without adding a single second to takt.",
+      "lede": "Most plants accept a trade-off between inspection depth and throughput. With deep-learning inspection running at takt, you don't have to.",
+      "heroImage": "sandwich-line-inspection.jpg",
+      "heroStyle": "photo",
+      "ctaHeadline": "See it on your own product.",
+      "seo": {
+        "title": "How live inspection cuts reject rates | Robopipe",
+        "description": "Why catching defects immediately — not more accurately — is what lowers reject rates in food production, and how a live quality score changes operator behaviour."
+      }
+    },
+    {
+      "slug": "live-quality-score",
+      "title": "Giving floor teams a live quality score",
+      "category": "Story",
+      "date": "May 30, 2026",
+      "readingTime": "4 min read",
+      "excerpt": "Why real-time feedback beats end-of-shift reports — and what changed when operators saw their pass rate live.",
+      "lede": "Why real-time feedback beats end-of-shift reports — and what changed when operators saw their pass rate live.",
+      "heroImage": "tablet-line.png",
+      "heroStyle": "photo",
+      "ctaHeadline": "Put a live score on your floor.",
+      "seo": {
+        "title": "Putting a live quality score on the floor | Robopipe",
+        "description": "How showing a real-time quality score on the production floor turns inspection from an end-of-shift report into something operators act on immediately."
+      }
+    },
+    {
+      "slug": "capture-to-inference",
+      "title": "From capture to inference: the Robopipe pipeline",
+      "category": "Engineering",
+      "date": "May 14, 2026",
+      "readingTime": "8 min read",
+      "excerpt": "A technical walkthrough of the open capture → label → train → infer loop that powers every deployment.",
+      "lede": "A technical walkthrough of the open capture → label → train → infer loop that powers every deployment.",
+      "heroImage": "annotate-ui.png",
+      "heroStyle": "framed",
+      "ctaHeadline": "Run the pipeline on your own products.",
+      "seo": {
+        "title": "The capture-to-inference pipeline explained | Robopipe",
+        "description": "A plain walkthrough of Robopipe’s four stages — capture, label, train, infer — and what each one actually does on a real production line."
+      }
+    }
+  ]
+}

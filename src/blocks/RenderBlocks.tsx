@@ -10,12 +10,16 @@ import { CTABannerComponent } from './CTABanner/Component'
 import { FAQAccordionComponent } from './FAQAccordion/Component'
 import { FeatureGridComponent } from './FeatureGrid/Component'
 import { HeroComponent } from './Hero/Component'
+import { IndustryCardsComponent } from './IndustryCards/Component'
+import { IndustrySectionComponent } from './IndustrySection/Component'
 import { LogoCloudComponent } from './LogoCloud/Component'
 import { MediaBlockComponent } from './MediaBlock/Component'
+import { PlanComparisonComponent } from './PlanComparison/Component'
 import { PricingTableComponent } from './PricingTable/Component'
+import { ProcessStepsComponent } from './ProcessSteps/Component'
+import { SplitSectionComponent } from './SplitSection/Component'
 import { StatsComponent } from './Stats/Component'
 import { TestimonialBarComponent } from './TestimonialBar/Component'
-import { UseCaseCardsComponent } from './UseCaseCards/Component'
 
 type LayoutBlock = NonNullable<Page['layout']>[number]
 
@@ -28,9 +32,13 @@ const components: Record<LayoutBlock['blockType'], React.FC<any>> = {
   stats: StatsComponent,
   logoCloud: LogoCloudComponent,
   testimonialBar: TestimonialBarComponent,
-  useCaseCards: UseCaseCardsComponent,
+  industryCards: IndustryCardsComponent,
+  industrySection: IndustrySectionComponent,
+  processSteps: ProcessStepsComponent,
   pricingTable: PricingTableComponent,
+  planComparison: PlanComparisonComponent,
   faqAccordion: FAQAccordionComponent,
+  splitSection: SplitSectionComponent,
   caseStudyGrid: CaseStudyGridComponent,
   blogTeaser: BlogTeaserComponent,
   ctaBanner: CTABannerComponent,

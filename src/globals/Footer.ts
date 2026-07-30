@@ -39,5 +39,19 @@ export const Footer: GlobalConfig = {
       localized: true,
       admin: { description: 'Short company blurb shown next to the logo.' },
     },
+    {
+      name: 'legalLinks',
+      type: 'array',
+      maxRows: 3,
+      admin: { description: 'Links in the bottom bar (e.g. Privacy Policy).' },
+      fields: [linkField()],
+    },
+    {
+      name: 'copyright',
+      type: 'text',
+      admin: {
+        description: 'Legal entity for the © line, e.g. "Robopipe s.r.o." (year is added automatically).',
+      },
+    },
   ],
 }

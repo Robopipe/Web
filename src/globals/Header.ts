@@ -22,6 +22,12 @@ export const Header: GlobalConfig = {
       fields: [linkField()],
     },
     {
+      name: 'secondaryLink',
+      type: 'group',
+      admin: { description: 'Plain text link before the CTA (e.g. "App login").' },
+      fields: [linkField({ required: false })],
+    },
+    {
       name: 'cta',
       type: 'group',
       admin: { description: 'Highlighted button at the end of the navigation.' },

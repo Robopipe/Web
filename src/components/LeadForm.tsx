@@ -10,32 +10,54 @@ import type { Locale } from '@/i18n/routing'
 const initialState: LeadFormState = { status: 'idle' }
 
 const inputClasses =
-  'w-full rounded-md border border-ink-200 bg-white px-3.5 py-2.5 text-sm text-ink-900 placeholder:text-ink-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-200'
+  'h-12 w-full rounded-sm border border-border-12 bg-white px-3.5 text-sm text-text-90 placeholder:text-text-38 focus:border-border-focus focus:outline-none focus:ring-2 focus:ring-brand-tint'
+
+const labelClasses = 'mb-1.5 block text-sm font-medium text-text-heading'
+
+const INDUSTRIES = ['food', 'pharma', 'retail', 'logistics', 'other'] as const
 
 type Props = {
-  showUseCase?: boolean
+  microcopy?: string | null
 }
 
-export const LeadForm: React.FC<Props> = ({ showUseCase = true }) => {
+export const LeadForm: React.FC<Props> = ({ microcopy }) => {
   const t = useTranslations('contact')
+  const tIndustries = useTranslations('industries')
   const locale = useLocale() as Locale
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const [state, formAction, pending] = useActionState(submitLead, initialState)
+  // Remount the form after a successful submission to reset it.
+  const [formKey, setFormKey] = React.useState(0)
 
   if (state.status === 'success') {
     return (
-      <div
-        role="status"
-        className="rounded-lg border border-brand-300 bg-brand-100 px-6 py-8 text-center"
-      >
-        <p className="text-lg font-semibold text-ink-900">{t('success')}</p>
+      <div role="status" className="flex flex-col items-center gap-4 py-10 text-center">
+        <span className="flex h-14 w-14 items-center justify-center rounded-full bg-brand-tint text-brand-fg">
+          <svg viewBox="0 0 24 24" fill="none" className="h-7 w-7" aria-hidden="true">
+            <path
+              d="M5 12.5l5 5L19 7"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+            />
+          </svg>
+        </span>
+        <h3 className="text-2xl leading-8">{t('successTitle')}</h3>
+        <p className="max-w-sm text-sm text-text-60">{t('successText')}</p>
+        <button
+          type="button"
+          onClick={() => setFormKey((k) => k + 1)}
+          className="text-sm font-medium text-brand-fg hover:text-brand-fg-hover"
+        >
+          {t('sendAnother')}
+        </button>
       </div>
     )
   }
 
   return (
-    <form action={formAction} className="space-y-4" noValidate>
+    <form key={formKey} action={formAction} className="space-y-4" noValidate>
       <input type="hidden" name="locale" value={locale} />
       <input type="hidden" name="sourcePage" value={pathname} />
       {searchParams.get('tier') && (
@@ -51,13 +73,35 @@ export const LeadForm: React.FC<Props> = ({ showUseCase = true }) => {
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <label htmlFor="lead-name" className="mb-1.5 block text-sm font-medium text-ink-700">
+          <label htmlFor="lead-name" className={labelClasses}>
             {t('name')} *
           </label>
-          <input id="lead-name" name="name" required maxLength={200} className={inputClasses} />
+          <input
+            id="lead-name"
+            name="name"
+            required
+            maxLength={200}
+            placeholder={t('namePlaceholder')}
+            className={inputClasses}
+          />
         </div>
         <div>
-          <label htmlFor="lead-email" className="mb-1.5 block text-sm font-medium text-ink-700">
+          <label htmlFor="lead-company" className={labelClasses}>
+            {t('company')}
+          </label>
+          <input
+            id="lead-company"
+            name="company"
+            maxLength={200}
+            placeholder={t('companyPlaceholder')}
+            className={inputClasses}
+          />
+        </div>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label htmlFor="lead-email" className={labelClasses}>
             {t('email')} *
           </label>
           <input
@@ -66,55 +110,70 @@ export const LeadForm: React.FC<Props> = ({ showUseCase = true }) => {
             type="email"
             required
             maxLength={320}
+            placeholder={t('emailPlaceholder')}
+            className={inputClasses}
+          />
+        </div>
+        <div>
+          <label htmlFor="lead-phone" className={labelClasses}>
+            {t('phone')}
+          </label>
+          <input
+            id="lead-phone"
+            name="phone"
+            type="tel"
+            maxLength={50}
+            placeholder="+420"
             className={inputClasses}
           />
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div>
-          <label htmlFor="lead-company" className="mb-1.5 block text-sm font-medium text-ink-700">
-            {t('company')}
-          </label>
-          <input id="lead-company" name="company" maxLength={200} className={inputClasses} />
-        </div>
-        {showUseCase && (
-          <div>
-            <label htmlFor="lead-usecase" className="mb-1.5 block text-sm font-medium text-ink-700">
-              {t('useCase')}
-            </label>
-            <input id="lead-usecase" name="useCase" maxLength={500} className={inputClasses} />
-          </div>
-        )}
+      <div>
+        <label htmlFor="lead-industry" className={labelClasses}>
+          {t('industry')}
+        </label>
+        <select id="lead-industry" name="industry" defaultValue="" className={inputClasses}>
+          <option value="" />
+          {INDUSTRIES.map((value) => (
+            <option key={value} value={value}>
+              {tIndustries(value)}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div>
-        <label htmlFor="lead-message" className="mb-1.5 block text-sm font-medium text-ink-700">
+        <label htmlFor="lead-message" className={labelClasses}>
           {t('message')} *
         </label>
         <textarea
           id="lead-message"
           name="message"
           required
-          rows={5}
+          rows={4}
           maxLength={5000}
-          className={inputClasses}
+          placeholder={t('messagePlaceholder')}
+          className={`${inputClasses} h-auto py-3`}
         />
       </div>
 
       {state.status === 'error' && (
-        <p role="alert" className="text-sm font-medium text-red-600">
+        <p role="alert" className="text-sm font-medium text-danger">
           {t('error')}
         </p>
       )}
 
-      <button
-        type="submit"
-        disabled={pending}
-        className="rounded-md bg-brand-500 px-6 py-3 text-sm font-semibold text-ink-900 transition-colors hover:bg-brand-400 disabled:opacity-60"
-      >
-        {pending ? t('submitting') : t('submit')}
-      </button>
+      <div className="flex flex-wrap items-center gap-4 pt-2">
+        <button
+          type="submit"
+          disabled={pending}
+          className="inline-flex h-12 items-center justify-center rounded-sm bg-brand px-6 text-base font-semibold text-brand-ink transition-colors hover:bg-brand-hover disabled:opacity-60"
+        >
+          {pending ? t('submitting') : t('submit')}
+        </button>
+        {microcopy && <p className="text-[13px] text-text-38">{microcopy}</p>}
+      </div>
     </form>
   )
 }

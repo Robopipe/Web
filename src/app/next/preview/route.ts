@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 
 import { pathFor, type PreviewCollection } from '@/lib/paths'
 
-const collections: PreviewCollection[] = ['pages', 'posts', 'case-studies']
+const collections: PreviewCollection[] = ['pages', 'posts']
 
 export async function GET(req: Request): Promise<Response> {
   const { searchParams } = new URL(req.url)

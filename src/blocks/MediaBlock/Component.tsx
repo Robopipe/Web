@@ -8,7 +8,7 @@ export const MediaBlockComponent: React.FC<MediaBlockType> = ({ media, caption }
     <figure className="mx-auto max-w-4xl">
       <Media media={media} size="hero" className="w-full rounded-lg" />
       {caption && (
-        <figcaption className="mt-3 text-center text-sm text-ink-500">{caption}</figcaption>
+        <figcaption className="mt-3 text-center text-sm text-text-60">{caption}</figcaption>
       )}
     </figure>
   </section>

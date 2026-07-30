@@ -59,10 +59,32 @@ export const Posts: CollectionConfig = {
       relationTo: 'media',
     },
     {
+      name: 'heroStyle',
+      type: 'select',
+      defaultValue: 'photo',
+      options: [
+        { label: 'Photo (full bleed)', value: 'photo' },
+        { label: 'Framed screenshot on dark gradient', value: 'framed' },
+      ],
+      admin: { position: 'sidebar' },
+    },
+    {
       name: 'content',
       type: 'richText',
       required: true,
       localized: true,
+      admin: {
+        description: 'Blockquotes render as lime callout boxes on the site.',
+      },
+    },
+    {
+      name: 'ctaHeadline',
+      type: 'text',
+      localized: true,
+      admin: {
+        description:
+          'Headline of the dark "Book a demo" section under the post, e.g. "Run the pipeline on your own products." Falls back to a default when empty.',
+      },
     },
     {
       name: 'readingTime',

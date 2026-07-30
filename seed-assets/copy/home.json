@@ -1,0 +1,200 @@
+{
+  "meta": {
+    "title": "Robopipe — Visual quality control that learns your product",
+    "description": "Robopipe puts deep-learning visual inspection across food, pharma, retail and logistics operations. Sealed IP67 camera, self-service training, live floor dashboard. Book a demo."
+  },
+  "sections": [
+    {
+      "type": "hero",
+      "chip": "Industrial machine vision",
+      "headline": "AI visual control that learns your product.",
+      "subline": "Robopipe puts deep-learning inspection wherever your products move — in food plants, pharma packaging, retail fulfilment and logistics hubs. Catch defects in real time. No data scientists required.",
+      "buttons": [
+        { "label": "Book a demo", "target": "contact", "variant": "filled" },
+        { "label": "See pricing", "target": "pricing", "variant": "outlined" }
+      ],
+      "video": "line-loop.mp4",
+      "trustLine": {
+        "leadIn": "Trusted in operations running",
+        "items": ["3,600 products / hour", "up to 99.5% precision", "< 1 day to go live"]
+      }
+    },
+    {
+      "type": "logoStrip",
+      "eyebrow": "Trusted in production and warehouses across Europe",
+      "logos": [
+        { "name": "Crocodille", "image": "logo-crocodille.png" },
+        { "name": "Bageterie Boulevard", "image": "logo-bageterie.jpg" },
+        { "name": "MG Servis", "image": "logo-mgservis.png" },
+        { "name": "Wolfberry", "image": "logo-wolfberry.png" },
+        { "name": "Foodstr", "image": "logo-foodstr.png" }
+      ]
+    },
+    {
+      "type": "features",
+      "headline": "Deep-learning inspection your own team runs.",
+      "subline": "AI defect detection built for the factory floor, not the lab.",
+      "items": [
+        {
+          "icon": "IcoAddLarge",
+          "title": "Self-service setup",
+          "body": "Add a new product to check yourself in minutes. Snap a few good examples, confirm what \"right\" looks like, and Robopipe starts inspecting — no engineers, no tickets, no waiting.",
+          "image": "annotate-ui.png",
+          "imageStyle": "framed"
+        },
+        {
+          "icon": "IcoChart",
+          "title": "Real-time production monitoring",
+          "body": "A floor display that shows operators how today's batch is running — piece counts, pass rate, top defects, downtime and takt, with instant feedback the team acts on right at the line.",
+          "image": "dashboard-ui.png",
+          "imageStyle": "framed"
+        },
+        {
+          "icon": "IcoBox",
+          "title": "Built for harsh environments",
+          "body": "Fully sealed, IP67 washdown-ready hardware that survives steam, spray, dust and cold stores. Mount it straight above the line and hose it down with the rest of the plant.",
+          "image": "camera-line.jpeg",
+          "imageStyle": "photo"
+        },
+        {
+          "icon": "IcoConnector",
+          "title": "Connects to anything",
+          "body": "An optional versatile AI PLC controller with analog and digital I/O, RS485/RS232, Modbus and EtherCAT over Ethernet — wired into the systems you already run, including your ERP and WMS.",
+          "image": "controller-box.png",
+          "imageStyle": "photo"
+        }
+      ]
+    },
+    {
+      "type": "industriesGrid",
+      "headline": "Made to redefine your industry.",
+      "subline": "The same pipeline — capture, label, train, infer — tuned to four very different floors.",
+      "items": [
+        {
+          "title": "Food processing",
+          "body": "Defects, foreign objects and portion checks at line speed.",
+          "linkLabel": "Explore →",
+          "target": "industries#food",
+          "image": "inspection-detection.jpg"
+        },
+        {
+          "title": "Pharma & healthcare",
+          "body": "Fill, closure and label verification with full audit trails.",
+          "linkLabel": "Explore →",
+          "target": "industries#pharma",
+          "image": "pharma-hmi.jpeg"
+        },
+        {
+          "title": "Retail & e-commerce",
+          "body": "Product photos tagged by AI — catalogs that stay searchable.",
+          "linkLabel": "Explore →",
+          "target": "industries#retail",
+          "image": "retail-packing.jpg"
+        },
+        {
+          "title": "Logistics",
+          "body": "Safety hazards flagged live, movements turned into statistics.",
+          "linkLabel": "Explore →",
+          "target": "industries#logistics",
+          "image": "logistics-warehouse.png"
+        }
+      ]
+    },
+    {
+      "type": "howItWorks",
+      "background": "dark",
+      "headline": "AI inspection, live in a day.",
+      "subline": "No integrators, no long projects. Your team owns it from day one.",
+      "image": "inspection-identify.webp",
+      "steps": [
+        {
+          "number": 1,
+          "title": "We install on-site",
+          "body": "Our team comes to your plant or warehouse, mounts the sealed camera over your line and sets everything up on the spot — wet, cold and dusty areas included."
+        },
+        {
+          "number": 2,
+          "title": "Add your product",
+          "body": "Capture a batch of images, label them and train the model — guided end to end, no ML expertise needed. You stay in control of what passes."
+        },
+        {
+          "number": 3,
+          "title": "Go live — with support",
+          "body": "Operators see quality on the floor display; managers watch trends in the analytics portal. We stay on with post-install service whenever you need us."
+        }
+      ],
+      "button": { "label": "Book a demo", "target": "contact", "variant": "filled" },
+      "stats": [
+        { "value": "< 1 day", "label": "to first inspection" },
+        { "value": "IP67", "label": "washdown rated" },
+        { "value": "0", "label": "data scientists needed" },
+        { "value": "24/7", "label": "monitoring" },
+        { "value": "✓", "label": "works offline" }
+      ]
+    },
+    {
+      "type": "quote",
+      "chip": "Customer story",
+      "quote": "“The floor team finally sees their quality score live — and quality went up because of it. We were shown how to label one product; the rest we add ourselves.”",
+      "attribution": "Head of Quality · Crocodille",
+      "link": { "label": "read the case study", "target": "case-studies" }
+    },
+    {
+      "type": "blogAndFaq",
+      "blog": {
+        "headline": "From the blog",
+        "posts": [
+          {
+            "slug": "cut-reject-rates",
+            "tag": "Guide",
+            "title": "Cut reject rates without slowing production",
+            "excerpt": "How self-service inspection pays back in the first month.",
+            "date": "Jun 12, 2026",
+            "image": "use-case-food.png"
+          },
+          {
+            "slug": "live-quality-score",
+            "tag": "Story",
+            "title": "Giving floor teams a live quality score",
+            "excerpt": "Why real-time feedback beats end-of-shift reports.",
+            "date": "May 30, 2026",
+            "image": "tablet-line.png"
+          }
+        ],
+        "linkLabel": "All posts →",
+        "linkTarget": "blog"
+      },
+      "faq": {
+        "headline": "Questions, answered.",
+        "items": [
+          {
+            "question": "Can we add new products ourselves?",
+            "answer": "Yes. Adding a product is self-service — show it a few good examples and it starts checking. No engineers or vendor visits needed.",
+            "defaultOpen": true
+          },
+          {
+            "question": "Will it survive our washdown area?",
+            "answer": "The hardware is IP67-rated and fully sealed for steam, spray and cold stores."
+          },
+          {
+            "question": "What do operators actually see?",
+            "answer": "A live floor dashboard with today's pass rate, top defects and instant feedback."
+          },
+          {
+            "question": "How long until we're inspecting?",
+            "answer": "Most lines are live within a day — mount, add your product, go."
+          }
+        ]
+      }
+    },
+    {
+      "type": "ctaBanner",
+      "background": "dark",
+      "headline": "See AI quality control on your own products.",
+      "subline": "Book a 30-minute demo and watch deep-learning inspection catch defects on your own product.",
+      "buttons": [
+        { "label": "Book a demo", "target": "contact", "variant": "filled" }
+      ]
+    }
+  ]
+}

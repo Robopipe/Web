@@ -9,8 +9,17 @@ const leadSchema = z.object({
   name: z.string().trim().min(1).max(200),
   email: z.string().trim().email().max(320),
   company: z.string().trim().max(200).optional(),
+  phone: z
+    .string()
+    .trim()
+    .max(50)
+    .optional()
+    .transform((v) => v || undefined),
   message: z.string().trim().min(1).max(5000),
-  useCase: z.string().trim().max(500).optional(),
+  industry: z
+    .enum(['food', 'pharma', 'retail', 'logistics', 'other'])
+    .optional()
+    .or(z.literal('').transform(() => undefined)),
   tier: z.string().trim().max(100).optional(),
   locale: z.enum(['cs', 'en']),
   sourcePage: z.string().trim().max(500).optional(),
@@ -81,7 +90,8 @@ export async function submitLead(
             `Name: ${lead.name}`,
             `Email: ${lead.email}`,
             lead.company && `Company: ${lead.company}`,
-            lead.useCase && `Use case: ${lead.useCase}`,
+            lead.phone && `Phone: ${lead.phone}`,
+            lead.industry && `Industry: ${lead.industry}`,
             lead.tier && `Pricing tier: ${lead.tier}`,
             `Locale: ${lead.locale}`,
             lead.sourcePage && `Page: ${lead.sourcePage}`,

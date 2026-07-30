@@ -1,0 +1,59 @@
+{
+  "meta": {
+    "title": "Contact & book a demo — Robopipe",
+    "description": "Talk to Robopipe about visual quality control in your operation. Book a 30-minute demo, email sales or call our Czech HQ."
+  },
+  "hero": {
+    "chip": "Contact",
+    "headline": "Let's put a camera on your process.",
+    "subline": "Tell us what you make and we'll come back within one business day — usually with a first idea of how inspection would work on your product."
+  },
+  "form": {
+    "title": "Book a demo",
+    "fields": [
+      { "name": "name", "label": "Name", "type": "text", "placeholder": "Jana Nováková" },
+      { "name": "company", "label": "Company", "type": "text", "placeholder": "Your company" },
+      { "name": "email", "label": "Work email", "type": "email", "placeholder": "you@company.com" },
+      { "name": "phone", "label": "Phone (optional)", "type": "tel", "placeholder": "+420" },
+      {
+        "name": "industry",
+        "label": "Industry",
+        "type": "select",
+        "options": ["Food processing", "Pharma & healthcare", "Retail & e-commerce", "Logistics", "Other"]
+      },
+      {
+        "name": "message",
+        "label": "What should we inspect?",
+        "type": "textarea",
+        "placeholder": "Product, throughput, what goes wrong today…"
+      }
+    ],
+    "submitLabel": "Send request",
+    "microcopy": "Your first step to 24/7 visual inspection."
+  },
+  "success": {
+    "headline": "Thanks — we'll be in touch.",
+    "body": "Your request is on its way. Expect a reply within one business day.",
+    "resetLabel": "Send another message"
+  },
+  "contactInfo": [
+    {
+      "icon": "IcoMail",
+      "title": "Sales",
+      "value": "jan.jelinek@robopipe.io",
+      "href": "mailto:jan.jelinek@robopipe.io"
+    },
+    {
+      "icon": "IcoSupport",
+      "title": "Phone",
+      "value": "+420 728 488 116",
+      "href": "tel:+420728488116",
+      "note": "Mon–Fri, 8:00–17:00 CET"
+    },
+    {
+      "icon": "IcoHome",
+      "title": "Headquarters",
+      "address": ["Robopipe s.r.o.", "Thámova 13", "186 00 Praha 8 — Karlín", "Czech Republic"]
+    }
+  ]
+}

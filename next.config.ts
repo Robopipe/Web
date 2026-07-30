@@ -17,7 +17,6 @@ const legacyRedirects = [
 ]
 
 const nextConfig: NextConfig = {
-  output: 'standalone',
   images: {
     localPatterns: [
       {
@@ -27,7 +26,7 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'storage.googleapis.com',
+        hostname: '*.public.blob.vercel-storage.com',
       },
     ],
   },

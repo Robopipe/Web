@@ -37,6 +37,8 @@ export const linkField = ({ name = 'link', required = true }: LinkOptions = {}):
     {
       name: 'url',
       type: 'text',
+      // Localized: external URLs often carry locale prefixes (/cs/blog vs /en/blog).
+      localized: true,
       admin: {
         condition: (_data, siblingData) => siblingData?.type === 'external',
       },

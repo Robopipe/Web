@@ -10,7 +10,7 @@ export const Hero: Block = {
       name: 'eyebrow',
       type: 'text',
       localized: true,
-      admin: { description: 'Small label above the heading.' },
+      admin: { description: 'Chip label above the heading.' },
     },
     {
       name: 'heading',
@@ -27,7 +27,14 @@ export const Hero: Block = {
       name: 'links',
       type: 'array',
       maxRows: 2,
+      admin: { description: 'First link renders as the filled CTA, second as outlined.' },
       fields: [linkField()],
+    },
+    {
+      name: 'video',
+      type: 'upload',
+      relationTo: 'media',
+      admin: { description: 'Looping full-width video below the copy (takes precedence over image).' },
     },
     {
       name: 'image',
@@ -35,12 +42,37 @@ export const Hero: Block = {
       relationTo: 'media',
     },
     {
+      name: 'trust',
+      type: 'group',
+      admin: { description: 'Trust strip under the media (e.g. "Trusted in operations running …").' },
+      fields: [
+        {
+          name: 'label',
+          type: 'text',
+          localized: true,
+        },
+        {
+          name: 'items',
+          type: 'array',
+          maxRows: 4,
+          fields: [
+            {
+              name: 'text',
+              type: 'text',
+              required: true,
+              localized: true,
+            },
+          ],
+        },
+      ],
+    },
+    {
       name: 'variant',
       type: 'select',
-      defaultValue: 'split',
+      defaultValue: 'centered',
       options: [
-        { label: 'Split (text + image)', value: 'split' },
         { label: 'Centered', value: 'centered' },
+        { label: 'Split (text + image)', value: 'split' },
       ],
     },
   ],

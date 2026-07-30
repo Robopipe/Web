@@ -8,17 +8,21 @@ export const ContactForm: Block = {
       name: 'heading',
       type: 'text',
       localized: true,
+      admin: { description: 'Form card title, e.g. "Book a demo".' },
     },
     {
-      name: 'text',
-      type: 'textarea',
+      name: 'microcopy',
+      type: 'text',
       localized: true,
+      admin: { description: 'Small line beside the submit button.' },
     },
     {
-      name: 'showUseCase',
+      name: 'showSidebar',
       type: 'checkbox',
       defaultValue: true,
-      admin: { description: 'Show the optional "use case" field on the form.' },
+      admin: {
+        description: 'Show contact details and the map (from Site Settings) next to the form.',
+      },
     },
   ],
 }

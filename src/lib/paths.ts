@@ -15,4 +15,11 @@ export const pathFor = (collection: PreviewCollection, slug: string, locale: str
   }
 }
 
-export const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
+// Production sets NEXT_PUBLIC_SERVER_URL explicitly; Vercel preview deployments
+// fall back to the stable branch alias exposed by the system env vars.
+const vercelUrl =
+  process.env.NEXT_PUBLIC_VERCEL_BRANCH_URL || process.env.NEXT_PUBLIC_VERCEL_URL
+
+export const SERVER_URL =
+  process.env.NEXT_PUBLIC_SERVER_URL ||
+  (vercelUrl ? `https://${vercelUrl}` : 'http://localhost:3000')

@@ -1,0 +1,74 @@
+{
+  "meta": {
+    "title": "Case studies — Robopipe on real production lines",
+    "description": "Real results from producers running Robopipe deep-learning inspection: sandwich lines at 3,600 pieces/hour, capsule counting at 99.5% precision, packaging checks and AI product tagging."
+  },
+  "hero": {
+    "chip": "Case studies",
+    "headline": "Machine vision case studies: real operations, measured results.",
+    "subline": "How producers and operators across Europe run deep-learning inspection on their own lines."
+  },
+  "featured": {
+    "customer": "Crocodille",
+    "chip": "Food processing",
+    "title": "Quality went up the day the line could see it.",
+    "body": "Crocodille produces fresh sandwiches and baguettes at 3,600 pieces per hour per line. Installing the camera raised production quality itself: operators see the quality of their work in real time on the floor display — and are evaluated on it. We showed the team how to label one product; every product since, they've added themselves.",
+    "metrics": [
+      { "value": "3,600", "label": "pieces / hour / line" },
+      { "value": "95%", "label": "detection precision" },
+      { "value": "19", "label": "different checks per baguette" }
+    ],
+    "image": "tablet-line.png",
+    "logo": "logo-crocodille.png"
+  },
+  "studies": [
+    {
+      "customer": "Wolfberry",
+      "chip": "Pharma & healthcare",
+      "title": "Every jar filled with the exact capsule count.",
+      "body": "Wolfberry fills supplement capsules into jars. Robopipe watches the filling line and verifies that every jar leaves with the exact number of capsules — with an image record of each fill, miscounted jars never reach a customer.",
+      "metrics": [
+        { "value": "99.5%", "label": "counting precision" },
+        { "value": "100%", "label": "jars documented" }
+      ],
+      "image": "pharma-hmi.jpeg",
+      "logo": "logo-wolfberry.png"
+    },
+    {
+      "customer": null,
+      "chip": "Retail & e-commerce",
+      "title": "A full-time data-entry job, tagged away by AI.",
+      "body": "Listing a product used to be one person's entire job: photograph it, identify it, search the web for specs, type it all into the system — repeat. Robopipe now captures the photo, classifies the item, finds the information online and fills the listing automatically.",
+      "metrics": [
+        { "value": "< 1 min", "label": "per item listed" },
+        { "value": "1", "label": "full-time role automated" }
+      ],
+      "image": "retail-tagging.jpeg",
+      "logo": null
+    },
+    {
+      "customer": "MG Servis",
+      "chip": "Food processing",
+      "title": "Packaging quality checked 100% — without the cost of manual inspection.",
+      "body": "Customers return products that aren't 100% — and human quality checks are expensive and never catch everything. Robopipe inspects every pack: seal tightness, beans properly wrapped in bacon, and no foreign objects inside the packaging.",
+      "metrics": [
+        { "value": "95%", "label": "detection precision" },
+        { "value": "5", "label": "different checks per pack" }
+      ],
+      "image": "inspection-detection.jpg",
+      "logo": "logo-mgservis.png"
+    }
+  ],
+  "pullQuote": {
+    "quote": "“The floor team finally sees their quality score live. Nobody waits for a customer complaint anymore.”",
+    "attribution": "Head of Quality · Crocodille"
+  },
+  "ctaBanner": {
+    "background": "dark",
+    "headline": "Your line could be next.",
+    "subline": "Book a 30-minute demo and we'll walk through a deployment on a line like yours.",
+    "buttons": [
+      { "label": "Book a demo", "target": "contact", "variant": "filled" }
+    ]
+  }
+}

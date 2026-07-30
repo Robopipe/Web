@@ -34,14 +34,24 @@ export const Leads: CollectionConfig = {
       type: 'text',
     },
     {
+      name: 'phone',
+      type: 'text',
+    },
+    {
       name: 'message',
       type: 'textarea',
       required: true,
     },
     {
-      name: 'useCase',
-      type: 'text',
-      admin: { description: 'Free-text use case / interest area from the form.' },
+      name: 'industry',
+      type: 'select',
+      options: [
+        { label: 'Food processing', value: 'food' },
+        { label: 'Pharma & healthcare', value: 'pharma' },
+        { label: 'Retail & e-commerce', value: 'retail' },
+        { label: 'Logistics', value: 'logistics' },
+        { label: 'Other', value: 'other' },
+      ],
     },
     {
       name: 'tier',

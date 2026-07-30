@@ -2,7 +2,7 @@
 
 Sales-oriented marketing site for [Robopipe](https://robopipe.io) (industrial machine vision by KOALA42).
 
-**Stack:** Next.js 16 (App Router) + Payload CMS 3 embedded in one app · PostgreSQL · Tailwind v4 · next-intl (cs/en) · Resend · GCS media · Plausible. Deployed to GCP Cloud Run via Cloud Build.
+**Stack:** Next.js 16 (App Router) + Payload CMS 3 embedded in one app · PostgreSQL (Neon) · Tailwind v4 · next-intl (cs/en) · Resend · Vercel Blob media · Plausible. Deployed to Vercel.
 
 ## Local development
 
@@ -18,7 +18,7 @@ pnpm dev
 - Site: http://localhost:3000 (redirects to `/cs` or `/en` by browser language)
 - Admin: http://localhost:3000/admin — seeded login `admin@robopipe.io` / `admin`
 
-Optional env: `RESEND_API_KEY` (lead notification emails; logged to console when unset), `GCS_BUCKET`/`GCS_PROJECT_ID` (media storage; local `./media` when unset), `NEXT_PUBLIC_PLAUSIBLE_DOMAIN` (analytics; disabled when unset).
+Optional env: `RESEND_API_KEY` (lead notification emails; logged to console when unset), `BLOB_READ_WRITE_TOKEN` (media storage; local `./media` when unset), `NEXT_PUBLIC_PLAUSIBLE_DOMAIN` (analytics; disabled when unset).
 
 ## Architecture notes
 
@@ -42,15 +42,12 @@ pnpm generate:types
 
 Commit the generated migration and `src/payload-types.ts`.
 
-## Deployment (GCP)
+## Deployment (Vercel)
 
-`cloudbuild.yaml` builds the image (with an ephemeral Postgres so `next build` can prerender), pushes to Artifact Registry, runs migrations against Cloud SQL through the Cloud SQL Auth Proxy, and deploys to Cloud Run.
+The Vercel project deploys `master` to production; every other branch/PR gets a preview deployment. The build command (`vercel.json`) is `pnpm payload migrate && pnpm build`, so each deployment migrates its own database before `next build` prerenders against it.
 
-Two Cloud Build triggers on the GitHub repo share the file with different substitutions:
-
-| Trigger | Branch | Service | `_ENV` |
-| --- | --- | --- | --- |
-| staging | `dev` | `robopipe-web-staging` | `staging` |
-| prod | `main` | `robopipe-web-prod` | `prod` |
-
-One-time setup per environment: Cloud SQL instance + database, GCS media bucket, Secret Manager secrets (`robopipe-database-url-<env>` using the `/cloudsql/...` unix-socket host, `robopipe-database-url-migrate-<env>` using host `sqlproxy`, `robopipe-payload-secret-<env>`, `robopipe-preview-secret-<env>`, shared `robopipe-resend-api-key`), an Artifact Registry repo `robopipe`, and trigger substitutions for `_SERVER_URL`, `_GCS_BUCKET`, `_CLOUDSQL_INSTANCE`, `_PLAUSIBLE_DOMAIN`.
+- **Database** — Neon via the Vercel Marketplace integration, which injects `DATABASE_URL` (pooled; `DATABASE_URL_UNPOOLED` also available as a fallback for migrations). Preview branching is enabled: each preview deployment gets its own Neon branch forked from production, so PR migrations never touch prod data.
+- **Media** — a single Vercel Blob store connected to all environments (injects `BLOB_READ_WRITE_TOKEN`). One shared store is required because Neon preview branches reference blob keys uploaded in production; `addRandomSuffix` keeps preview uploads from colliding with prod files.
+- **Manual env vars** — `PAYLOAD_SECRET` and `PREVIEW_SECRET` (distinct values per environment), `RESEND_API_KEY` (production only), `NEXT_PUBLIC_SERVER_URL=https://robopipe.io` and `NEXT_PUBLIC_PLAUSIBLE_DOMAIN=robopipe.io` (production only — previews fall back to their Vercel branch URL).
+- **Geo** — the locale-suggestion feature reads Vercel's `x-vercel-ip-country` header in `src/proxy.ts`; it is dormant in local dev where the header is absent.
+- **Seeding prod** (one-time): pull production env vars locally (`vercel env pull`), then run `pnpm seed` with them exported, and redeploy so prerendered pages pick up the content.

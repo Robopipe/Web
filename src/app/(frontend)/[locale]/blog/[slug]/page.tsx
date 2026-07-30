@@ -9,6 +9,7 @@ import { LivePreviewListener } from '@/components/LivePreviewListener'
 import { Media } from '@/components/Media'
 import { PostCard } from '@/components/PostCard'
 import { RichText } from '@/components/RichText'
+import { buttonClasses, Chip } from '@/components/ui'
 import { locales, type Locale } from '@/i18n/routing'
 import { buildMeta, ogImageUrl } from '@/lib/meta'
 import { SERVER_URL, pathFor } from '@/lib/paths'
@@ -64,11 +65,22 @@ export default async function PostPage({ params }: Props) {
   const categories = (post.categories ?? []).filter(
     (c): c is Exclude<typeof c, number> => typeof c !== 'number',
   )
-  const related = await getRelatedPosts(
-    locale,
-    post.id,
-    categories.map((c) => c.id),
-  )
+  let related = (
+    await getRelatedPosts(
+      locale,
+      post.id,
+      categories.map((c) => c.id),
+      2,
+    )
+  ).slice(0, 2)
+  if (!related.length) {
+    // No same-category siblings — fall back to the latest posts.
+    const latest = await getPosts(locale, { limit: 3 })
+    related = latest.docs.filter((p) => p.id !== post.id).slice(0, 2)
+  }
+
+  const framed = post.heroStyle === 'framed'
+  const hasHero = post.heroImage && typeof post.heroImage !== 'number'
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -79,60 +91,99 @@ export default async function PostPage({ params }: Props) {
     dateModified: post.updatedAt,
     image: ogImageUrl(post.heroImage) || undefined,
     author: authors.map((author) => ({ '@type': 'Person', name: author.name })),
+    publisher: { '@type': 'Organization', name: 'Robopipe' },
     mainEntityOfPage: `${SERVER_URL}${pathFor('posts', slug, locale)}`,
   }
 
   return (
-    <article className="container-site py-16">
-      {draft && <LivePreviewListener />}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
-      <div className="mx-auto max-w-3xl">
-        <Link
-          href={`/${locale}/blog`}
-          className="text-sm font-semibold text-brand-700 hover:text-brand-600"
-        >
-          ← {tBlog('backToBlog')}
-        </Link>
+    <>
+      <article className="pt-16">
+        {draft && <LivePreviewListener />}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+        <div className="container-article">
+          <Link
+            href={`/${locale}/blog`}
+            className="text-sm font-medium text-brand-fg hover:text-brand-fg-hover"
+          >
+            ← {tBlog('backToBlog')}
+          </Link>
 
-        <header className="mt-6 mb-10">
-          {!!categories.length && (
-            <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-brand-700">
-              {categories.map((c) => c.title).join(' · ')}
-            </p>
-          )}
-          <h1 className="text-4xl font-bold leading-tight">{post.title}</h1>
-          <p className="mt-4 text-sm text-ink-500">
-            {authors.length > 0 && `${t('by', { name: authors.map((a) => a.name).join(', ') })} · `}
-            {post.publishedAt &&
-              format.dateTime(new Date(post.publishedAt), {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-              })}
-            {post.readingTime ? ` · ${t('minRead', { minutes: post.readingTime })}` : ''}
-          </p>
-        </header>
+          <header className="mt-6">
+            <div className="mb-5 flex flex-wrap items-center gap-3">
+              {categories[0] && <Chip>{categories[0].title}</Chip>}
+              <span className="text-[13px] text-text-38">
+                {authors.length > 0 &&
+                  `${t('by', { name: authors.map((a) => a.name).join(', ') })} · `}
+                {post.publishedAt &&
+                  format.dateTime(new Date(post.publishedAt), {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                  })}
+                {post.readingTime ? ` · ${t('minRead', { minutes: post.readingTime })}` : ''}
+              </span>
+            </div>
+            <h1>{post.title}</h1>
+            {post.excerpt && (
+              <p className="mt-5 text-[19px] leading-[30px] text-text-60">{post.excerpt}</p>
+            )}
+          </header>
+        </div>
 
-        {post.heroImage && typeof post.heroImage !== 'number' && (
-          <Media media={post.heroImage} size="hero" className="mb-10 w-full rounded-lg" priority />
+        {hasHero && (
+          <div className="container-article-wide mt-10">
+            {framed ? (
+              <div className="flex h-[280px] items-center justify-center rounded-lg bg-linear-160 from-gray-800 to-gray-950 p-8 sm:h-[420px]">
+                <Media
+                  media={post.heroImage}
+                  size="hero"
+                  className="max-h-full w-auto max-w-[85%] rounded-[6px] shadow-lift"
+                  priority
+                />
+              </div>
+            ) : (
+              <Media
+                media={post.heroImage}
+                size="hero"
+                className="h-[280px] w-full rounded-lg object-cover sm:h-[420px]"
+                priority
+              />
+            )}
+          </div>
         )}
 
-        <RichText data={post.content} />
-      </div>
+        <div className="container-article mt-10 pb-16">
+          <RichText data={post.content} />
+        </div>
+      </article>
 
       {!!related.length && (
-        <aside className="mx-auto mt-20 max-w-5xl">
-          <h2 className="mb-8 text-2xl font-bold">{tBlog('relatedPosts')}</h2>
-          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-            {related.map((relatedPost) => (
-              <PostCard key={relatedPost.id} post={relatedPost} />
-            ))}
+        <aside className="container-article-wide pb-16">
+          <div className="border-t border-border-12 pt-10">
+            <h3 className="mb-8 text-2xl leading-8">{tBlog('relatedPosts')}</h3>
+            <div className="grid gap-5 sm:grid-cols-2">
+              {related.map((relatedPost) => (
+                <PostCard key={relatedPost.id} post={relatedPost} variant="horizontal" />
+              ))}
+            </div>
           </div>
         </aside>
       )}
-    </article>
+
+      <section className="bg-surface-dark">
+        <div className="container-site flex flex-col items-center gap-6 py-16 text-center lg:py-18">
+          <h2 className="max-w-3xl text-text-invert">{post.ctaHeadline || tBlog('ctaHeadline')}</h2>
+          <Link
+            href={tBlog('ctaHref')}
+            className={buttonClasses({ variant: 'filled', size: 'lg' })}
+          >
+            {tBlog('ctaButton')}
+          </Link>
+        </div>
+      </section>
+    </>
   )
 }

@@ -1,45 +1,67 @@
 import React from 'react'
 
-import { Media } from '@/components/Media'
+import { CMSLink } from '@/components/CMSLink'
+import { Chip } from '@/components/ui'
 import type { TestimonialBarBlock } from '@/payload-types'
 
 export const TestimonialBarComponent: React.FC<TestimonialBarBlock> = ({
+  eyebrow,
   heading,
   testimonials,
+  link,
 }) => {
   const items = (testimonials ?? []).filter(
     (t): t is Exclude<typeof t, number> => typeof t !== 'number',
   )
   if (!items.length) return null
 
+  const single = items.length === 1
+  const inlineLink = link?.link
+
   return (
-    <section className="bg-ink-900 text-white">
+    <section className="bg-surface-page">
       <div className="container-site py-16 lg:py-20">
-        {heading && <h2 className="mb-12 text-center text-3xl font-bold text-white">{heading}</h2>}
-        <div className={`grid gap-8 ${items.length > 1 ? 'lg:grid-cols-2' : 'mx-auto max-w-3xl'}`}>
-          {items.map((testimonial) => (
-            <figure key={testimonial.id} className="rounded-lg bg-ink-800 p-8">
-              <blockquote className="text-lg leading-relaxed text-ink-100">
-                “{testimonial.quote}”
-              </blockquote>
-              <figcaption className="mt-6 flex items-center gap-4">
-                {testimonial.avatar && typeof testimonial.avatar !== 'number' && (
-                  <Media
-                    media={testimonial.avatar}
-                    size="thumbnail"
-                    className="h-11 w-11 rounded-full object-cover"
+        {heading && <h2 className="mb-12 text-center">{heading}</h2>}
+        {single ? (
+          <figure className="mx-auto flex max-w-3xl flex-col items-center gap-6 text-center">
+            {eyebrow && <Chip>{eyebrow}</Chip>}
+            <blockquote className="font-heading text-[24px] leading-9 font-medium text-text-heading lg:text-[28px] lg:leading-10">
+              “{items[0].quote}”
+            </blockquote>
+            <figcaption className="text-sm text-text-60">
+              {[items[0].personRole, items[0].company].filter(Boolean).join(' · ') ||
+                items[0].personName}
+              {inlineLink?.label && (
+                <>
+                  {' — '}
+                  <CMSLink
+                    link={inlineLink}
+                    className="font-medium text-brand-fg hover:text-brand-fg-hover"
                   />
-                )}
-                <div>
-                  <p className="font-semibold text-white">{testimonial.personName}</p>
-                  <p className="text-sm text-ink-400">
+                </>
+              )}
+            </figcaption>
+          </figure>
+        ) : (
+          <div className="grid gap-6 lg:grid-cols-2">
+            {items.map((testimonial) => (
+              <figure
+                key={testimonial.id}
+                className="rounded-lg border border-border-12 bg-white p-8"
+              >
+                <blockquote className="text-lg leading-relaxed text-text-90">
+                  “{testimonial.quote}”
+                </blockquote>
+                <figcaption className="mt-6">
+                  <p className="font-semibold text-text-heading">{testimonial.personName}</p>
+                  <p className="text-sm text-text-60">
                     {[testimonial.personRole, testimonial.company].filter(Boolean).join(' · ')}
                   </p>
-                </div>
-              </figcaption>
-            </figure>
-          ))}
-        </div>
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   )

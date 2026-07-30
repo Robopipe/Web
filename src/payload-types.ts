@@ -75,6 +75,7 @@ export interface Config {
     testimonials: Testimonial;
     faqs: Faq;
     leads: Lead;
+    'newsletter-subscribers': NewsletterSubscriber;
     media: Media;
     redirects: Redirect;
     users: User;
@@ -93,6 +94,7 @@ export interface Config {
     testimonials: TestimonialsSelect<false> | TestimonialsSelect<true>;
     faqs: FaqsSelect<false> | FaqsSelect<true>;
     leads: LeadsSelect<false> | LeadsSelect<true>;
+    'newsletter-subscribers': NewsletterSubscribersSelect<false> | NewsletterSubscribersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
@@ -162,9 +164,13 @@ export interface Page {
     | StatsBlock
     | LogoCloudBlock
     | TestimonialBarBlock
-    | UseCaseCardsBlock
+    | IndustryCardsBlock
+    | IndustrySectionBlock
+    | ProcessStepsBlock
     | PricingTableBlock
+    | PlanComparisonBlock
     | FAQAccordionBlock
+    | SplitSectionBlock
     | CaseStudyGridBlock
     | BlogTeaserBlock
     | CTABannerBlock
@@ -195,11 +201,14 @@ export interface Page {
  */
 export interface HeroBlock {
   /**
-   * Small label above the heading.
+   * Chip label above the heading.
    */
   eyebrow?: string | null;
   heading: string;
   text?: string | null;
+  /**
+   * First link renders as the filled CTA, second as outlined.
+   */
   links?:
     | {
         link: {
@@ -212,8 +221,24 @@ export interface HeroBlock {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Looping full-width video below the copy (takes precedence over image).
+   */
+  video?: (number | null) | Media;
   image?: (number | null) | Media;
-  variant?: ('split' | 'centered') | null;
+  /**
+   * Trust strip under the media (e.g. "Trusted in operations running …").
+   */
+  trust?: {
+    label?: string | null;
+    items?:
+      | {
+          text: string;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  variant?: ('centered' | 'split') | null;
   id?: string | null;
   blockName?: string | null;
   blockType: 'hero';
@@ -281,12 +306,142 @@ export interface Media {
 export interface FeatureGridBlock {
   heading?: string | null;
   text?: string | null;
+  background?: ('light' | 'dark') | null;
   columns?: ('2' | '3' | '4') | null;
   features: {
     /**
-     * Optional icon or small illustration.
+     * Optional card media header.
      */
-    icon?: (number | null) | Media;
+    image?: (number | null) | Media;
+    imageStyle?: ('cover' | 'framed') | null;
+    /**
+     * Design-system glyph shown in a lime-tint square.
+     */
+    icon?:
+      | (
+          | 'IcoAIStyleColored'
+          | 'IcoAIStyleDefault'
+          | 'IcoAddLarge'
+          | 'IcoAddSmall'
+          | 'IcoAdjustments'
+          | 'IcoAiPower'
+          | 'IcoAnnotate'
+          | 'IcoAnnotationReadyStyleDefault'
+          | 'IcoAnnotationReadyStyleFlat'
+          | 'IcoArrowDown'
+          | 'IcoArrowLeft'
+          | 'IcoArrowRight'
+          | 'IcoArrowUp'
+          | 'IcoBasket'
+          | 'IcoBox'
+          | 'IcoBulb'
+          | 'IcoBulbAlt'
+          | 'IcoCalendar'
+          | 'IcoCamera'
+          | 'IcoCardView'
+          | 'IcoChart'
+          | 'IcoChat'
+          | 'IcoCheck'
+          | 'IcoChevronDown'
+          | 'IcoChevronLeft'
+          | 'IcoChevronRight'
+          | 'IcoClose'
+          | 'IcoCog'
+          | 'IcoConnector'
+          | 'IcoController'
+          | 'IcoCursor'
+          | 'IcoDarkTheme'
+          | 'IcoDashboard'
+          | 'IcoDate'
+          | 'IcoDelete'
+          | 'IcoDesktop'
+          | 'IcoDocumentation'
+          | 'IcoDots'
+          | 'IcoDownload'
+          | 'IcoDropdownMenu'
+          | 'IcoDuplicate'
+          | 'IcoEdit'
+          | 'IcoErrorStyleDefault'
+          | 'IcoErrorStyleFlat'
+          | 'IcoEthernet'
+          | 'IcoExpand'
+          | 'IcoEye'
+          | 'IcoFilterTable'
+          | 'IcoFocusTypeAuto'
+          | 'IcoFocusTypeCapture'
+          | 'IcoFocusTypeFixed'
+          | 'IcoFullArrowDown'
+          | 'IcoFullArrowRight'
+          | 'IcoFullArrowUp'
+          | 'IcoGSM'
+          | 'IcoHamburger'
+          | 'IcoHand'
+          | 'IcoHome'
+          | 'IcoHorizontal'
+          | 'IcoImage'
+          | 'IcoIndicator'
+          | 'IcoInfere'
+          | 'IcoInformation'
+          | 'IcoInput'
+          | 'IcoInvisible'
+          | 'IcoLightTheme'
+          | 'IcoLink'
+          | 'IcoLocationArrow'
+          | 'IcoLock'
+          | 'IcoLogout'
+          | 'IcoMail'
+          | 'IcoMinus'
+          | 'IcoModel'
+          | 'IcoMotor'
+          | 'IcoNoCamera'
+          | 'IcoNote'
+          | 'IcoOr'
+          | 'IcoOutput'
+          | 'IcoPause'
+          | 'IcoPowerSource'
+          | 'IcoRedo'
+          | 'IcoRefresh'
+          | 'IcoRemove'
+          | 'IcoRemoveAnnotation'
+          | 'IcoRotateLeft'
+          | 'IcoRotateRight'
+          | 'IcoRun'
+          | 'IcoSave'
+          | 'IcoSearch'
+          | 'IcoSensor'
+          | 'IcoSettings'
+          | 'IcoShape'
+          | 'IcoShare'
+          | 'IcoSocialsSocialGithub'
+          | 'IcoSocialsSocialLinkedin'
+          | 'IcoSocialsSocialReddit'
+          | 'IcoSocialsSocialXTwitter'
+          | 'IcoSocialsSocialYoutube'
+          | 'IcoSortBy'
+          | 'IcoStopCapture'
+          | 'IcoSuccessStyleDefault'
+          | 'IcoSuccessStyleFlat'
+          | 'IcoSupport'
+          | 'IcoSwitch'
+          | 'IcoTableView'
+          | 'IcoTarget'
+          | 'IcoTemperature'
+          | 'IcoTerminal'
+          | 'IcoTrash'
+          | 'IcoUSB'
+          | 'IcoUndo'
+          | 'IcoUnlock'
+          | 'IcoUpload'
+          | 'IcoUser'
+          | 'IcoVertical'
+          | 'IcoVisible'
+          | 'IcoXaxis'
+          | 'IcoXor'
+          | 'IcoYaxis'
+          | 'IcoZoomIn'
+          | 'IcoZoomOut'
+        )
+      | null;
     title: string;
     text?: string | null;
     id?: string | null;
@@ -337,9 +492,10 @@ export interface MediaBlockType {
  */
 export interface StatsBlock {
   heading?: string | null;
+  background?: ('light' | 'dark') | null;
   items: {
     /**
-     * E.g. "12MP", "4 TOPs", "99.7%".
+     * E.g. "3,600", "99.5%", "< 1 day".
      */
     value: string;
     label: string;
@@ -373,8 +529,27 @@ export interface LogoCloudBlock {
  * via the `definition` "TestimonialBarBlock".
  */
 export interface TestimonialBarBlock {
+  /**
+   * Chip label above the quote (e.g. "Customer story").
+   */
+  eyebrow?: string | null;
   heading?: string | null;
+  /**
+   * A single testimonial renders as a large centered pull quote.
+   */
   testimonials: (number | Testimonial)[];
+  /**
+   * Optional inline link after the attribution (e.g. "read the case study").
+   */
+  link?: {
+    link?: {
+      label?: string | null;
+      type?: ('internal' | 'external') | null;
+      page?: (number | null) | Page;
+      url?: string | null;
+      newTab?: boolean | null;
+    };
+  };
   id?: string | null;
   blockName?: string | null;
   blockType: 'testimonialBar';
@@ -396,24 +571,102 @@ export interface Testimonial {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "UseCaseCardsBlock".
+ * via the `definition` "IndustryCardsBlock".
  */
-export interface UseCaseCardsBlock {
+export interface IndustryCardsBlock {
   heading?: string | null;
   text?: string | null;
   cards: {
     image?: (number | null) | Media;
     title: string;
     text?: string | null;
+    link?: {
+      label?: string | null;
+      type?: ('internal' | 'external') | null;
+      page?: (number | null) | Page;
+      url?: string | null;
+      newTab?: boolean | null;
+    };
     /**
-     * Use-case landing page this card links to.
+     * Card link label, e.g. "Explore". Rendered with an arrow.
      */
-    page?: (number | null) | Page;
+    exploreLabel?: string | null;
     id?: string | null;
   }[];
   id?: string | null;
   blockName?: string | null;
-  blockType: 'useCaseCards';
+  blockType: 'industryCards';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "IndustrySectionBlock".
+ */
+export interface IndustrySectionBlock {
+  /**
+   * Anchor id for deep links, e.g. "food" → /industries#food.
+   */
+  anchor?: string | null;
+  /**
+   * Chip label, e.g. "Food processing".
+   */
+  chip?: string | null;
+  heading: string;
+  text?: string | null;
+  image?: (number | null) | Media;
+  imageSide?: ('left' | 'right') | null;
+  background?: ('white' | 'tinted') | null;
+  bullets?:
+    | {
+        text: string;
+        id?: string | null;
+      }[]
+    | null;
+  stats?:
+    | {
+        value: string;
+        label: string;
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'industrySection';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProcessStepsBlock".
+ */
+export interface ProcessStepsBlock {
+  heading: string;
+  text?: string | null;
+  image?: (number | null) | Media;
+  steps: {
+    title: string;
+    text?: string | null;
+    id?: string | null;
+  }[];
+  cta?: {
+    link?: {
+      label?: string | null;
+      type?: ('internal' | 'external') | null;
+      page?: (number | null) | Page;
+      url?: string | null;
+      newTab?: boolean | null;
+    };
+  };
+  /**
+   * Stat strip at the bottom of the section.
+   */
+  stats?:
+    | {
+        value: string;
+        label: string;
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'processSteps';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -425,14 +678,25 @@ export interface PricingTableBlock {
   tiers: {
     name: string;
     /**
-     * E.g. "from €2,990" / "od 74 900 Kč" or "Individual".
+     * One-liner under the name, e.g. "Prove it on one camera before you scale."
+     */
+    tagline?: string | null;
+    /**
+     * E.g. "€390" / "9 900 Kč" or "Custom".
      */
     price: string;
     /**
-     * E.g. "per kit" or "per month". Optional.
+     * E.g. "/ camera". Optional.
      */
     period?: string | null;
-    description?: string | null;
+    /**
+     * Billing note, e.g. "3-month minimum · hardware rental included".
+     */
+    subNote?: string | null;
+    /**
+     * Bold lead-in above features, e.g. "Everything in Standard and".
+     */
+    featuresLeadIn?: string | null;
     features?:
       | {
           text: string;
@@ -446,10 +710,15 @@ export interface PricingTableBlock {
       url?: string | null;
       newTab?: boolean | null;
     };
+    ctaVariant?: ('filled' | 'outlined') | null;
     /**
-     * Visually emphasize this tier as the recommended one.
+     * Renders as the dark "Most popular" card.
      */
     highlighted?: boolean | null;
+    /**
+     * Badge on the highlighted card, e.g. "Most popular".
+     */
+    badge?: string | null;
     id?: string | null;
   }[];
   /**
@@ -459,6 +728,41 @@ export interface PricingTableBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'pricingTable';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "PlanComparisonBlock".
+ */
+export interface PlanComparisonBlock {
+  heading?: string | null;
+  /**
+   * Tier names, in column order.
+   */
+  columns: {
+    name: string;
+    id?: string | null;
+  }[];
+  groups: {
+    /**
+     * Group header, e.g. "Inspection".
+     */
+    label: string;
+    rows: {
+      label: string;
+      /**
+       * One value per tier column: "✓", "—", or text like "5 / month".
+       */
+      values: {
+        value?: string | null;
+        id?: string | null;
+      }[];
+      id?: string | null;
+    }[];
+    id?: string | null;
+  }[];
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'planComparison';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -498,6 +802,29 @@ export interface Faq {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "SplitSectionBlock".
+ */
+export interface SplitSectionBlock {
+  blog?: {
+    /**
+     * E.g. "From the blog".
+     */
+    heading?: string | null;
+    limit?: number | null;
+  };
+  faq?: {
+    /**
+     * E.g. "Questions, answered."
+     */
+    heading?: string | null;
+    faqs?: (number | Faq)[] | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'splitSection';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "CaseStudyGridBlock".
  */
 export interface CaseStudyGridBlock {
@@ -526,10 +853,11 @@ export interface CaseStudy {
    */
   slug?: string | null;
   customer: string;
+  industry?: ('food' | 'pharma' | 'retail' | 'logistics') | null;
   /**
-   * E.g. "Pharma", "Logistics".
+   * Featured study renders as the large two-column card on the listing.
    */
-  industry?: string | null;
+  featured?: boolean | null;
   customerLogo?: (number | null) | Media;
   heroImage?: (number | null) | Media;
   /**
@@ -546,7 +874,10 @@ export interface CaseStudy {
         id?: string | null;
       }[]
     | null;
-  content: {
+  /**
+   * Optional long-form body — case studies are listing-only in v1.
+   */
+  content?: {
     root: {
       type: string;
       children: {
@@ -560,7 +891,7 @@ export interface CaseStudy {
       version: number;
     };
     [k: string]: unknown;
-  };
+  } | null;
   /**
    * Overrides for search engines and social sharing. Falls back to the document title/excerpt.
    */
@@ -598,13 +929,21 @@ export interface BlogTeaserBlock {
 export interface CTABannerBlock {
   heading: string;
   text?: string | null;
-  link: {
-    label: string;
-    type?: ('internal' | 'external') | null;
-    page?: (number | null) | Page;
-    url?: string | null;
-    newTab?: boolean | null;
-  };
+  /**
+   * First link renders filled, second outlined.
+   */
+  links?:
+    | {
+        link: {
+          label: string;
+          type?: ('internal' | 'external') | null;
+          page?: (number | null) | Page;
+          url?: string | null;
+          newTab?: boolean | null;
+        };
+        id?: string | null;
+      }[]
+    | null;
   id?: string | null;
   blockName?: string | null;
   blockType: 'ctaBanner';
@@ -614,12 +953,18 @@ export interface CTABannerBlock {
  * via the `definition` "ContactFormBlock".
  */
 export interface ContactFormBlock {
-  heading?: string | null;
-  text?: string | null;
   /**
-   * Show the optional "use case" field on the form.
+   * Form card title, e.g. "Book a demo".
    */
-  showUseCase?: boolean | null;
+  heading?: string | null;
+  /**
+   * Small line beside the submit button.
+   */
+  microcopy?: string | null;
+  /**
+   * Show contact details and the map (from Site Settings) next to the form.
+   */
+  showSidebar?: boolean | null;
   id?: string | null;
   blockName?: string | null;
   blockType: 'contactForm';
@@ -643,6 +988,10 @@ export interface Post {
    */
   excerpt?: string | null;
   heroImage?: (number | null) | Media;
+  heroStyle?: ('photo' | 'framed') | null;
+  /**
+   * Blockquotes render as lime callout boxes on the site.
+   */
   content: {
     root: {
       type: string;
@@ -658,6 +1007,10 @@ export interface Post {
     };
     [k: string]: unknown;
   };
+  /**
+   * Headline of the dark "Book a demo" section under the post, e.g. "Run the pipeline on your own products." Falls back to a default when empty.
+   */
+  ctaHeadline?: string | null;
   /**
    * Minutes — computed from content on save.
    */
@@ -725,11 +1078,9 @@ export interface Lead {
   name: string;
   email: string;
   company?: string | null;
+  phone?: string | null;
   message: string;
-  /**
-   * Free-text use case / interest area from the form.
-   */
-  useCase?: string | null;
+  industry?: ('food' | 'pharma' | 'retail' | 'logistics' | 'other') | null;
   /**
    * Pricing tier the visitor clicked before submitting, if any.
    */
@@ -740,6 +1091,20 @@ export interface Lead {
    */
   sourcePage?: string | null;
   status?: ('new' | 'contacted' | 'qualified' | 'closed') | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Blog newsletter signups. No sending is wired up yet — export or connect later.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "newsletter-subscribers".
+ */
+export interface NewsletterSubscriber {
+  id: number;
+  email: string;
+  locale?: ('cs' | 'en') | null;
+  sourcePage?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -847,6 +1212,10 @@ export interface PayloadLockedDocument {
         value: number | Lead;
       } | null)
     | ({
+        relationTo: 'newsletter-subscribers';
+        value: number | NewsletterSubscriber;
+      } | null)
+    | ({
         relationTo: 'media';
         value: number | Media;
       } | null)
@@ -917,9 +1286,13 @@ export interface PagesSelect<T extends boolean = true> {
         stats?: T | StatsBlockSelect<T>;
         logoCloud?: T | LogoCloudBlockSelect<T>;
         testimonialBar?: T | TestimonialBarBlockSelect<T>;
-        useCaseCards?: T | UseCaseCardsBlockSelect<T>;
+        industryCards?: T | IndustryCardsBlockSelect<T>;
+        industrySection?: T | IndustrySectionBlockSelect<T>;
+        processSteps?: T | ProcessStepsBlockSelect<T>;
         pricingTable?: T | PricingTableBlockSelect<T>;
+        planComparison?: T | PlanComparisonBlockSelect<T>;
         faqAccordion?: T | FAQAccordionBlockSelect<T>;
+        splitSection?: T | SplitSectionBlockSelect<T>;
         caseStudyGrid?: T | CaseStudyGridBlockSelect<T>;
         blogTeaser?: T | BlogTeaserBlockSelect<T>;
         ctaBanner?: T | CTABannerBlockSelect<T>;
@@ -959,7 +1332,19 @@ export interface HeroBlockSelect<T extends boolean = true> {
             };
         id?: T;
       };
+  video?: T;
   image?: T;
+  trust?:
+    | T
+    | {
+        label?: T;
+        items?:
+          | T
+          | {
+              text?: T;
+              id?: T;
+            };
+      };
   variant?: T;
   id?: T;
   blockName?: T;
@@ -971,10 +1356,13 @@ export interface HeroBlockSelect<T extends boolean = true> {
 export interface FeatureGridBlockSelect<T extends boolean = true> {
   heading?: T;
   text?: T;
+  background?: T;
   columns?: T;
   features?:
     | T
     | {
+        image?: T;
+        imageStyle?: T;
         icon?: T;
         title?: T;
         text?: T;
@@ -1009,6 +1397,7 @@ export interface MediaBlockTypeSelect<T extends boolean = true> {
  */
 export interface StatsBlockSelect<T extends boolean = true> {
   heading?: T;
+  background?: T;
   items?:
     | T
     | {
@@ -1041,16 +1430,30 @@ export interface LogoCloudBlockSelect<T extends boolean = true> {
  * via the `definition` "TestimonialBarBlock_select".
  */
 export interface TestimonialBarBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
   heading?: T;
   testimonials?: T;
+  link?:
+    | T
+    | {
+        link?:
+          | T
+          | {
+              label?: T;
+              type?: T;
+              page?: T;
+              url?: T;
+              newTab?: T;
+            };
+      };
   id?: T;
   blockName?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "UseCaseCardsBlock_select".
+ * via the `definition` "IndustryCardsBlock_select".
  */
-export interface UseCaseCardsBlockSelect<T extends boolean = true> {
+export interface IndustryCardsBlockSelect<T extends boolean = true> {
   heading?: T;
   text?: T;
   cards?:
@@ -1059,7 +1462,82 @@ export interface UseCaseCardsBlockSelect<T extends boolean = true> {
         image?: T;
         title?: T;
         text?: T;
-        page?: T;
+        link?:
+          | T
+          | {
+              label?: T;
+              type?: T;
+              page?: T;
+              url?: T;
+              newTab?: T;
+            };
+        exploreLabel?: T;
+        id?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "IndustrySectionBlock_select".
+ */
+export interface IndustrySectionBlockSelect<T extends boolean = true> {
+  anchor?: T;
+  chip?: T;
+  heading?: T;
+  text?: T;
+  image?: T;
+  imageSide?: T;
+  background?: T;
+  bullets?:
+    | T
+    | {
+        text?: T;
+        id?: T;
+      };
+  stats?:
+    | T
+    | {
+        value?: T;
+        label?: T;
+        id?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProcessStepsBlock_select".
+ */
+export interface ProcessStepsBlockSelect<T extends boolean = true> {
+  heading?: T;
+  text?: T;
+  image?: T;
+  steps?:
+    | T
+    | {
+        title?: T;
+        text?: T;
+        id?: T;
+      };
+  cta?:
+    | T
+    | {
+        link?:
+          | T
+          | {
+              label?: T;
+              type?: T;
+              page?: T;
+              url?: T;
+              newTab?: T;
+            };
+      };
+  stats?:
+    | T
+    | {
+        value?: T;
+        label?: T;
         id?: T;
       };
   id?: T;
@@ -1076,9 +1554,11 @@ export interface PricingTableBlockSelect<T extends boolean = true> {
     | T
     | {
         name?: T;
+        tagline?: T;
         price?: T;
         period?: T;
-        description?: T;
+        subNote?: T;
+        featuresLeadIn?: T;
         features?:
           | T
           | {
@@ -1094,10 +1574,45 @@ export interface PricingTableBlockSelect<T extends boolean = true> {
               url?: T;
               newTab?: T;
             };
+        ctaVariant?: T;
         highlighted?: T;
+        badge?: T;
         id?: T;
       };
   footnote?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "PlanComparisonBlock_select".
+ */
+export interface PlanComparisonBlockSelect<T extends boolean = true> {
+  heading?: T;
+  columns?:
+    | T
+    | {
+        name?: T;
+        id?: T;
+      };
+  groups?:
+    | T
+    | {
+        label?: T;
+        rows?:
+          | T
+          | {
+              label?: T;
+              values?:
+                | T
+                | {
+                    value?: T;
+                    id?: T;
+                  };
+              id?: T;
+            };
+        id?: T;
+      };
   id?: T;
   blockName?: T;
 }
@@ -1108,6 +1623,26 @@ export interface PricingTableBlockSelect<T extends boolean = true> {
 export interface FAQAccordionBlockSelect<T extends boolean = true> {
   heading?: T;
   faqs?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "SplitSectionBlock_select".
+ */
+export interface SplitSectionBlockSelect<T extends boolean = true> {
+  blog?:
+    | T
+    | {
+        heading?: T;
+        limit?: T;
+      };
+  faq?:
+    | T
+    | {
+        heading?: T;
+        faqs?: T;
+      };
   id?: T;
   blockName?: T;
 }
@@ -1139,14 +1674,19 @@ export interface BlogTeaserBlockSelect<T extends boolean = true> {
 export interface CTABannerBlockSelect<T extends boolean = true> {
   heading?: T;
   text?: T;
-  link?:
+  links?:
     | T
     | {
-        label?: T;
-        type?: T;
-        page?: T;
-        url?: T;
-        newTab?: T;
+        link?:
+          | T
+          | {
+              label?: T;
+              type?: T;
+              page?: T;
+              url?: T;
+              newTab?: T;
+            };
+        id?: T;
       };
   id?: T;
   blockName?: T;
@@ -1157,8 +1697,8 @@ export interface CTABannerBlockSelect<T extends boolean = true> {
  */
 export interface ContactFormBlockSelect<T extends boolean = true> {
   heading?: T;
-  text?: T;
-  showUseCase?: T;
+  microcopy?: T;
+  showSidebar?: T;
   id?: T;
   blockName?: T;
 }
@@ -1171,7 +1711,9 @@ export interface PostsSelect<T extends boolean = true> {
   slug?: T;
   excerpt?: T;
   heroImage?: T;
+  heroStyle?: T;
   content?: T;
+  ctaHeadline?: T;
   readingTime?: T;
   authors?: T;
   categories?: T;
@@ -1219,6 +1761,7 @@ export interface CaseStudiesSelect<T extends boolean = true> {
   slug?: T;
   customer?: T;
   industry?: T;
+  featured?: T;
   customerLogo?: T;
   heroImage?: T;
   excerpt?: T;
@@ -1274,12 +1817,24 @@ export interface LeadsSelect<T extends boolean = true> {
   name?: T;
   email?: T;
   company?: T;
+  phone?: T;
   message?: T;
-  useCase?: T;
+  industry?: T;
   tier?: T;
   locale?: T;
   sourcePage?: T;
   status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "newsletter-subscribers_select".
+ */
+export interface NewsletterSubscribersSelect<T extends boolean = true> {
+  email?: T;
+  locale?: T;
+  sourcePage?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1439,6 +1994,18 @@ export interface Header {
       }[]
     | null;
   /**
+   * Plain text link before the CTA (e.g. "App login").
+   */
+  secondaryLink?: {
+    link?: {
+      label?: string | null;
+      type?: ('internal' | 'external') | null;
+      page?: (number | null) | Page;
+      url?: string | null;
+      newTab?: boolean | null;
+    };
+  };
+  /**
    * Highlighted button at the end of the navigation.
    */
   cta?: {
@@ -1481,6 +2048,25 @@ export interface Footer {
    * Short company blurb shown next to the logo.
    */
   note?: string | null;
+  /**
+   * Links in the bottom bar (e.g. Privacy Policy).
+   */
+  legalLinks?:
+    | {
+        link: {
+          label: string;
+          type?: ('internal' | 'external') | null;
+          page?: (number | null) | Page;
+          url?: string | null;
+          newTab?: boolean | null;
+        };
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Legal entity for the © line, e.g. "Robopipe s.r.o." (year is added automatically).
+   */
+  copyright?: string | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -1499,6 +2085,27 @@ export interface SiteSetting {
    * Public contact email shown on the site.
    */
   contactEmail?: string | null;
+  /**
+   * Details shown on the contact page next to the form.
+   */
+  contact?: {
+    /**
+     * Displayed phone number, e.g. "+420 728 488 116".
+     */
+    phone?: string | null;
+    /**
+     * E.g. "Mon–Fri, 8:00–17:00 CET".
+     */
+    phoneHours?: string | null;
+    /**
+     * Postal address, one line per row.
+     */
+    address?: string | null;
+    /**
+     * Static map screenshot of the HQ.
+     */
+    mapImage?: (number | null) | Media;
+  };
   socials?:
     | {
         platform: 'linkedin' | 'github' | 'youtube' | 'x' | 'facebook' | 'instagram';
@@ -1535,6 +2142,19 @@ export interface HeaderSelect<T extends boolean = true> {
               newTab?: T;
             };
         id?: T;
+      };
+  secondaryLink?:
+    | T
+    | {
+        link?:
+          | T
+          | {
+              label?: T;
+              type?: T;
+              page?: T;
+              url?: T;
+              newTab?: T;
+            };
       };
   cta?:
     | T
@@ -1579,6 +2199,21 @@ export interface FooterSelect<T extends boolean = true> {
         id?: T;
       };
   note?: T;
+  legalLinks?:
+    | T
+    | {
+        link?:
+          | T
+          | {
+              label?: T;
+              type?: T;
+              page?: T;
+              url?: T;
+              newTab?: T;
+            };
+        id?: T;
+      };
+  copyright?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
@@ -1591,6 +2226,14 @@ export interface SiteSettingsSelect<T extends boolean = true> {
   siteName?: T;
   leadNotificationEmail?: T;
   contactEmail?: T;
+  contact?:
+    | T
+    | {
+        phone?: T;
+        phoneHours?: T;
+        address?: T;
+        mapImage?: T;
+      };
   socials?:
     | T
     | {

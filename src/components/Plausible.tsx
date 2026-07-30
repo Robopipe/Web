@@ -6,11 +6,17 @@ export const Plausible: React.FC = () => {
   const domain = process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN
   if (!domain) return null
   return (
-    <Script
-      defer
-      data-domain={domain}
-      src="https://plausible.io/js/script.js"
-      strategy="afterInteractive"
-    />
+    <>
+      {/* Queues trackEvent() calls made before script.js finishes loading. */}
+      <Script id="plausible-stub" strategy="afterInteractive">
+        {`window.plausible = window.plausible || function () { (window.plausible.q = window.plausible.q || []).push(arguments) }`}
+      </Script>
+      <Script
+        defer
+        data-domain={domain}
+        src="https://plausible.io/js/script.js"
+        strategy="afterInteractive"
+      />
+    </>
   )
 }

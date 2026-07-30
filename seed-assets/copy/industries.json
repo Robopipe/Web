@@ -1,0 +1,102 @@
+{
+  "meta": {
+    "title": "Industries — Machine vision for food, pharma, retail & logistics | Robopipe",
+    "description": "See how Robopipe machine vision solves quality control across food processing, pharma & healthcare, retail & e-commerce and logistics — piece inspection, counting, tagging and warehouse safety."
+  },
+  "hero": {
+    "chip": "Industries",
+    "headline": "Machine vision for four very different floors.",
+    "subline": "Capture, label, train, infer — the same open pipeline behind every deployment, tuned to what your line actually makes, packs or ships."
+  },
+  "industries": [
+    {
+      "id": "food",
+      "chip": "Food processing",
+      "heading": "Food processing: every piece checked at line speed.",
+      "intro": "From sandwich assembly to fruit sorting, Robopipe inspects every product passing the camera — in washdown areas, cold stores and flour dust alike.",
+      "bullets": [
+        "Missing, misplaced or wrong ingredients on assembled products",
+        "Foreign-object detection",
+        "Portion, weight-by-vision and fill-level checks",
+        "Piece counting, pass rate and takt on the floor display"
+      ],
+      "stats": [
+        { "value": "3,600", "label": "products / hour inspected" },
+        { "value": "−32%", "label": "reject rate in month one" }
+      ],
+      "image": "food-baguette-inspection.png",
+      "imageSide": "left",
+      "background": "default"
+    },
+    {
+      "id": "pharma",
+      "chip": "Pharma & healthcare",
+      "heading": "Pharma & healthcare: verified fills, closures and labels.",
+      "intro": "Capsule filling, blister packing and labelling verified piece by piece — with an image record of every inspection for your quality documentation.",
+      "bullets": [
+        "Fill level, capsule and blister completeness",
+        "Cap, seal and closure presence and position",
+        "Label presence, orientation and batch-code legibility",
+        "Image archive of every pass and reject, exportable for audits"
+      ],
+      "stats": [
+        { "value": "99.5%", "label": "detection precision" },
+        { "value": "100%", "label": "of pieces documented" }
+      ],
+      "image": "pharma-hmi.jpeg",
+      "imageSide": "right",
+      "background": "tinted"
+    },
+    {
+      "id": "retail",
+      "chip": "Retail & e-commerce",
+      "heading": "Retail & e-commerce: your whole catalog, tagged by AI.",
+      "intro": "Tagging thousands of product images by hand is slow, inconsistent and error-prone — and bad metadata buries products in search. Robopipe reads your product photos and writes the tags for you, keeping the whole catalog searchable as it grows.",
+      "bullets": [
+        "New products listed from a photo — color, material, size and style extracted automatically",
+        "Uniform terminology across the entire catalog — no typos, omissions or mixed labels",
+        "Better SEO and site search: “black leather office chair” finds the right product",
+        "Scales to seasonal collections and tens of thousands of SKUs without extra headcount",
+        "Fulfilment covered too: order contents verified with photo proof of every shipped box",
+        "Shelf analytics: store checks digitized — products on shelf photos detected and classified to improve on-shelf availability"
+      ],
+      "stats": [
+        { "value": "10k+", "label": "images tagged per day" },
+        { "value": "0", "label": "hours of manual tagging" }
+      ],
+      "image": "retail-packing.jpg",
+      "imageSide": "left",
+      "background": "default"
+    },
+    {
+      "id": "logistics",
+      "chip": "Logistics",
+      "heading": "Logistics: a safer, measured warehouse.",
+      "intro": "Cameras watch aisles, docks and conveyors around the clock — flagging safety hazards the moment they appear and turning every movement into operational statistics.",
+      "bullets": [
+        "Forklift–pedestrian near-misses detected, counted and mapped to their hotspots",
+        "Missing PPE (vests, helmets) and unauthorized entry into forklift-only zones",
+        "Blocked emergency exits, spills and aisle obstructions flagged the moment they appear",
+        "Speeding and wrong-way driving in aisles logged per vehicle and shift",
+        "Traffic heatmaps, dock dwell times and congestion peaks — evidence for re-layouts",
+        "Throughput and near-miss statistics wired into your WMS and safety reporting"
+      ],
+      "stats": [
+        { "value": "−60%", "label": "safety incidents reported" },
+        { "value": "24/7", "label": "monitoring & statistics" }
+      ],
+      "image": "logistics-warehouse.png",
+      "imageSide": "right",
+      "background": "tinted"
+    }
+  ],
+  "ctaBanner": {
+    "background": "dark",
+    "heading": "Don't see your line here?",
+    "sub": "If a camera can see it, Robopipe can learn it. Tell us what you make and we'll show you what inspection would look like.",
+    "buttons": [
+      { "label": "Book a demo", "target": "contact", "variant": "filled" },
+      { "label": "See case studies", "target": "case-studies", "variant": "outlined" }
+    ]
+  }
+}

@@ -31,6 +31,35 @@ export const SiteSettings: GlobalConfig = {
       admin: { description: 'Public contact email shown on the site.' },
     },
     {
+      name: 'contact',
+      type: 'group',
+      admin: { description: 'Details shown on the contact page next to the form.' },
+      fields: [
+        {
+          name: 'phone',
+          type: 'text',
+          admin: { description: 'Displayed phone number, e.g. "+420 728 488 116".' },
+        },
+        {
+          name: 'phoneHours',
+          type: 'text',
+          localized: true,
+          admin: { description: 'E.g. "Mon–Fri, 8:00–17:00 CET".' },
+        },
+        {
+          name: 'address',
+          type: 'textarea',
+          admin: { description: 'Postal address, one line per row.' },
+        },
+        {
+          name: 'mapImage',
+          type: 'upload',
+          relationTo: 'media',
+          admin: { description: 'Static map screenshot of the HQ.' },
+        },
+      ],
+    },
+    {
       name: 'socials',
       type: 'array',
       fields: [

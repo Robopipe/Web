@@ -1,0 +1,158 @@
+{
+  "meta": {
+    "title": "Pricing — Robopipe visual inspection plans",
+    "description": "Robopipe pricing: Standard €390, Pro €590 per camera per month, and custom Enterprise. Sealed IP67 hardware, on-site install and deep-learning inspection in one predictable price."
+  },
+  "hero": {
+    "chip": "Pricing",
+    "headline": "Pricing that scales with your operation.",
+    "subline": "Hardware, install and deep-learning inspection in one predictable monthly price. Start with one camera, roll out when you're ready."
+  },
+  "tiers": [
+    {
+      "name": "Standard",
+      "tagline": "Prove it on one camera before you scale.",
+      "price": "€390",
+      "period": "/ camera",
+      "subNote": "3-month minimum · hardware rental included",
+      "ctaLabel": "Get started",
+      "ctaVariant": "outlined",
+      "highlighted": false,
+      "features": [
+        "Unlimited cameras & products",
+        "Piece counting, statistics & downtime",
+        "Self-service product setup in studio app",
+        "Real-time production floor dashboard that works on any tablet",
+        "5 model trainings per month",
+        "Email support"
+      ]
+    },
+    {
+      "name": "Pro",
+      "badge": "Most popular",
+      "tagline": "Full quality control across your busiest operations.",
+      "price": "€590",
+      "period": "/ camera",
+      "subNote": "Annual · on-site install included",
+      "ctaLabel": "Book a demo",
+      "ctaVariant": "filled",
+      "highlighted": true,
+      "leadIn": "Everything in Standard and",
+      "features": [
+        "Advanced analytics (downtime, site comparisons, per-part statistics)",
+        "Unlimited model trainings",
+        "PLC with digital outputs, RS485, EtherCAT & Modbus",
+        "On-site install & operator training",
+        "Post-install service & priority support"
+      ]
+    },
+    {
+      "name": "Enterprise",
+      "tagline": "Multi-site rollouts wired into your systems.",
+      "price": "Custom",
+      "period": "",
+      "subNote": "Volume pricing · dedicated success manager",
+      "ctaLabel": "Talk to sales",
+      "ctaVariant": "filled",
+      "highlighted": false,
+      "leadIn": "Everything in Pro and",
+      "features": [
+        "ERP & MES integration",
+        "Custom models & tailored hardware",
+        "SLA"
+      ]
+    }
+  ],
+  "footnote": "All plans include IP67 washdown-rated hardware, over-the-air updates and unlimited operators. Prices exclude VAT.",
+  "logoStrip": {
+    "eyebrow": "Trusted in production and warehouses across Europe",
+    "logos": [
+      { "name": "Crocodille", "image": "logo-crocodille.png" },
+      { "name": "Bageterie Boulevard", "image": "logo-bageterie.jpg" },
+      { "name": "MG Servis", "image": "logo-mgservis.png" },
+      { "name": "Wolfberry", "image": "logo-wolfberry.png" },
+      { "name": "Foodstr", "image": "logo-foodstr.png" }
+    ]
+  },
+  "comparison": {
+    "headline": "Compare plans",
+    "columns": ["Standard", "Pro", "Enterprise"],
+    "groups": [
+      {
+        "label": "Inspection",
+        "rows": [
+          { "label": "Cameras & sites", "standard": "Unlimited", "pro": "Unlimited", "enterprise": "Unlimited" },
+          { "label": "Inspected products", "standard": "Unlimited", "pro": "Unlimited", "enterprise": "Unlimited" },
+          { "label": "Self-service product setup", "standard": "✓", "pro": "✓", "enterprise": "✓" },
+          { "label": "Piece counting & statistics", "standard": "✓", "pro": "✓", "enterprise": "✓" },
+          { "label": "Downtime & production takt", "standard": "✓", "pro": "✓", "enterprise": "✓" },
+          { "label": "Advanced analytics (site comparisons, per-part stats)", "standard": "", "pro": "✓", "enterprise": "✓" }
+        ]
+      },
+      {
+        "label": "Deployment & support",
+        "rows": [
+          { "label": "Real-time floor dashboard", "standard": "✓", "pro": "✓", "enterprise": "✓" },
+          { "label": "Model trainings", "standard": "5 / month", "pro": "Unlimited", "enterprise": "Unlimited" },
+          { "label": "On-site install & training", "standard": "", "pro": "✓", "enterprise": "✓" },
+          { "label": "PLC I/O (DI/DO, RS485, EtherCAT, Modbus)", "standard": "", "pro": "✓", "enterprise": "✓" },
+          { "label": "Post-install service & support", "standard": "Email", "pro": "Priority", "enterprise": "24/7 SLA" },
+          { "label": "ERP / MES integration", "standard": "", "pro": "", "enterprise": "✓" },
+          { "label": "Custom models & hardware", "standard": "", "pro": "", "enterprise": "✓" }
+        ]
+      }
+    ]
+  },
+  "benefits": {
+    "background": "dark",
+    "heading": "With Pro install and support are on us.",
+    "sub": "We come to your plant, mount the sealed camera over your process and set everything up on site — then stay on with service and support long after go-live.",
+    "items": [
+      {
+        "icon": "IcoController",
+        "title": "We come to you",
+        "body": "On-site install in wet, cold and dusty areas — wired into the systems you already run."
+      },
+      {
+        "icon": "IcoSupport",
+        "title": "Post-install support",
+        "body": "Ongoing service, tuning and priority support included on Pro and above."
+      },
+      {
+        "icon": "IcoRefresh",
+        "title": "Always up to date",
+        "body": "Over-the-air model and software updates keep inspection sharp as your products change."
+      }
+    ]
+  },
+  "faq": {
+    "headline": "Pricing questions, answered.",
+    "items": [
+      {
+        "question": "Is hardware included in the price?",
+        "answer": "Yes. The IP67 camera and AI PLC controller are included as rental in every plan — there is no separate hardware purchase."
+      },
+      {
+        "question": "What does on-site install cover?",
+        "answer": "Our team mounts the sealed camera over your line, wires it in and trains your operators. It's included on Pro and Enterprise."
+      },
+      {
+        "question": "Can we start small and scale?",
+        "answer": "That's the point of the Standard plan — prove it on one camera, then add cameras and upgrade whenever you're ready. No re-install needed."
+      },
+      {
+        "question": "Do you integrate with our ERP?",
+        "answer": "On Enterprise we connect Robopipe to your ERP and MES over Modbus, EtherCAT and Ethernet, and tailor models and hardware to your line."
+      }
+    ]
+  },
+  "ctaBanner": {
+    "background": "dark",
+    "headline": "Not sure which plan fits?",
+    "subline": "Book a 30-minute demo and we'll size it to your operation and products with you.",
+    "buttons": [
+      { "label": "Book a demo", "target": "contact", "variant": "filled" },
+      { "label": "Talk to sales", "target": "contact", "variant": "outlined" }
+    ]
+  }
+}

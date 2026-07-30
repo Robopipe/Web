@@ -2,48 +2,124 @@
 @plugin '@tailwindcss/typography';
 
 @theme {
-  /* Robopipe brand — extracted from the current site */
-  --color-brand-100: #e8f9f0;
-  --color-brand-200: #b9edd2;
-  --color-brand-300: #79dca3;
-  --color-brand-400: #56d08d;
-  --color-brand-500: #43c47d;
-  --color-brand-600: #35a868;
-  --color-brand-700: #2a8553;
-  --color-brand-800: #1f6440;
+  /* Robopipe design system — tokens/semantic.css (design-system 9316150f) */
+  --color-*: initial;
 
-  --color-ink-50: #fafafa;
-  --color-ink-100: #f0f0f2;
-  --color-ink-200: #dddde2;
-  --color-ink-300: #c8c8cf;
-  --color-ink-400: #9a9aa5;
-  --color-ink-500: #6e6e7c;
-  --color-ink-600: #4a4a58;
-  --color-ink-700: #33333f;
-  --color-ink-800: #232330;
-  --color-ink-900: #1b1b27;
+  /* Brand — electric lime. Fill/accent color, NOT a foreground-on-white color. */
+  --color-brand: #cef94c;
+  --color-brand-hover: #c2f532;
+  /* Text/icons ON lime fills */
+  --color-brand-ink: #1a2410;
+  /* Brand text/links on white */
+  --color-brand-fg: #3f6b00;
+  --color-brand-fg-hover: #2f5000;
+  /* Lime wash for callouts/tints */
+  --color-brand-tint: rgba(206, 249, 76, 0.2);
 
-  --color-accent: #0050bd;
+  --color-white: #ffffff;
+  --color-black: #000000;
+  --color-transparent: transparent;
+  --color-current: currentColor;
 
+  /* Surfaces */
+  --color-surface-page: #ffffff;
+  --color-surface-3: rgba(0, 0, 0, 0.03);
+  --color-surface-5: rgba(0, 0, 0, 0.05);
+  --color-surface-12: rgba(0, 0, 0, 0.12);
+  --color-surface-dark: #0f0f18;
+  --color-surface-darkest: #030712;
+
+  /* Gray ramp (used by card image gradients) */
+  --color-gray-800: #1b1b27;
+  --color-gray-900: #0f0f18;
+  --color-gray-950: #030712;
+
+  /* Text */
+  --color-text-90: rgba(0, 0, 0, 0.9);
+  --color-text-60: rgba(0, 0, 0, 0.6);
+  --color-text-38: rgba(0, 0, 0, 0.38);
+  --color-text-heading: rgb(19, 16, 30);
+  --color-text-invert: rgba(255, 255, 255, 0.9);
+  --color-text-invert-60: rgba(255, 255, 255, 0.6);
+
+  /* Borders */
+  --color-border-5: rgba(0, 0, 0, 0.05);
+  --color-border-12: rgba(0, 0, 0, 0.12);
+  --color-border-invert-12: rgba(255, 255, 255, 0.12);
+  --color-border-focus: #3f6b00;
+
+  /* Status */
+  --color-danger: rgb(233, 58, 87);
+  --color-danger-strong: rgb(181, 27, 64);
+  --color-success: rgb(34, 197, 94);
+  --color-warning: rgb(188, 178, 18);
+
+  /* Radii */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+
+  /* Shadows */
+  --shadow-card: 0 0 0 1px rgba(0, 0, 0, 0.05);
+  --shadow-popup: 0 4px 16px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.05);
+  --shadow-lift: 0 8px 24px rgba(0, 0, 0, 0.1);
+
+  /* Fonts */
   --font-sans: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
   --font-heading: var(--font-barlow), var(--font-space-grotesk), ui-sans-serif, sans-serif;
+  --font-mono: var(--font-space-mono), ui-monospace, monospace;
+  --font-numbers: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 }
 
 @layer base {
   body {
-    @apply bg-white font-sans text-ink-800 antialiased;
+    @apply bg-surface-page font-sans text-[16px] leading-6 text-text-90 antialiased;
   }
 
   h1,
   h2,
   h3,
-  h4,
+  h4 {
+    @apply font-heading font-bold text-text-heading;
+  }
+
   h5,
   h6 {
-    @apply font-heading font-semibold text-ink-900;
+    @apply font-heading font-semibold text-text-heading;
+  }
+
+  h1 {
+    @apply text-[44px] leading-[54px] tracking-[-0.02em] lg:text-[56px] lg:leading-[68px];
+  }
+
+  h2 {
+    @apply text-[36px] leading-[46px] tracking-[-0.02em] lg:text-[44px] lg:leading-[56px];
+  }
+
+  h3 {
+    @apply text-[32px] leading-10 tracking-[-0.01em];
+  }
+
+  h4 {
+    @apply text-2xl leading-8 tracking-[-0.01em];
+  }
+
+  h5 {
+    @apply text-xl leading-7;
   }
 }
 
 @utility container-site {
   @apply mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8;
+}
+
+/* Narrow article column (blog post body) and its breakout media container */
+@utility container-article {
+  @apply mx-auto w-full max-w-[760px] px-4 sm:px-6;
+}
+
+@utility container-article-wide {
+  @apply mx-auto w-full max-w-[1000px] px-4 sm:px-6;
 }

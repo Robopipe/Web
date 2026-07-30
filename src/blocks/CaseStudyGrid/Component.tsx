@@ -24,8 +24,8 @@ export const CaseStudyGridComponent: React.FC<CaseStudyGridBlock> = async ({
 
   return (
     <section className="container-site py-16 lg:py-24">
-      {heading && <h2 className="mb-12 text-center text-3xl font-bold">{heading}</h2>}
-      <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+      {heading && <h2 className="mb-12 text-center">{heading}</h2>}
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {items.map((caseStudy) => (
           <CaseStudyCard key={caseStudy.id} caseStudy={caseStudy} />
         ))}

@@ -16,15 +16,15 @@ export const BlogTeaserComponent: React.FC<BlogTeaserBlock> = async ({ heading, 
   return (
     <section className="container-site py-16 lg:py-24">
       <div className="mb-10 flex items-end justify-between">
-        <h2 className="text-3xl font-bold">{heading || t('title')}</h2>
+        <h2>{heading || t('title')}</h2>
         <Link
           href={`/${locale}/blog`}
-          className="text-sm font-semibold text-brand-700 hover:text-brand-600"
+          className="text-sm font-semibold text-brand-fg hover:text-brand-fg-hover"
         >
           {t('allPosts')} →
         </Link>
       </div>
-      <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {result.docs.map((post) => (
           <PostCard key={post.id} post={post} />
         ))}

@@ -27,15 +27,12 @@ export const getPageBySlug = async (slug: string, locale: Locale, draft = false)
  */
 export const getPosts = async (
   locale: Locale,
-  opts: { page?: number; limit?: number; category?: string } = {},
+  opts: { page?: number; limit?: number } = {},
 ) => {
   const payload = await getPayloadClient()
   return payload.find({
     collection: 'posts',
-    where: {
-      slug: { exists: true },
-      ...(opts.category ? { 'categories.slug': { equals: opts.category } } : {}),
-    },
+    where: { slug: { exists: true } },
     locale,
     fallbackLocale: false,
     sort: '-publishedAt',
@@ -91,37 +88,13 @@ export const getCaseStudies = async (locale: Locale, limit = 50) => {
     where: { slug: { exists: true } },
     locale,
     fallbackLocale: false,
-    sort: '-createdAt',
+    sort: 'createdAt',
     limit,
     depth: 2,
   })
 }
 
-export const getCaseStudyBySlug = async (slug: string, locale: Locale, draft = false) => {
-  const payload = await getPayloadClient()
-  const result = await payload.find({
-    collection: 'case-studies',
-    where: { slug: { equals: slug } },
-    locale,
-    fallbackLocale: false,
-    draft,
-    limit: 1,
-    depth: 2,
-    overrideAccess: draft,
-  })
-  return result.docs[0] ?? null
-}
 
-export const getCategories = async (locale: Locale) => {
-  const payload = await getPayloadClient()
-  const result = await payload.find({
-    collection: 'categories',
-    locale,
-    limit: 50,
-    sort: 'title',
-  })
-  return result.docs
-}
 
 /** Localized slugs of a document in every locale — for hreflang and the language switcher. */
 export const getLocalizedSlugs = async (
