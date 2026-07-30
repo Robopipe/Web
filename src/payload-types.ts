@@ -71,6 +71,7 @@ export interface Config {
     posts: Post;
     categories: Category;
     authors: Author;
+    'blog-topics': BlogTopic;
     'case-studies': CaseStudy;
     testimonials: Testimonial;
     faqs: Faq;
@@ -80,6 +81,7 @@ export interface Config {
     redirects: Redirect;
     users: User;
     'payload-kv': PayloadKv;
+    'payload-jobs': PayloadJob;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -90,6 +92,7 @@ export interface Config {
     posts: PostsSelect<false> | PostsSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     authors: AuthorsSelect<false> | AuthorsSelect<true>;
+    'blog-topics': BlogTopicsSelect<false> | BlogTopicsSelect<true>;
     'case-studies': CaseStudiesSelect<false> | CaseStudiesSelect<true>;
     testimonials: TestimonialsSelect<false> | TestimonialsSelect<true>;
     faqs: FaqsSelect<false> | FaqsSelect<true>;
@@ -99,6 +102,7 @@ export interface Config {
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
+    'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -111,11 +115,13 @@ export interface Config {
     header: Header;
     footer: Footer;
     'site-settings': SiteSetting;
+    'blog-ai': BlogAi;
   };
   globalsSelect: {
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
     'site-settings': SiteSettingsSelect<false> | SiteSettingsSelect<true>;
+    'blog-ai': BlogAiSelect<false> | BlogAiSelect<true>;
   };
   locale: 'cs' | 'en';
   widgets: {
@@ -124,7 +130,9 @@ export interface Config {
   user: User;
   jobs: {
     tasks: unknown;
-    workflows: unknown;
+    workflows: {
+      'generate-blog-post': WorkflowGenerateBlogPost;
+    };
   };
 }
 export interface UserAuthOperations {
@@ -1068,6 +1076,45 @@ export interface Category {
   createdAt: string;
 }
 /**
+ * Queue of article ideas for AI generation. Queued topics are picked up by the nightly job, which writes a bilingual draft post for review.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "blog-topics".
+ */
+export interface BlogTopic {
+  id: number;
+  /**
+   * Working title / topic idea. Claude writes the final title itself.
+   */
+  title: string;
+  /**
+   * What the article should cover: angle, key points, facts to include, target reader. The more grounding, the better the draft.
+   */
+  description: string;
+  /**
+   * Optional one-off instructions for this article, on top of the Blog AI base prompt.
+   */
+  extraInstructions?: string | null;
+  /**
+   * Prefills publishedAt on the generated draft. Does not delay generation — topics generate on the next nightly run.
+   */
+  targetPublishDate?: string | null;
+  /**
+   * Set back to "Queued" to regenerate (overwrites the draft content; old text stays in version history).
+   */
+  status?: ('queued' | 'generating' | 'ready' | 'failed') | null;
+  /**
+   * The generated draft post.
+   */
+  post?: (number | null) | Post;
+  /**
+   * Last generation error, if any.
+   */
+  error?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Inquiries submitted through the contact form.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1174,6 +1221,99 @@ export interface PayloadKv {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-jobs".
+ */
+export interface PayloadJob {
+  id: number;
+  /**
+   * Input data provided to the job
+   */
+  input?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  taskStatus?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  completedAt?: string | null;
+  totalTried?: number | null;
+  /**
+   * If hasError is true this job will not be retried
+   */
+  hasError?: boolean | null;
+  /**
+   * If hasError is true, this is the error that caused it
+   */
+  error?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Task execution log
+   */
+  log?:
+    | {
+        executedAt: string;
+        completedAt: string;
+        taskSlug: 'inline';
+        taskID: string;
+        input?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        output?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        state: 'failed' | 'succeeded';
+        error?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  workflowSlug?: 'generate-blog-post' | null;
+  taskSlug?: 'inline' | null;
+  queue?: string | null;
+  waitUntil?: string | null;
+  processing?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
@@ -1194,6 +1334,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'authors';
         value: number | Author;
+      } | null)
+    | ({
+        relationTo: 'blog-topics';
+        value: number | BlogTopic;
       } | null)
     | ({
         relationTo: 'case-studies';
@@ -1754,6 +1898,21 @@ export interface AuthorsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "blog-topics_select".
+ */
+export interface BlogTopicsSelect<T extends boolean = true> {
+  title?: T;
+  description?: T;
+  extraInstructions?: T;
+  targetPublishDate?: T;
+  status?: T;
+  post?: T;
+  error?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "case-studies_select".
  */
 export interface CaseStudiesSelect<T extends boolean = true> {
@@ -1945,6 +2104,38 @@ export interface PayloadKvSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-jobs_select".
+ */
+export interface PayloadJobsSelect<T extends boolean = true> {
+  input?: T;
+  taskStatus?: T;
+  completedAt?: T;
+  totalTried?: T;
+  hasError?: T;
+  error?: T;
+  log?:
+    | T
+    | {
+        executedAt?: T;
+        completedAt?: T;
+        taskSlug?: T;
+        taskID?: T;
+        input?: T;
+        output?: T;
+        state?: T;
+        error?: T;
+        id?: T;
+      };
+  workflowSlug?: T;
+  taskSlug?: T;
+  queue?: T;
+  waitUntil?: T;
+  processing?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents_select".
  */
 export interface PayloadLockedDocumentsSelect<T extends boolean = true> {
@@ -2125,6 +2316,29 @@ export interface SiteSetting {
   createdAt?: string | null;
 }
 /**
+ * Settings for AI-generated blog posts. Create a topic in Blog topics to queue an article; drafts are generated by the nightly job.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "blog-ai".
+ */
+export interface BlogAi {
+  id: number;
+  /**
+   * Base writing instructions sent to Claude for every generated post (brand voice, structure, SEO rules). Edits apply to the next generation run — no deploy needed.
+   */
+  basePrompt: string;
+  /**
+   * Author assigned to generated posts.
+   */
+  defaultAuthor?: (number | null) | Author;
+  /**
+   * Receives "draft ready for review" and generation-failure emails. Leave empty to disable.
+   */
+  notificationEmail?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header_select".
  */
@@ -2254,6 +2468,18 @@ export interface SiteSettingsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "blog-ai_select".
+ */
+export interface BlogAiSelect<T extends boolean = true> {
+  basePrompt?: T;
+  defaultAuthor?: T;
+  notificationEmail?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "collections_widget".
  */
 export interface CollectionsWidget {
@@ -2261,6 +2487,15 @@ export interface CollectionsWidget {
     [k: string]: unknown;
   };
   width: 'full';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "WorkflowGenerate-blog-post".
+ */
+export interface WorkflowGenerateBlogPost {
+  input: {
+    topicId: number;
+  };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

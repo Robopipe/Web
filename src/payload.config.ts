@@ -8,6 +8,7 @@ import sharp from 'sharp'
 import { fileURLToPath } from 'url'
 
 import { Authors } from './collections/Authors'
+import { BlogTopics } from './collections/BlogTopics'
 import { CaseStudies } from './collections/CaseStudies'
 import { Categories } from './collections/Categories'
 import { FAQs } from './collections/FAQs'
@@ -21,7 +22,9 @@ import { Testimonials } from './collections/Testimonials'
 import { Users } from './collections/Users'
 import { Footer } from './globals/Footer'
 import { Header } from './globals/Header'
+import { BlogAI } from './globals/BlogAI'
 import { SiteSettings } from './globals/SiteSettings'
+import { generateBlogPost } from './jobs/generateBlogPost'
 import { SERVER_URL } from './lib/paths'
 
 const filename = fileURLToPath(import.meta.url)
@@ -55,6 +58,7 @@ export default buildConfig({
     Posts,
     Categories,
     Authors,
+    BlogTopics,
     CaseStudies,
     Testimonials,
     FAQs,
@@ -64,8 +68,20 @@ export default buildConfig({
     Redirects,
     Users,
   ],
-  globals: [Header, Footer, SiteSettings],
+  globals: [Header, Footer, SiteSettings, BlogAI],
   editor: lexicalEditor(),
+  jobs: {
+    workflows: [generateBlogPost],
+    access: {
+      // The run endpoint (/api/payload-jobs/run) is hit by Vercel Cron, which
+      // sends the CRON_SECRET env var as a Bearer token automatically.
+      run: ({ req }) => {
+        if (req.user) return true
+        if (!process.env.CRON_SECRET) return false
+        return req.headers.get('authorization') === `Bearer ${process.env.CRON_SECRET}`
+      },
+    },
+  },
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
@@ -98,9 +114,11 @@ export default buildConfig({
             // Uploads go browser → Blob directly, bypassing Vercel's ~4.5 MB
             // serverless request-body limit (Media accepts video/PDF).
             clientUploads: true,
-            // One Blob store is shared by prod and previews; the suffix keeps
-            // preview uploads from overwriting same-named prod files.
-            addRandomSuffix: true,
+            // NB: addRandomSuffix must stay off — the adapter doesn't write the
+            // suffixed names back to imageSizes, so their URLs would 404. The
+            // store is shared by prod and previews: treat preview admin as
+            // read-mostly, uploads there can collide with prod filenames.
+            addRandomSuffix: false,
           }),
         ]
       : []),

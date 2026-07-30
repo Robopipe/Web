@@ -11,6 +11,10 @@ import {
   REST_PUT,
 } from '@payloadcms/next/routes'
 
+// Blog generation jobs (/api/payload-jobs/run, hit by Vercel Cron) make
+// long-running Claude API calls — allow the full Fluid compute duration.
+export const maxDuration = 300
+
 export const GET = REST_GET(config)
 export const POST = REST_POST(config)
 export const DELETE = REST_DELETE(config)
