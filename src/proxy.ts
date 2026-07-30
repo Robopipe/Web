@@ -30,6 +30,7 @@ export default function proxy(request: NextRequest) {
 }
 
 export const config = {
-  // Exclude Payload admin/API, Next internals, media files and static assets
-  matcher: ['/((?!api|admin|_next|media|.*\\..*).*)'],
+  // Exclude Payload admin/API, Next internals, draft-preview routes (/next/*),
+  // media files and static assets
+  matcher: ['/((?!api|admin|next|_next|media|.*\\..*).*)'],
 }
