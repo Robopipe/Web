@@ -1,0 +1,24 @@
+diff --git a/dist/getClientUploadRoute.js b/dist/getClientUploadRoute.js
+index e11cf568867309efcb243fab490a33c6b01c46a8..9d171720abf1b787bdc40c9025545b14ea51dd1f 100644
+--- a/dist/getClientUploadRoute.js
++++ b/dist/getClientUploadRoute.js
+@@ -18,6 +18,7 @@ export const getClientUploadRoute = ({ access = defaultAccess, addRandomSuffix,
+                     }
+                     return Promise.resolve({
+                         addRandomSuffix,
++                        allowOverwrite: true,
+                         cacheControlMaxAge
+                     });
+                 },
+diff --git a/dist/uploadFile.js b/dist/uploadFile.js
+index b3b6bf4b5d407cd5cf44a84c071a282d00959819..d13dffecc756ba5a552a67eaff3ee39fba71073e 100644
+--- a/dist/uploadFile.js
++++ b/dist/uploadFile.js
+@@ -11,6 +11,7 @@ export async function uploadFile({ access, addRandomSuffix, buffer, cacheControl
+     const result = await put(fileKey, buffer, {
+         access,
+         addRandomSuffix,
++        allowOverwrite: true,
+         cacheControlMaxAge,
+         contentType: mimeType,
+         token

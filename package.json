@@ -67,6 +67,9 @@
       "sharp",
       "esbuild",
       "unrs-resolver"
-    ]
+    ],
+    "patchedDependencies": {
+      "@payloadcms/storage-vercel-blob@3.86.0": "patches/@payloadcms__storage-vercel-blob@3.86.0.patch"
+    }
   }
 }
