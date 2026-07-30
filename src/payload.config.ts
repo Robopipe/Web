@@ -102,25 +102,25 @@ export default buildConfig({
       }
     : {}),
   plugins: [
-    ...(process.env.BLOB_READ_WRITE_TOKEN
-      ? [
-          vercelBlobStorage({
-            collections: {
-              // Media read access is public, so serve files from the Blob CDN
-              // instead of streaming through /api/media/file/* functions.
-              media: { disablePayloadAccessControl: true },
-            },
-            token: process.env.BLOB_READ_WRITE_TOKEN,
-            // Uploads go browser → Blob directly, bypassing Vercel's ~4.5 MB
-            // serverless request-body limit (Media accepts video/PDF).
-            clientUploads: true,
-            // NB: addRandomSuffix must stay off — the adapter doesn't write the
-            // suffixed names back to imageSizes, so their URLs would 404. The
-            // store is shared by prod and previews: treat preview admin as
-            // read-mostly, uploads there can collide with prod filenames.
-            addRandomSuffix: false,
-          }),
-        ]
-      : []),
+    // Registered unconditionally: the plugin then keeps its client-upload
+    // handler in the admin importMap even when `generate:importmap` runs
+    // without env vars (e.g. from the dev server). Without a token the plugin
+    // disables itself and Payload falls back to local ./media storage.
+    vercelBlobStorage({
+      collections: {
+        // Media read access is public, so serve files from the Blob CDN
+        // instead of streaming through /api/media/file/* functions.
+        media: { disablePayloadAccessControl: true },
+      },
+      token: process.env.BLOB_READ_WRITE_TOKEN,
+      // Uploads go browser → Blob directly, bypassing Vercel's ~4.5 MB
+      // serverless request-body limit (Media accepts video/PDF).
+      clientUploads: true,
+      // NB: addRandomSuffix must stay off — the adapter doesn't write the
+      // suffixed names back to imageSizes, so their URLs would 404. The
+      // store is shared by prod and previews: treat preview admin as
+      // read-mostly, uploads there can collide with prod filenames.
+      addRandomSuffix: false,
+    }),
   ],
 })
