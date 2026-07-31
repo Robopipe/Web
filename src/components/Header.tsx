@@ -34,7 +34,11 @@ export const Header: React.FC<Props> = ({ header }) => {
     <header className="sticky top-0 z-50 border-b border-border-12 bg-white">
       <div className="container-site flex h-18 items-center gap-4">
         <div className="flex flex-1 items-center">
-          <Link href={`/${locale}`} className="shrink-0" aria-label="Robopipe">
+          <Link
+            href={`/${locale}`}
+            className="flex shrink-0 flex-col items-end"
+            aria-label="Robopipe by KOALA42"
+          >
             <Image
               src="/logo.svg"
               alt="Robopipe"
@@ -43,6 +47,9 @@ export const Header: React.FC<Props> = ({ header }) => {
               priority
               className="h-[22px] w-auto"
             />
+            <span className="mt-0.5 text-[10px] font-medium leading-none tracking-wide text-text-60">
+              by KOALA42
+            </span>
           </Link>
         </div>
 
