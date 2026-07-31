@@ -15,6 +15,7 @@ export const Posts: CollectionConfig = {
     livePreview: {
       url: ({ data, locale }) =>
         generatePreviewPath({ collection: 'posts', slug: data?.slug, locale: locale.code }),
+      openByDefault: true,
     },
     preview: (data, { locale }) =>
       generatePreviewPath({ collection: 'posts', slug: data?.slug as string, locale }),

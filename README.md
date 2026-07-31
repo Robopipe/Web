@@ -2,7 +2,7 @@
 
 Sales-oriented marketing site for [Robopipe](https://robopipe.io) (industrial machine vision by KOALA42).
 
-**Stack:** Next.js 16 (App Router) + Payload CMS 3 embedded in one app · PostgreSQL (Neon) · Tailwind v4 · next-intl (cs/en) · Resend · Vercel Blob media · Plausible. Deployed to Vercel.
+**Stack:** Next.js 16 (App Router) + Payload CMS 3 embedded in one app · PostgreSQL (Neon) · Tailwind v4 · next-intl (cs/en) · Resend · Vercel Blob media · Vercel Analytics + Speed Insights. Deployed to Vercel.
 
 ## Local development
 
@@ -18,7 +18,7 @@ pnpm dev
 - Site: http://localhost:3000 (redirects to `/cs` or `/en` by browser language)
 - Admin: http://localhost:3000/admin — seeded login `admin@robopipe.io` / `admin`
 
-Optional env: `RESEND_API_KEY` (lead notification emails; logged to console when unset), `BLOB_READ_WRITE_TOKEN` (media storage; local `./media` when unset), `NEXT_PUBLIC_PLAUSIBLE_DOMAIN` (analytics; disabled when unset).
+Optional env: `RESEND_API_KEY` (lead notification emails; logged to console when unset), `BLOB_READ_WRITE_TOKEN` (media storage; local `./media` when unset).
 
 ## Architecture notes
 
@@ -61,6 +61,7 @@ The Vercel project deploys `master` to production; every other branch/PR gets a 
 
 - **Database** — Neon via the Vercel Marketplace integration, which injects `DATABASE_URL` (pooled; `DATABASE_URL_UNPOOLED` also available as a fallback for migrations). Preview branching is enabled: each preview deployment gets its own Neon branch forked from production, so PR migrations never touch prod data.
 - **Media** — a single Vercel Blob store with **public** access connected to all environments (injects `BLOB_READ_WRITE_TOKEN`; the Payload adapter doesn't support private stores). One shared store is required because Neon preview branches reference blob keys uploaded in production. `addRandomSuffix` must stay off (it breaks imageSizes URLs), so treat preview admin as read-mostly — uploads there share the namespace with prod.
-- **Manual env vars** — `PAYLOAD_SECRET` and `PREVIEW_SECRET` (distinct values per environment), `RESEND_API_KEY` (production only), `NEXT_PUBLIC_SERVER_URL=https://robopipe.io` and `NEXT_PUBLIC_PLAUSIBLE_DOMAIN=robopipe.io` (production only — previews fall back to their Vercel branch URL).
+- **Manual env vars** — `PAYLOAD_SECRET` and `PREVIEW_SECRET` (distinct values per environment), `RESEND_API_KEY` (production only), `NEXT_PUBLIC_SERVER_URL=https://robopipe.io` (production only — previews fall back to their Vercel branch URL).
+- **Analytics** — Vercel Web Analytics + Speed Insights (`<Analytics />` / `<SpeedInsights />` in the frontend layout, cookieless). Both must be enabled per project in the Vercel dashboard, otherwise no data is collected. Custom events (locale-suggestion accept/decline) require the Pro plan.
 - **Geo** — the locale-suggestion feature reads Vercel's `x-vercel-ip-country` header in `src/proxy.ts`; it is dormant in local dev where the header is absent.
 - **Seeding prod** (one-time): pull production env vars locally (`vercel env pull`), then run `pnpm seed` with them exported, and redeploy so prerendered pages pick up the content.

@@ -27,11 +27,11 @@
     "headline": "Poznámky ke strojovému vidění přímo z výroby.",
     "description": "Návody, příběhy a technické poznámky o provozu strojového vidění ve výrobě.",
     "allPosts": "Všechny články",
-    "relatedPosts": "Čtěte dál",
+    "relatedPosts": "Mohlo by vás zajímat",
     "noPosts": "Zatím zde nejsou žádné články.",
     "backToBlog": "Všechny články",
     "ctaHeadline": "Vyzkoušejte to na vlastním produktu.",
-    "ctaButton": "Objednat demo",
+    "ctaButton": "Domluvit demo",
     "ctaHref": "/cs/kontakt"
   },
   "newsletter": {
@@ -40,16 +40,16 @@
     "emailLabel": "E-mail",
     "subscribe": "Odebírat",
     "submitting": "Přihlašuji…",
-    "success": "Hotovo — uvidíme se ve vaší schránce.",
+    "success": "Hotovo! Další článek vám přistane ve schránce.",
     "error": "Přihlášení se nezdařilo. Zkuste to prosím znovu."
   },
   "caseStudies": {
     "title": "Případové studie",
     "headline": "Případové studie strojového vidění: reálné provozy, měřitelné výsledky.",
-    "description": "Jak výrobci a provozy napříč Evropou nasazují deep-learning inspekci na vlastních linkách.",
-    "ctaHeading": "Příští na řadě může být vaše linka.",
-    "ctaText": "Zarezervujte si 30minutové demo a projdeme nasazení na lince, jako je ta vaše.",
-    "ctaButton": "Objednat demo",
+    "description": "Jak výrobci a sklady po celé Evropě nasazují AI kontrolu kvality na vlastních linkách.",
+    "ctaHeading": "Třeba je na řadě právě vaše linka.",
+    "ctaText": "Domluvte si půlhodinové demo a projdeme si, jak by nasazení vypadalo na lince, jako je ta vaše.",
+    "ctaButton": "Domluvit demo",
     "ctaHref": "/cs/kontakt"
   },
   "contact": {
@@ -66,7 +66,7 @@
     "submit": "Odeslat poptávku",
     "submitting": "Odesílám…",
     "successTitle": "Děkujeme — ozveme se.",
-    "successText": "Poptávku jsme přijali. Odpověď čekejte do jednoho pracovního dne.",
+    "successText": "Poptávku jsme přijali a ozveme se vám do jednoho pracovního dne.",
     "sendAnother": "Odeslat další zprávu",
     "error": "Odeslání se nezdařilo. Zkuste to prosím znovu, nebo nám napište přímo.",
     "salesLabel": "Obchod",
@@ -89,6 +89,6 @@
   "pagination": {
     "previous": "Předchozí",
     "next": "Další",
-    "page": "Strana {page} z {total}"
+    "page": "Stránka {page} z {total}"
   }
 }

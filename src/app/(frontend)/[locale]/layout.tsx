@@ -1,3 +1,5 @@
+import { Analytics } from '@vercel/analytics/next'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 import type { Metadata } from 'next'
 import { NextIntlClientProvider, hasLocale } from 'next-intl'
 import { setRequestLocale } from 'next-intl/server'
@@ -8,7 +10,6 @@ import React from 'react'
 import { Footer } from '@/components/Footer'
 import { Header } from '@/components/Header'
 import { LocaleSuggestion } from '@/components/LocaleSuggestion'
-import { Plausible } from '@/components/Plausible'
 import { routing, type Locale } from '@/i18n/routing'
 import { SERVER_URL } from '@/lib/paths'
 import { getGlobals } from '@/lib/queries'
@@ -70,7 +71,8 @@ export default async function LocaleLayout({ children, params }: Props) {
           <Footer footer={footer} settings={settings} />
           <LocaleSuggestion />
         </NextIntlClientProvider>
-        <Plausible />
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   )

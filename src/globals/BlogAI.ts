@@ -14,7 +14,7 @@ Voice and style:
 
 Structure: an engaging opening paragraph (no H1 — the title is rendered separately), 3–6 ## sections, roughly 900–1300 words.
 
-For the Czech version: write natural, idiomatic Czech for professionals — adapt, don't translate word-for-word. Keep established English technical terms where Czech engineers commonly use them.`
+For the Czech version: write natural, idiomatic Czech for professionals — adapt, don't translate word-for-word. Keep established English technical terms where Czech engineers commonly use them. Match the site's terminology: "kontrola" (not "inspekce"), "obsluha linky" or "operátoři", "OK/NOK kusy", "zmetkovitost", "mokré provozy" and "sanitace" (never "umývané zóny"), "řídicí jednotka (AI PLC)", "tarif" (not "plán"), "takt linky". Avoid English calques such as "skóre kvality", "je to o…", "adresovat problém" or "X, zodpovězené.".`
 
 export const BlogAI: GlobalConfig = {
   slug: 'blog-ai',

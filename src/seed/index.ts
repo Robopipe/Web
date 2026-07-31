@@ -7,6 +7,8 @@ import { getPayload, type Payload } from 'payload'
 
 import type { IconName } from '@/components/icons'
 
+import { MEDIA_ALT_CS } from './csCopyFixes'
+
 /**
  * Development/staging seed: the full site content from the approved design
  * (claude.ai/design project 5effe350, copy extracted into seed-assets/copy),
@@ -128,9 +130,10 @@ const uploadMedia = async (payload: Payload, filename: string, alt: string): Pro
   const dir = filename.endsWith('.mp4') ? 'video' : 'img'
   const doc = await payload.create({
     collection: 'media',
-    data: { alt },
+    data: { alt: MEDIA_ALT_CS[filename] ?? alt },
     filePath: path.join(ASSETS, dir, filename),
   })
+  await payload.update({ collection: 'media', id: doc.id, locale: 'en', data: { alt } })
   mediaCache.set(filename, doc.id)
   return doc.id
 }
@@ -212,7 +215,7 @@ const seed = async (): Promise<void> => {
   const categories = {
     guide: await makeCategory(['Návod', 'navod'], ['Guide', 'guide']),
     story: await makeCategory(['Příběh', 'pribeh'], ['Story', 'story']),
-    engineering: await makeCategory(['Engineering', 'engineering'], ['Engineering', 'engineering']),
+    engineering: await makeCategory(['Technologie', 'engineering'], ['Engineering', 'engineering']),
   }
 
   const author = await payload.create({
@@ -239,7 +242,7 @@ const seed = async (): Promise<void> => {
     await makeFaq(
       {
         q: 'Můžeme nové produkty přidávat sami?',
-        a: 'Ano. Přidání produktu je samoobslužné — ukažte pár správných kusů a kontrola začne. Žádní inženýři ani návštěvy dodavatele.',
+        a: 'Ano. Nový produkt si přidáte sami — kameře stačí ukázat několik správných kusů a kontrola může začít. Bez techniků a bez čekání na výjezd dodavatele.',
       },
       {
         q: 'Can we add new products ourselves?',
@@ -248,8 +251,8 @@ const seed = async (): Promise<void> => {
     ),
     await makeFaq(
       {
-        q: 'Přežije to naši umývanou zónu?',
-        a: 'Hardware má krytí IP67 a je plně utěsněný proti páře, ostřiku i chladírnám.',
+        q: 'Vydrží to sanitaci a tlakové mytí?',
+        a: 'Ano. Hardware má krytí IP67 a je plně utěsněný — nevadí mu pára, tlakové mytí ani mráz v chladírně.',
       },
       {
         q: 'Will it survive our washdown area?',
@@ -259,7 +262,7 @@ const seed = async (): Promise<void> => {
     await makeFaq(
       {
         q: 'Co vlastně vidí operátoři?',
-        a: 'Živý dashboard na hale s dnešní úspěšností, nejčastějšími vadami a okamžitou zpětnou vazbou.',
+        a: 'Velký přehled přímo na hale: kolik kusů dnes prošlo, jaké vady se objevují nejčastěji a okamžitou zpětnou vazbu k právě běžící výrobě.',
       },
       {
         q: 'What do operators actually see?',
@@ -269,7 +272,7 @@ const seed = async (): Promise<void> => {
     await makeFaq(
       {
         q: 'Za jak dlouho začneme kontrolovat?',
-        a: 'Většina linek jede do jednoho dne — namontovat, přidat produkt, spustit.',
+        a: 'Většina linek kontroluje do jednoho dne od instalace — namontujeme kameru, vy přidáte produkt a jede se.',
       },
       {
         q: "How long until we're inspecting?",
@@ -282,7 +285,7 @@ const seed = async (): Promise<void> => {
     await makeFaq(
       {
         q: 'Je hardware v ceně?',
-        a: 'Ano. IP67 kamera i AI PLC kontrolér jsou v každém plánu zahrnuty formou pronájmu — žádný samostatný nákup hardwaru.',
+        a: 'Ano. Kamera s krytím IP67 i řídicí jednotka AI PLC jsou v každém tarifu zahrnuté formou pronájmu — hardware zvlášť nekupujete.',
       },
       {
         q: 'Is hardware included in the price?',
@@ -291,8 +294,8 @@ const seed = async (): Promise<void> => {
     ),
     await makeFaq(
       {
-        q: 'Co zahrnuje instalace na místě?',
-        a: 'Náš tým namontuje utěsněnou kameru nad vaši linku, zapojí ji a zaškolí operátory. V ceně u plánů Pro a Enterprise.',
+        q: 'Co všechno instalace zahrnuje?',
+        a: 'Přijedeme k vám, namontujeme utěsněnou kameru nad linku, zapojíme ji a zaškolíme obsluhu. U tarifů Pro a Enterprise je instalace v ceně.',
       },
       {
         q: 'What does on-site install cover?',
@@ -301,8 +304,8 @@ const seed = async (): Promise<void> => {
     ),
     await makeFaq(
       {
-        q: 'Můžeme začít v malém a škálovat?',
-        a: 'Přesně k tomu je plán Standard — ověřte si to na jedné kameře a kdykoli budete připraveni, přidávejte další kamery nebo přejděte výš, bez nutnosti nové instalace.',
+        q: 'Můžeme začít s jednou kamerou a postupně přidávat?',
+        a: 'Přesně na to je tarif Standard — všechno si vyzkoušíte na jedné kameře a další můžete kdykoli přidat, případně přejít na vyšší tarif. Nic se znovu neinstaluje.',
       },
       {
         q: 'Can we start small and scale?',
@@ -311,8 +314,8 @@ const seed = async (): Promise<void> => {
     ),
     await makeFaq(
       {
-        q: 'Integrujete se s naším ERP?',
-        a: 'V plánu Enterprise propojíme Robopipe s vaším ERP a MES přes Modbus, EtherCAT a Ethernet a přizpůsobíme modely i hardware vaší lince.',
+        q: 'Napojíte se na naše ERP?',
+        a: 'Ano. V tarifu Enterprise propojíme Robopipe s vaším ERP i MES přes Modbus, EtherCAT nebo Ethernet a modely i hardware přizpůsobíme přímo vaší lince.',
       },
       {
         q: 'Do you integrate with our ERP?',
@@ -327,7 +330,7 @@ const seed = async (): Promise<void> => {
     collection: 'testimonials',
     data: {
       quote:
-        'Tým na hale konečně vidí své skóre kvality živě. Na reklamaci od zákazníka už nikdo nečeká.',
+        'Lidé na hale konečně vidí kvalitu své práce v reálném čase. Nikdo už nečeká, až přijde reklamace od zákazníka.',
       personName: 'Vedoucí kvality',
       personRole: 'Vedoucí kvality',
       company: 'Crocodille',
@@ -348,7 +351,7 @@ const seed = async (): Promise<void> => {
     collection: 'testimonials',
     data: {
       quote:
-        'Tým na hale konečně vidí své skóre kvality živě — a kvalita díky tomu šla nahoru. Ukázali nám, jak označit jeden produkt; všechny další už přidáváme sami.',
+        'Lidé na hale konečně vidí kvalitu své práce v reálném čase — a kvalita díky tomu šla nahoru. Stačilo, aby nám ukázali, jak označit první produkt; všechny další už si přidáváme sami.',
       personName: 'Vedoucí kvality',
       personRole: 'Vedoucí kvality',
       company: 'Crocodille',
@@ -387,7 +390,7 @@ const seed = async (): Promise<void> => {
         title: 'Kvalita šla nahoru v den, kdy linka prohlédla.',
         slug: 'crocodille-kvalita-na-lince',
         excerpt:
-          'Crocodille vyrábí čerstvé sendviče a bagety rychlostí 3 600 kusů za hodinu na linku. Instalace kamery zvedla kvalitu samotné výroby: operátoři vidí kvalitu své práce v reálném čase na displeji na hale — a jsou podle ní hodnoceni. Ukázali jsme týmu, jak označit jeden produkt; každý další už si přidali sami.',
+          'Crocodille vyrábí čerstvé sendviče a bagety tempem 3 600 kusů za hodinu na každé lince. Kamera nad linkou zvedla kvalitu samotné výroby: obsluha vidí výsledky své práce v reálném čase na displeji přímo na hale — a je podle nich hodnocená. Týmu jsme ukázali, jak označit první produkt; každý další už si přidali sami.',
         metrics: [
           ['3 600', 'kusů / hod / linka'],
           ['95 %', 'přesnost detekce'],
@@ -412,13 +415,13 @@ const seed = async (): Promise<void> => {
       logo: media.logoWolfberry,
       image: media.pharmaHmi,
       cs: {
-        title: 'Každá dóza naplněná přesným počtem kapslí.',
+        title: 'V každé dóze přesně tolik kapslí, kolik má být.',
         slug: 'wolfberry-pocitani-kapsli',
         excerpt:
-          'Wolfberry plní doplňky stravy do dóz. Robopipe sleduje plnicí linku a ověřuje, že každá dóza odchází s přesným počtem kapslí. Každé plnění navíc dokumentuje obrazový záznam, takže špatně napočítaná dóza se k zákazníkovi nikdy nedostane.',
+          'Wolfberry plní doplňky stravy do dóz. Robopipe hlídá plnicí linku a u každé dózy ověří, že odchází se správným počtem kapslí. Každé plnění je navíc doložené snímkem, takže špatně naplněná dóza se k zákazníkovi vůbec nedostane.',
         metrics: [
           ['99,5 %', 'přesnost počítání'],
-          ['100 %', 'dóz zdokumentováno'],
+          ['100 %', 'zdokumentovaných dóz'],
         ],
       },
       en: {
@@ -437,13 +440,13 @@ const seed = async (): Promise<void> => {
       industry: 'retail',
       image: media.retailTagging,
       cs: {
-        title: 'Celý úvazek ručního zadávání dat převzala AI.',
+        title: 'Zalistování produktů: práci na celý úvazek převzala AI.',
         slug: 'ai-tagovani-produktu',
         excerpt:
-          'Zalistovat nový produkt bývalo prací na celý úvazek jednoho člověka: vyfotit ho, identifikovat, dohledat parametry na webu a přepsat všechno do systému — pořád dokola. Robopipe dnes fotku pořídí, položku klasifikuje, informace dohledá online a záznam vyplní automaticky.',
+          'Zalistování nových produktů dřív vytížilo jednoho člověka na plný úvazek: produkt vyfotit, poznat, dohledat parametry na webu a všechno přepsat do systému — pořád dokola. Dnes Robopipe fotku pořídí, položku rozpozná, informace si dohledá na internetu a záznam vyplní sám.',
         metrics: [
           ['< 1 min', 'na zalistovanou položku'],
-          ['1', 'automatizovaný celý úvazek'],
+          ['1', 'ušetřený celý úvazek'],
         ],
       },
       en: {
@@ -463,10 +466,10 @@ const seed = async (): Promise<void> => {
       logo: media.logoMgservis,
       image: media.inspectionDetection,
       cs: {
-        title: 'Kvalita balení kontrolovaná na 100 % — bez nákladů na ruční kontrolu.',
+        title: 'Stoprocentní kontrola balení — bez jediného člověka u pásu navíc.',
         slug: 'mg-servis-kontrola-baleni',
         excerpt:
-          'Zákazníci vracejí produkty, které nejsou stoprocentní — a ruční kontroly kvality jsou drahé a nikdy nezachytí všechno. Robopipe kontroluje každé balení: těsnost svaru, fazole správně zabalené ve slanině a žádné cizí předměty uvnitř obalu.',
+          'Zákazníci vracejí každý kus, který není stoprocentní — a ruční kontrola je drahá a stejně nikdy nezachytí všechno. Robopipe proto kontroluje každé balení: těsnost svaru, fazole správně zabalené ve slanině i to, že se do obalu nedostal žádný cizí předmět.',
         metrics: [
           ['95 %', 'přesnost detekce'],
           ['5', 'různých kontrol na balení'],
@@ -541,45 +544,45 @@ const seed = async (): Promise<void> => {
     'capture-to-inference': {
       title: 'Od snímku k inferenci: pipeline Robopipe',
       slug: 'od-snimku-k-inferenci',
-      excerpt: 'Technický průchod otevřenou smyčkou nasnímat → označit → natrénovat → vyhodnotit, která pohání každé nasazení.',
+      excerpt: 'Technická procházka otevřenou smyčkou nasnímat → označit → natrénovat → vyhodnotit, na které stojí každé nasazení.',
       ctaHeadline: 'Spusťte pipeline na vlastních produktech.',
       seo: {
         title: 'Pipeline od snímku k inferenci | Robopipe',
         description:
-          'Srozumitelný průchod čtyřmi fázemi Robopipe — snímání, označení, trénink, inference — a tím, co každá z nich skutečně dělá na reálné výrobní lince.',
+          'Srozumitelně o čtyřech fázích Robopipe — snímání, označování, trénink a inference — a o tom, co každá z nich doopravdy dělá na reálné výrobní lince.',
       },
     },
     'cut-reject-rates': {
       title: 'Snižte zmetkovitost bez zpomalení výroby',
       slug: 'snizte-zmetkovitost',
-      excerpt: 'Jak se samoobslužná inspekce zaplatí v prvním měsíci — aniž by taktu přidala jedinou sekundu.',
+      excerpt: 'Jak se kamerová kontrola zaplatí už v prvním měsíci — aniž by k taktu linky přidala jedinou sekundu.',
       ctaHeadline: 'Vyzkoušejte to na vlastním produktu.',
       seo: {
         title: 'Jak živá inspekce snižuje zmetkovitost | Robopipe',
         description:
-          'Proč zmetkovitost ve výrobě potravin snižuje okamžité zachycení vad — ne přesnější kontrola — a jak živé skóre kvality mění chování operátorů.',
+          'Zmetkovitost ve výrobě potravin nesnižuje přesnější kontrola, ale okamžité zachycení vad. A živý přehled kvality mění i to, jak se chová obsluha linky.',
       },
     },
     'live-quality-score': {
       title: 'Živé skóre kvality pro tým na hale',
       slug: 'zive-skore-kvality',
-      excerpt: 'Proč zpětná vazba v reálném čase poráží směnové reporty — a co se změnilo, když operátoři viděli svou úspěšnost živě.',
+      excerpt: 'Proč zpětná vazba v reálném čase vyhrává nad směnovými reporty — a co všechno se změnilo, když obsluha uviděla svou úspěšnost naživo.',
       ctaHeadline: 'Dejte živé skóre na svou halu.',
       seo: {
         title: 'Živé skóre kvality na výrobní hale | Robopipe',
         description:
-          'Jak zobrazení skóre kvality v reálném čase na hale mění inspekci ze směnového reportu v něco, na co operátoři reagují okamžitě.',
+          'Jak živé skóre kvality na hale mění kontrolu ze směnového reportu v něco, na co obsluha reaguje okamžitě.',
       },
     },
     'automated-product-tagging': {
-      title: 'Automatické tagování produktů: nechte počítačové vidění spravovat metadata katalogu',
+      title: 'Automatické tagování produktů: svěřte metadata katalogu počítačovému vidění',
       slug: 'automaticke-tagovani-produktu',
-      excerpt: 'Ruční tagování tisíců produktových fotek je pomalé, nejednotné a chybové — a špatná metadata pohřbí produkty ve vyhledávání. AI označování řeší všechny tři problémy.',
+      excerpt: 'Ruční tagování tisíců produktových fotek je pomalé, nejednotné a plné chyb — a kvůli špatným metadatům se produkty ztrácejí ve vyhledávání. AI tagování řeší všechny tři problémy najednou.',
       ctaHeadline: 'Dejte svůj katalog na autopilota.',
       seo: {
         title: 'Automatické tagování produktů počítačovým viděním | Robopipe',
         description:
-          'Jak AI označování obrázků nahrazuje pomalé a chybové ruční tagování — extrahuje barvu, materiál a styl a zlepšuje vyhledávání i SEO e-shopu ve velkém.',
+          'Jak AI tagování obrázků nahrazuje pomalé a chybové ruční tagování — rozpozná barvu, materiál i styl a ve velkém zlepšuje vyhledávání i SEO e-shopu.',
       },
     },
   }
@@ -675,15 +678,15 @@ const seed = async (): Promise<void> => {
       slug: 'kontakt',
       layout: contactLayout({
         chip: 'Kontakt',
-        h1: 'Pojďme dát kameru na váš proces.',
-        sub: 'Napište nám, co vyrábíte, a ozveme se do jednoho pracovního dne — obvykle rovnou s první představou, jak by inspekce fungovala na vašem produktu.',
-        formTitle: 'Objednat demo',
-        microcopy: 'Váš první krok k vizuální kontrole 24/7.',
+        h1: 'Pojďme dát kameru do vašeho provozu.',
+        sub: 'Napište nám, co vyrábíte, a do jednoho pracovního dne se vám ozveme — většinou rovnou s první představou, jak by kontrola vašeho produktu mohla vypadat.',
+        formTitle: 'Domluvit demo',
+        microcopy: 'První krok ke kontrole kvality, která běží 24/7.',
       }),
       seo: {
         title: 'Kontakt a demo — Robopipe',
         description:
-          'Promluvte si s Robopipe o vizuální kontrole kvality ve vašem provozu. Objednejte si 30minutové demo, napište obchodu nebo zavolejte do pražského sídla.',
+          'Domluvte si s Robopipe půlhodinové demo vizuální kontroly kvality pro váš provoz, napište obchodnímu týmu nebo zavolejte do naší pražské kanceláře.',
       },
       _status: 'published',
     },
@@ -697,7 +700,7 @@ const seed = async (): Promise<void> => {
       slug: 'contact',
       layout: contactLayout({
         chip: 'Contact',
-        h1: "Let's put a camera on your process.",
+        h1: "Let's put a camera in your operation.",
         sub: "Tell us what you make and we'll come back within one business day — usually with a first idea of how inspection would work on your product.",
         formTitle: 'Book a demo',
         microcopy: 'Your first step to 24/7 visual inspection.',
@@ -817,19 +820,19 @@ const seed = async (): Promise<void> => {
     )
 
   const comparisonCs = {
-    heading: 'Porovnání plánů',
+    heading: 'Porovnání tarifů',
     columns: ['Standard', 'Pro', 'Enterprise'],
     groups: [
       {
-        label: 'Inspekce',
+        label: 'Kontrola',
         rows: [
-          { label: 'Kamery a lokality', values: ['Neomezeně', 'Neomezeně', 'Neomezeně'] },
+          { label: 'Kamery a závody', values: ['Neomezeně', 'Neomezeně', 'Neomezeně'] },
           { label: 'Kontrolované produkty', values: ['Neomezeně', 'Neomezeně', 'Neomezeně'] },
           { label: 'Samoobslužné nastavení produktů', values: ['✓', '✓', '✓'] },
           { label: 'Počítání kusů a statistiky', values: ['✓', '✓', '✓'] },
           { label: 'Prostoje a takt výroby', values: ['✓', '✓', '✓'] },
           {
-            label: 'Pokročilá analytika (porovnání závodů, statistiky po kusech)',
+            label: 'Pokročilá analytika (porovnání závodů, statistiky po jednotlivých kusech)',
             values: ['', '✓', '✓'],
           },
         ],
@@ -837,12 +840,12 @@ const seed = async (): Promise<void> => {
       {
         label: 'Nasazení a podpora',
         rows: [
-          { label: 'Dashboard na halu v reálném čase', values: ['✓', '✓', '✓'] },
-          { label: 'Tréninky modelů', values: ['5 / měsíc', 'Neomezeně', 'Neomezeně'] },
-          { label: 'Instalace a zaškolení na místě', values: ['', '✓', '✓'] },
+          { label: 'Živý přehled výroby na hale', values: ['✓', '✓', '✓'] },
+          { label: 'Tréninky modelu', values: ['5 měsíčně', 'Neomezeně', 'Neomezeně'] },
+          { label: 'Instalace a zaškolení u vás', values: ['', '✓', '✓'] },
           { label: 'PLC I/O (DI/DO, RS485, EtherCAT, Modbus)', values: ['', '✓', '✓'] },
-          { label: 'Poinstalační servis a podpora', values: ['E-mail', 'Prioritní', '24/7 SLA'] },
-          { label: 'Integrace ERP / MES', values: ['', '', '✓'] },
+          { label: 'Servis a podpora po instalaci', values: ['E-mail', 'Prioritní', '24/7 SLA'] },
+          { label: 'Napojení na ERP / MES', values: ['', '', '✓'] },
           { label: 'Modely a hardware na míru', values: ['', '', '✓'] },
         ],
       },
@@ -890,14 +893,14 @@ const seed = async (): Promise<void> => {
       layout: pricingLayout({
         hero: {
           chip: 'Ceník',
-          h1: 'Ceník, který roste s vaším provozem.',
-          sub: 'Hardware, instalace i deep-learning inspekce v jedné předvídatelné měsíční ceně. Začněte s jednou kamerou a rozšiřujte, až budete připraveni.',
+          h1: 'Zaměstnejte AI, která nespí.',
+          sub: 'Hardware, instalace i AI kontrola kvality v jedné pevné měsíční ceně. Začnete s jednou kamerou a další přidáte, kdy budete chtít.',
         },
         tableHeading: '',
         tiers: [
           {
             name: 'Standard',
-            tagline: 'Ověřte si to na jedné kameře, než začnete škálovat.',
+            tagline: 'Vyzkoušejte si všechno na jedné kameře, než přidáte další.',
             price: '9 900 Kč',
             period: '/ kamera / měsíc',
             ctaLabel: 'Začít',
@@ -906,10 +909,10 @@ const seed = async (): Promise<void> => {
             features: [
               'Neomezený počet kamer a produktů',
               'Počítání kusů, statistiky a prostoje',
-              'Samoobslužné nastavení produktů v aplikaci Studio',
-              'Dashboard na halu v reálném čase — funguje na jakémkoli tabletu',
+              'Nové produkty si nastavíte sami v aplikaci Studio',
+              'Živý přehled výroby na hale — poběží na jakémkoli tabletu',
               '5 tréninků modelu měsíčně',
-              'E-mailová podpora',
+              'Podpora e-mailem',
             ],
           },
           {
@@ -918,69 +921,69 @@ const seed = async (): Promise<void> => {
             tagline: 'Kompletní kontrola kvality pro vaše nejvytíženější provozy.',
             price: '14 900 Kč',
             period: '/ kamera / měsíc',
-            ctaLabel: 'Objednat demo',
+            ctaLabel: 'Domluvit demo',
             ctaUrl: '/cs/kontakt?tier=pro',
             ctaVariant: 'filled',
             highlighted: true,
-            leadIn: 'Vše z plánu Standard a navíc',
+            leadIn: 'Vše z tarifu Standard a navíc',
             features: [
-              'Pokročilá analytika (prostoje, porovnání závodů, statistiky po kusech)',
-              'Neomezené tréninky modelů',
+              'Pokročilá analytika (prostoje, porovnání závodů, statistiky po jednotlivých kusech)',
+              'Neomezený počet tréninků modelu',
               'PLC s digitálními výstupy, RS485, EtherCAT a Modbus',
-              'Instalace na místě a zaškolení operátorů',
-              'Poinstalační servis a prioritní podpora',
+              'Instalace u vás a zaškolení obsluhy',
+              'Servis po instalaci a prioritní podpora',
             ],
           },
           {
             name: 'Enterprise',
-            tagline: 'Nasazení napříč závody, zapojené do vašich systémů.',
+            tagline: 'Nasazení napříč závody, napojené na vaše systémy.',
             price: 'Individuálně',
             period: '',
-            subNote: 'objemové ceny · vyhrazený success manažer',
+            subNote: 'množstevní ceny · vyhrazená kontaktní osoba',
             ctaLabel: 'Kontaktovat obchod',
             ctaUrl: '/cs/kontakt?tier=enterprise',
             ctaVariant: 'filled',
-            leadIn: 'Vše z plánu Pro a navíc',
-            features: ['Integrace ERP a MES', 'Modely a hardware na míru', 'SLA'],
+            leadIn: 'Vše z tarifu Pro a navíc',
+            features: ['Napojení na ERP a MES', 'Modely a hardware na míru', 'SLA'],
           },
         ],
         footnote:
-          'Všechny plány zahrnují hardware s krytím IP67 do umývaných provozů, OTA aktualizace a neomezený počet operátorů. Ceny bez DPH.',
+          'Všechny tarify zahrnují hardware s krytím IP67 pro mokré provozy, aktualizace na dálku a neomezený počet operátorů. Ceny jsou uvedené bez DPH.',
         logoEyebrow: 'Důvěřují nám výrobní provozy a sklady po celé Evropě',
         comparison: comparisonCs,
         benefits: {
-          heading: 'S plánem Pro jsou instalace a podpora na nás.',
-          sub: 'Přijedeme do vašeho závodu, namontujeme utěsněnou kameru nad váš proces a všechno na místě nastavíme — a pak jsme vám dál k dispozici se servisem a podporou ještě dlouho po spuštění.',
+          heading: 'S tarifem Pro necháte instalaci i podporu na nás.',
+          sub: 'Přijedeme k vám do závodu, namontujeme utěsněnou kameru nad linku a všechno rovnou na místě zprovozníme. Se servisem a podporou jsme vám pak k ruce ještě dlouho po spuštění.',
           items: [
             {
               icon: 'IcoController',
               title: 'Přijedeme k vám',
-              body: 'Instalace na místě v mokrých, chladných i prašných provozech — zapojená do systémů, které už používáte.',
+              body: 'Nainstalujeme kameru i v mokrém, chladném nebo prašném provozu a napojíme ji na systémy, které už používáte.',
             },
             {
               icon: 'IcoSupport',
-              title: 'Poinstalační podpora',
-              body: 'Průběžný servis, ladění a prioritní podpora v ceně od plánu Pro výš.',
+              title: 'Servis i po instalaci',
+              body: 'Průběžný servis, dolaďování a prioritní podpora — od tarifu Pro v ceně.',
             },
             {
               icon: 'IcoRefresh',
               title: 'Vždy aktuální',
-              body: 'OTA aktualizace modelů i softwaru udrží inspekci přesnou, i když se vaše produkty mění.',
+              body: 'Modely i software aktualizujeme na dálku, takže kontrola zůstává přesná, i když se váš sortiment mění.',
             },
           ],
         },
-        faqHeading: 'Otázky k ceně, zodpovězené.',
+        faqHeading: 'Nejčastější otázky k ceně.',
         cta: {
-          heading: 'Nevíte, který plán sedí?',
-          sub: 'Objednejte si 30minutové demo a společně ho nastavíme podle vašeho provozu a produktů.',
-          primary: 'Objednat demo',
+          heading: 'Nevíte, který tarif vybrat?',
+          sub: 'Domluvte si půlhodinové demo a společně vybereme tarif, který sedne vašemu provozu i produktům.',
+          primary: 'Domluvit demo',
           secondary: 'Kontaktovat obchod',
         },
       }),
       seo: {
-        title: 'Ceník — plány vizuální inspekce Robopipe',
+        title: 'Ceník — tarify vizuální kontroly Robopipe',
         description:
-          'Ceník Robopipe: Standard 9 900 Kč, Pro 14 900 Kč za kameru měsíčně a Enterprise na míru. Utěsněný IP67 hardware, instalace na místě a deep-learning inspekce v jedné předvídatelné ceně.',
+          'Ceník Robopipe: Standard za 9 900 Kč, Pro za 14 900 Kč za kameru a měsíc, Enterprise na míru. Utěsněný hardware IP67, instalace u vás a AI kontrola kvality v jedné pevné měsíční ceně.',
       },
       _status: 'published',
     },
@@ -995,7 +998,7 @@ const seed = async (): Promise<void> => {
       layout: pricingLayout({
         hero: {
           chip: 'Pricing',
-          h1: 'Pricing that scales with your operation.',
+          h1: 'Hire AI that never sleeps.',
           sub: "Hardware, install and deep-learning inspection in one predictable monthly price. Start with one camera, roll out when you're ready.",
         },
         tableHeading: '',
@@ -1165,7 +1168,7 @@ const seed = async (): Promise<void> => {
         hero: {
           chip: 'Obory',
           h1: 'Strojové vidění pro čtyři úplně různé provozy.',
-          sub: 'Nasnímat, označit, natrénovat, vyhodnotit — stejná otevřená pipeline za každým nasazením, vyladěná podle toho, co vaše linka skutečně vyrábí, balí nebo expeduje.',
+          sub: 'Nasnímat, označit, natrénovat, vyhodnotit — každé nasazení stojí na stejné otevřené pipeline, vyladěné podle toho, co vaše linka opravdu vyrábí, balí nebo expeduje.',
         },
         sections: [
           {
@@ -1173,12 +1176,12 @@ const seed = async (): Promise<void> => {
             chip: 'Potravinářství',
             heading: 'Potravinářství: kontrola každého kusu v tempu linky.',
             intro:
-              'Od kompletace sendvičů po třídění ovoce — Robopipe kontroluje úplně každý produkt, který projde kolem kamery, ať už v umývaných zónách, chladírnách, nebo v moučném prachu.',
+              'Od kompletace sendvičů po třídění ovoce — Robopipe zkontroluje úplně každý kus, který projede pod kamerou, ať jde o mokrý provoz, chladírnu, nebo pekárnu plnou moučného prachu.',
             bullets: [
-              'Chybějící, špatně umístěné nebo záměněné suroviny na kompletovaných produktech',
+              'Chybějící, špatně umístěné nebo zaměněné suroviny na kompletovaných produktech',
               'Detekce cizích předmětů',
-              'Kontrola porcí, odhad hmotnosti kamerou a úrovně naplnění',
-              'Počítání kusů, úspěšnost a takt na displeji na hale',
+              'Kontrola porcí, odhad hmotnosti z obrazu a míry naplnění',
+              'Počítání kusů, podíl OK kusů a takt linky na displeji přímo na hale',
             ],
             stats: [
               ['3 600', 'zkontrolovaných produktů / hod'],
@@ -1191,18 +1194,18 @@ const seed = async (): Promise<void> => {
           {
             anchor: 'pharma',
             chip: 'Farmacie a zdravotnictví',
-            heading: 'Farmacie a zdravotnictví: ověřená plnění, uzávěry a etikety.',
+            heading: 'Farmacie a zdravotnictví: zkontrolované plnění, uzávěry i etikety.',
             intro:
-              'Plnění kapslí, blistrování a etiketování ověřené kus po kusu — s obrazovým záznamem každé kontroly pro vaši dokumentaci kvality.',
+              'Plnění kapslí, blistrování i etiketování zkontrolované kus po kusu — a ke každé kontrole obrazový záznam do vaší dokumentace kvality.',
             bullets: [
-              'Úroveň plnění, úplnost kapslí a blistrů',
-              'Přítomnost a pozice víček, plomb a uzávěrů',
+              'Míra naplnění, kompletnost kapslí a blistrů',
+              'Přítomnost a správná pozice víček, plomb a uzávěrů',
               'Přítomnost a orientace etikety, čitelnost kódu šarže',
-              'Obrazový archiv všech OK i NOK kusů, exportovatelný pro audity',
+              'Obrazový archiv všech OK i NOK kusů, připravený k exportu pro audit',
             ],
             stats: [
               ['99,5 %', 'přesnost detekce'],
-              ['100 %', 'kusů zdokumentováno'],
+              ['100 %', 'zdokumentovaných kusů'],
             ],
             image: industriesImages.pharma,
             imageSide: 'right',
@@ -1213,14 +1216,14 @@ const seed = async (): Promise<void> => {
             chip: 'Retail a e-commerce',
             heading: 'Retail a e-commerce: celý katalog otagovaný AI.',
             intro:
-              'Ruční tagování tisíců produktových fotek je pomalé, nejednotné a náchylné k chybám — a špatná metadata pohřbí produkty ve vyhledávání. Robopipe čte vaše produktové fotky a tagy píše za vás, aby katalog zůstal prohledávatelný, i když roste.',
+              'Ruční tagování tisíců produktových fotek je pomalé, nejednotné a náchylné k chybám — a kvůli špatným metadatům se produkty ztrácejí ve vyhledávání. Robopipe si vaše produktové fotky prohlédne a tagy doplní za vás, aby katalog zůstal přehledný a dohledatelný, i když roste.',
             bullets: [
               'Nové produkty zalistované z fotky — barva, materiál, velikost i styl rozpoznané automaticky',
-              'Jednotná terminologie napříč celým katalogem — bez překlepů, opomenutí a míchaných štítků',
+              'Jednotné názvosloví napříč celým katalogem — bez překlepů, vynechávek a nejednotných štítků',
               'Lepší SEO a vyhledávání: „černá kožená kancelářská židle" najde správný produkt',
-              'Zvládne sezónní kolekce i desítky tisíc SKU bez nutnosti najímat další lidi',
-              'Pokryjeme i fulfilment: obsah objednávky ověříme a doložíme fotografií každé odeslané krabice',
-              'Analýza regálů: digitalizované kontroly prodejen — fotky regálů automaticky vyhodnocené, aby zboží nikdy nechybělo na svém místě',
+              'Zvládne sezónní kolekce i desítky tisíc SKU, aniž byste museli nabírat další lidi',
+              'Pokryjeme i fulfilment: obsah objednávky ověříme a každou odeslanou krabici doložíme fotografií',
+              'Analýza regálů: kontrola prodejen v digitální podobě — fotky regálů se vyhodnotí automaticky, aby zboží na svém místě nikdy nechybělo',
             ],
             stats: [
               ['10k+', 'otagovaných obrázků denně'],
@@ -1233,16 +1236,16 @@ const seed = async (): Promise<void> => {
           {
             anchor: 'logistics',
             chip: 'Logistika',
-            heading: 'Logistika: bezpečnější a měřitelný sklad.',
+            heading: 'Logistika: bezpečnější sklad, který máte v číslech.',
             intro:
-              'Kamery nepřetržitě sledují uličky, doky a dopravníky — hlásí bezpečnostní rizika v okamžiku vzniku a mění každý pohyb v provozní statistiky.',
+              'Kamery nepřetržitě hlídají uličky, doky i dopravníky — bezpečnostní rizika nahlásí hned, jak vzniknou, a každý pohyb ve skladu promění v provozní statistiku.',
             bullets: [
-              'Skoronehody vysokozdvižných vozíků a chodců — detekované, počítané a mapované na riziková místa',
+              'Skoronehody vysokozdvižných vozíků a chodců — systém je rozpozná, spočítá a vyznačí riziková místa',
               'Chybějící OOPP (vesty, přilby) a neoprávněný vstup do zón pro vozíky',
-              'Zablokované únikové východy, rozlité kapaliny a překážky v uličkách hlášené okamžitě',
-              'Překračování rychlosti a jízda v protisměru zaznamenané podle vozíku a směny',
-              'Heatmapy provozu, prostoje na docích a špičky — podklady pro změny layoutu',
-              'Statistiky průchodnosti a skoronehod napojené do WMS a bezpečnostního reportingu',
+              'Zablokované únikové východy, rozlité kapaliny a překážky v uličkách nahlášené okamžitě',
+              'Překročení rychlosti a jízda v protisměru dohledatelné podle vozíku i směny',
+              'Mapy vytížení, prostoje na docích a špičky — podklady pro změnu uspořádání skladu',
+              'Statistiky průchodnosti a skoronehod napojené na WMS a bezpečnostní reporting',
             ],
             stats: [
               ['−60 %', 'hlášených bezpečnostních incidentů'],
@@ -1255,8 +1258,8 @@ const seed = async (): Promise<void> => {
         ],
         cta: {
           heading: 'Nevidíte tu svou linku?',
-          sub: 'Pokud to kamera vidí, Robopipe se to naučí. Napište nám, co vyrábíte, a ukážeme vám, jak by inspekce vypadala.',
-          primary: 'Objednat demo',
+          sub: 'Co kamera uvidí, to se Robopipe naučí. Napište nám, co vyrábíte, a ukážeme vám, jak by kontrola vypadala u vás.',
+          primary: 'Domluvit demo',
           secondaryLabel: 'Případové studie',
           secondaryUrl: '/cs/case-studies',
         },
@@ -1264,7 +1267,7 @@ const seed = async (): Promise<void> => {
       seo: {
         title: 'Obory — strojové vidění pro potravinářství, farmacii, retail a logistiku | Robopipe',
         description:
-          'Jak strojové vidění Robopipe řeší kontrolu kvality v potravinářství, farmacii a zdravotnictví, retailu a e-commerce i logistice — kusová inspekce, počítání, tagování a bezpečnost skladu.',
+          'Jak strojové vidění Robopipe řeší kontrolu kvality v potravinářství, farmacii a zdravotnictví, retailu a e-commerce i logistice — kontrola každého kusu, počítání, tagování produktů a bezpečnost skladu.',
       },
       _status: 'published',
     },
@@ -1402,7 +1405,7 @@ Poptávky uchováváme po dobu jednání a následně nejvýše 3 roky pro navaz
 
 ## Kdo údaje zpracovává
 
-Web běží na infrastruktuře Google Cloud v EU. E-maily odesíláme přes službu Resend. Údaje neprodáváme ani nesdílíme pro marketing třetích stran.
+Web provozujeme na platformě Vercel a data ukládáme v EU. E-maily odesíláme přes službu Resend. Údaje neprodáváme ani je nepředáváme třetím stranám pro marketing.
 
 ## Vaše práva
 
@@ -1424,7 +1427,7 @@ Inquiries are kept for the duration of our conversation and then for at most 3 y
 
 ## Who processes it
 
-The site runs on Google Cloud infrastructure in the EU. Emails are delivered via Resend. We do not sell your data or share it for third-party marketing.
+The site runs on Vercel; data is stored in the EU. Emails are delivered via Resend. We do not sell your data or share it for third-party marketing.
 
 ## Your rights
 
@@ -1598,14 +1601,14 @@ Under the GDPR you have the right to access, correct, delete and port your data,
   const homePage = await payload.create({
     collection: 'pages',
     data: {
-      title: 'Robopipe — Vizuální kontrola kvality, která se naučí váš produkt',
+      title: 'Robopipe — Vizuální kontrola kvality, kterou svůj produkt naučíte sami',
       slug: 'home',
       layout: homeLayout({
         hero: {
           chip: 'Průmyslové strojové vidění',
-          h1: 'AI vizuální kontrola, která se naučí váš produkt.',
-          sub: 'Robopipe nasazuje deep-learning inspekci všude, kudy prochází vaše produkty — v potravinářských provozech, farmaceutickém balení, retailovém fulfillmentu i logistických skladech. Zachyťte vady v reálném čase. Bez datových vědců.',
-          primary: 'Objednat demo',
+          h1: 'AI kontrola kvality, kterou svůj produkt naučíte sami.',
+          sub: 'Robopipe přináší AI kontrolu kvality všude, kudy procházejí vaše produkty — do potravinářské výroby, farmaceutického balení, e-commerce fulfilmentu i logistických skladů. Vady zachytíte hned, jak vzniknou. A nepotřebujete k tomu datové vědce.',
+          primary: 'Domluvit demo',
           secondary: 'Zobrazit ceník',
         },
         trust: {
@@ -1614,86 +1617,86 @@ Under the GDPR you have the right to access, correct, delete and port your data,
         },
         logoEyebrow: 'Důvěřují nám výrobní provozy a sklady po celé Evropě',
         features: {
-          heading: 'Deep-learning inspekce, kterou zvládne váš vlastní tým.',
+          heading: 'AI kontrola kvality, kterou zvládne váš vlastní tým.',
           sub: 'AI detekce vad navržená pro výrobní halu, ne pro laboratoř.',
           items: [
             {
               icon: 'IcoAddLarge',
-              title: 'Samoobslužné nastavení',
-              body: 'Nový produkt ke kontrole přidáte sami během minut. Vyfoťte pár správných kusů, potvrďte, jak vypadá „OK", a Robopipe začne kontrolovat — žádní inženýři, žádné tickety, žádné čekání.',
+              title: 'Nastavíte si sami',
+              body: 'Nový produkt přidáte do kontroly za pár minut. Vyfotíte několik správných kusů, potvrdíte, jak má vypadat kus, který je v pořádku, a Robopipe začne kontrolovat — bez techniků, bez ticketů a bez čekání.',
             },
             {
               icon: 'IcoChart',
-              title: 'Monitoring výroby v reálném čase',
-              body: 'Displej na hale ukazuje operátorům, jak běží dnešní šarže — počty kusů, úspěšnost, nejčastější vady, prostoje a takt, s okamžitou zpětnou vazbou, na kterou tým reaguje přímo u linky.',
+              title: 'Přehled o výrobě v reálném čase',
+              body: 'Displej na hale ukazuje obsluze, jak běží dnešní šarže — počty kusů, podíl OK kusů, nejčastější vady, prostoje i takt. Zpětná vazba přichází okamžitě a tým na ni reaguje přímo u linky.',
             },
             {
               icon: 'IcoBox',
               title: 'Odolné i v nejnáročnějším provozu',
-              body: 'Plně utěsněný hardware s krytím IP67 do umývaných provozů přežije páru, ostřik, prach i chladírny. Namontujte ho přímo nad linku a umyjte ho spolu se zbytkem haly.',
+              body: 'Plně utěsněný hardware s krytím IP67 vydrží páru, tlakové mytí, prach i mráz v chladírně. Namontujete ho přímo nad linku a při sanitaci ho umyjete spolu se zbytkem haly.',
             },
             {
               icon: 'IcoConnector',
               title: 'Připojí se k čemukoli',
-              body: 'Volitelný univerzální AI PLC kontrolér s analogovými i digitálními I/O, RS485/RS232, Modbus a EtherCAT po Ethernetu — zapojený do systémů, které už provozujete, včetně ERP a WMS.',
+              body: 'Volitelná univerzální řídicí jednotka AI PLC s analogovými i digitálními vstupy a výstupy, RS485/RS232, Modbus a EtherCAT po Ethernetu — napojí se na systémy, které už provozujete, včetně ERP a WMS.',
             },
           ],
         },
         industriesGrid: {
-          heading: 'Připraveno předefinovat vaše odvětví.',
+          heading: 'Postaveno pro váš obor.',
           sub: 'Stejná pipeline — nasnímat, označit, natrénovat, vyhodnotit — vyladěná pro čtyři úplně různé provozy.',
           exploreLabel: 'Prozkoumat',
           cards: [
             {
               title: 'Potravinářství',
-              body: 'Vady, cizí předměty a kontrola porcí v rychlosti linky.',
+              body: 'Vady, cizí předměty a kontrola porcí v tempu linky.',
               url: '/cs/obory#food',
               image: media.inspectionDetection,
             },
             {
               title: 'Farmacie a zdravotnictví',
-              body: 'Ověření plnění, uzávěrů a etiket s kompletní auditní stopou.',
+              body: 'Kontrola plnění, uzávěrů a etiket s kompletní auditní stopou.',
               url: '/cs/obory#pharma',
               image: media.pharmaHmi,
             },
             {
               title: 'Retail a e-commerce',
-              body: 'Produktové fotky tagované AI — katalogy, které zůstanou prohledávatelné.',
+              body: 'Produktové fotky otaguje AI — katalog zůstane přehledný a dohledatelný.',
               url: '/cs/obory#retail',
               image: media.retailPacking,
             },
             {
               title: 'Logistika',
-              body: 'Bezpečnostní rizika hlášená živě, pohyby proměněné ve statistiky.',
+              body: 'Bezpečnostní rizika hlášená okamžitě a provoz skladu přehledně v číslech.',
               url: '/cs/obory#logistics',
               image: media.logisticsWarehouse,
             },
           ],
         },
         process: {
-          heading: 'AI inspekce v provozu za jediný den.',
-          sub: 'Žádní integrátoři, žádné dlouhé projekty. Váš tým to vlastní od prvního dne.',
+          heading: 'AI kontrola v provozu za jediný den.',
+          sub: 'Žádní integrátoři, žádné dlouhé projekty. Všechno máte od prvního dne ve svých rukou.',
           steps: [
             {
               title: 'Nainstalujeme u vás',
-              body: 'Náš tým přijede do vašeho závodu nebo skladu, namontuje utěsněnou kameru nad linku a všechno na místě zprovozní — včetně mokrých, chladných a prašných provozů.',
+              body: 'Přijedeme k vám do závodu nebo skladu, namontujeme utěsněnou kameru nad linku a všechno rovnou na místě zprovozníme — i v mokrém, chladném nebo prašném provozu.',
             },
             {
               title: 'Přidejte svůj produkt',
-              body: 'Nasnímejte dávku obrázků, označte je a natrénujte model — s průvodcem od začátku do konce, bez znalostí ML. Co projde, určujete vy.',
+              body: 'Nasnímáte sadu snímků, označíte je a natrénujete model — průvodce vás provede od začátku do konce a strojové učení znát nepotřebujete. Co projde, určujete vy.',
             },
             {
-              title: 'Spusťte — s podporou',
-              body: 'Operátoři vidí kvalitu na displeji na hale; manažeři sledují trendy v analytickém portálu. Zůstáváme k dispozici s poinstalačním servisem, kdykoli nás potřebujete.',
+              title: 'Spusťte — s podporou v zádech',
+              body: 'Obsluha vidí kvalitu na displeji přímo na hale, vedoucí sledují trendy v analytickém portálu. A my jsme vám i po spuštění k ruce se servisem a podporou.',
             },
           ],
-          button: 'Objednat demo',
+          button: 'Domluvit demo',
           stats: [
-            ['< 1 den', 'do první inspekce'],
-            ['IP67', 'krytí do umývaných provozů'],
-            ['0', 'potřebných datových vědců'],
+            ['< 1 den', 'do první kontroly'],
+            ['IP67', 'krytí i pro mokré provozy'],
+            ['0', 'datových vědců potřeba'],
             ['24/7', 'monitoring'],
-            ['✓', 'funguje offline'],
+            ['✓', 'funguje i offline'],
           ],
         },
         quote: {
@@ -1701,17 +1704,17 @@ Under the GDPR you have the right to access, correct, delete and port your data,
           exploreLabel: 'přečtěte si případovou studii',
           linkUrl: '/cs/case-studies',
         },
-        split: { blogHeading: 'Z blogu', faqHeading: 'Otázky a odpovědi.' },
+        split: { blogHeading: 'Z blogu', faqHeading: 'Na co se ptáte nejčastěji.' },
         cta: {
-          heading: 'Podívejte se na AI kontrolu kvality na vlastních produktech.',
-          sub: 'Objednejte si 30minutové demo a sledujte, jak deep-learning inspekce zachytí vady na vašem vlastním produktu.',
-          button: 'Objednat demo',
+          heading: 'Vyzkoušejte AI kontrolu kvality na vlastních produktech.',
+          sub: 'Domluvte si půlhodinové demo a na vlastní oči uvidíte, jak AI najde vady přímo na vašem produktu.',
+          button: 'Domluvit demo',
         },
       }),
       seo: {
-        title: 'Robopipe — Vizuální kontrola kvality, která se naučí váš produkt',
+        title: 'Robopipe — Vizuální kontrola kvality, kterou svůj produkt naučíte sami',
         description:
-          'Robopipe nasazuje deep-learning vizuální inspekci v potravinářství, farmacii, retailu i logistice. Utěsněná IP67 kamera, samoobslužný trénink, živý dashboard na hale. Objednejte si demo.',
+          'Robopipe přináší AI vizuální kontrolu kvality do potravinářství, farmacie, retailu i logistiky. Utěsněná kamera IP67, trénink modelů svépomocí, živý přehled na hale. Domluvte si demo.',
       },
       _status: 'published',
     },
@@ -1721,12 +1724,12 @@ Under the GDPR you have the right to access, correct, delete and port your data,
     id: homePage.id,
     locale: 'en',
     data: {
-      title: 'Robopipe — Visual quality control that learns your product',
+      title: 'Robopipe — Visual quality control your own team trains',
       slug: 'home',
       layout: homeLayout({
         hero: {
           chip: 'Industrial machine vision',
-          h1: 'AI visual control that learns your product.',
+          h1: 'AI quality control your own team trains.',
           sub: 'Robopipe puts deep-learning inspection wherever your products move — in food plants, pharma packaging, retail fulfilment and logistics hubs. Catch defects in real time. No data scientists required.',
           primary: 'Book a demo',
           secondary: 'See pricing',
@@ -1832,7 +1835,7 @@ Under the GDPR you have the right to access, correct, delete and port your data,
         },
       }),
       seo: {
-        title: 'Robopipe — Visual quality control that learns your product',
+        title: 'Robopipe — Visual quality control your own team trains',
         description:
           'Robopipe puts deep-learning visual inspection across food, pharma, retail and logistics operations. Sealed IP67 camera, self-service training, live floor dashboard. Book a demo.',
       },
@@ -1891,7 +1894,7 @@ Under the GDPR you have the right to access, correct, delete and port your data,
             newTab: true,
           },
         },
-        cta: bookDemo(loc === 'cs' ? 'Objednat demo' : 'Book a demo'),
+        cta: bookDemo(loc === 'cs' ? 'Domluvit demo' : 'Book a demo'),
       },
       'hdr',
     )
@@ -1904,7 +1907,7 @@ Under the GDPR you have the right to access, correct, delete and port your data,
       {
         note:
           loc === 'cs'
-            ? 'Deep-learning kontrola kvality pro průmyslové provozy.'
+            ? 'AI kontrola kvality pro průmyslové provozy.'
             : 'Deep-learning quality control for industrial operations.',
         columns: [
           {
@@ -2013,9 +2016,9 @@ Under the GDPR you have the right to access, correct, delete and port your data,
         },
       ],
       defaultSeo: {
-        title: 'Robopipe — Vizuální kontrola kvality, která se naučí váš produkt',
+        title: 'Robopipe — Vizuální kontrola kvality, kterou svůj produkt naučíte sami',
         description:
-          'Deep-learning vizuální inspekce pro potravinářství, farmacii, retail a logistiku. Utěsněná IP67 kamera, samoobslužný trénink, živý dashboard na hale.',
+          'AI vizuální kontrola kvality pro potravinářství, farmacii, retail a logistiku. Utěsněná kamera IP67, trénink modelů svépomocí, živý přehled na hale.',
         image: media.tabletLine,
       },
     },
@@ -2031,7 +2034,7 @@ Under the GDPR you have the right to access, correct, delete and port your data,
         mapImage: media.contactMap,
       },
       defaultSeo: {
-        title: 'Robopipe — Visual quality control that learns your product',
+        title: 'Robopipe — Visual quality control your own team trains',
         description:
           'Deep-learning visual inspection for food, pharma, retail and logistics. Sealed IP67 camera, self-service training, live floor dashboard.',
         image: media.tabletLine,
