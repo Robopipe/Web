@@ -29,6 +29,27 @@ export const LeadForm: React.FC<Props> = ({ microcopy }) => {
   const [state, formAction, pending] = useActionState(submitLead, initialState)
   // Remount the form after a successful submission to reset it.
   const [formKey, setFormKey] = React.useState(0)
+  const [fieldErrors, setFieldErrors] = React.useState<{
+    name?: boolean
+    email?: boolean
+    message?: boolean
+  }>({})
+
+  // The form is noValidate — required fields get localized messages instead
+  // of the browser's native bubbles.
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    const data = new FormData(event.currentTarget)
+    const errors = {
+      name: !String(data.get('name') ?? '').trim(),
+      email: !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(data.get('email') ?? '').trim()),
+      message: !String(data.get('message') ?? '').trim(),
+    }
+    setFieldErrors(errors)
+    if (errors.name || errors.email || errors.message) event.preventDefault()
+  }
+
+  const clearFieldError = (field: 'name' | 'email' | 'message') => () =>
+    setFieldErrors((prev) => (prev[field] ? { ...prev, [field]: false } : prev))
 
   if (state.status === 'success') {
     return (
@@ -57,7 +78,7 @@ export const LeadForm: React.FC<Props> = ({ microcopy }) => {
   }
 
   return (
-    <form key={formKey} action={formAction} className="space-y-4" noValidate>
+    <form key={formKey} action={formAction} onSubmit={handleSubmit} className="space-y-4" noValidate>
       <input type="hidden" name="locale" value={locale} />
       <input type="hidden" name="sourcePage" value={pathname} />
       {searchParams.get('tier') && (
@@ -83,7 +104,14 @@ export const LeadForm: React.FC<Props> = ({ microcopy }) => {
             maxLength={200}
             placeholder={t('namePlaceholder')}
             className={inputClasses}
+            aria-invalid={fieldErrors.name || undefined}
+            onInput={clearFieldError('name')}
           />
+          {fieldErrors.name && (
+            <p role="alert" className="mt-1.5 text-sm text-danger">
+              {t('validation.nameRequired')}
+            </p>
+          )}
         </div>
         <div>
           <label htmlFor="lead-company" className={labelClasses}>
@@ -112,7 +140,14 @@ export const LeadForm: React.FC<Props> = ({ microcopy }) => {
             maxLength={320}
             placeholder={t('emailPlaceholder')}
             className={inputClasses}
+            aria-invalid={fieldErrors.email || undefined}
+            onInput={clearFieldError('email')}
           />
+          {fieldErrors.email && (
+            <p role="alert" className="mt-1.5 text-sm text-danger">
+              {t('validation.emailInvalid')}
+            </p>
+          )}
         </div>
         <div>
           <label htmlFor="lead-phone" className={labelClasses}>
@@ -155,7 +190,14 @@ export const LeadForm: React.FC<Props> = ({ microcopy }) => {
           maxLength={5000}
           placeholder={t('messagePlaceholder')}
           className={`${inputClasses} h-auto py-3`}
+          aria-invalid={fieldErrors.message || undefined}
+          onInput={clearFieldError('message')}
         />
+        {fieldErrors.message && (
+          <p role="alert" className="mt-1.5 text-sm text-danger">
+            {t('validation.messageRequired')}
+          </p>
+        )}
       </div>
 
       {state.status === 'error' && (
