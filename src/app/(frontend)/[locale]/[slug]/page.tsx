@@ -61,7 +61,10 @@ export default async function CMSPage({ params }: Props) {
   const page = await getPageBySlug(slug, locale, draft)
 
   if (!page) {
-    const redirectDoc = await getRedirect(`/${locale}/${slug}`)
+    // Also match unprefixed entries: old-site URLs reach here with whichever
+    // locale prefix the middleware guessed (e.g. /old-page → /cs/old-page).
+    const redirectDoc =
+      (await getRedirect(`/${locale}/${slug}`)) ?? (await getRedirect(`/${slug}`))
     if (redirectDoc) {
       if (redirectDoc.permanent) permanentRedirect(redirectDoc.to)
       redirect(redirectDoc.to)
