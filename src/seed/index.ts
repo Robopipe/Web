@@ -322,6 +322,16 @@ const seed = async (): Promise<void> => {
         a: 'On Enterprise we connect Robopipe to your ERP and MES over Modbus, EtherCAT and Ethernet, and tailor models and hardware to your line.',
       },
     ),
+    await makeFaq(
+      {
+        q: 'Můžeme si Robopipe provozovat sami?',
+        a: 'Ano. Robopipe nabízíme i jako open-source variantu, kterou si můžete provozovat na vlastní infrastruktuře — najdete ji na našem GitHubu. K vlastnímu provozu poskytujeme jen komunitní podporu; placené tarify zahrnují hardware, provoz, aktualizace i naši podporu.',
+      },
+      {
+        q: 'Can we self-host Robopipe?',
+        a: "Yes. Robopipe is also available as an open-source variant you can run on your own infrastructure — you'll find it on our GitHub. Self-hosting comes with community support only; paid plans include the hardware, hosting, updates and our support.",
+      },
+    ),
   ]
 
   // --- Testimonials ---
@@ -730,6 +740,7 @@ const seed = async (): Promise<void> => {
       subNote?: string
       ctaLabel: string
       ctaUrl: string
+      ctaNewTab?: boolean
       ctaVariant: 'filled' | 'outlined'
       highlighted?: boolean
       badge?: string
@@ -768,7 +779,12 @@ const seed = async (): Promise<void> => {
             subNote: tier.subNote,
             featuresLeadIn: tier.leadIn,
             features: tier.features.map((text) => ({ text })),
-            cta: { label: tier.ctaLabel, type: 'external' as const, url: tier.ctaUrl },
+            cta: {
+              label: tier.ctaLabel,
+              type: 'external' as const,
+              url: tier.ctaUrl,
+              newTab: tier.ctaNewTab ?? false,
+            },
             ctaVariant: tier.ctaVariant,
             highlighted: tier.highlighted ?? false,
             badge: tier.badge,
@@ -821,32 +837,42 @@ const seed = async (): Promise<void> => {
 
   const comparisonCs = {
     heading: 'Porovnání tarifů',
-    columns: ['Standard', 'Pro', 'Enterprise'],
+    columns: ['Open source', 'Standard', 'Pro', 'Enterprise'],
     groups: [
       {
         label: 'Kontrola',
         rows: [
-          { label: 'Kamery a závody', values: ['Neomezeně', 'Neomezeně', 'Neomezeně'] },
-          { label: 'Kontrolované produkty', values: ['Neomezeně', 'Neomezeně', 'Neomezeně'] },
-          { label: 'Samoobslužné nastavení produktů', values: ['✓', '✓', '✓'] },
-          { label: 'Počítání kusů a statistiky', values: ['✓', '✓', '✓'] },
-          { label: 'Prostoje a takt výroby', values: ['✓', '✓', '✓'] },
+          { label: 'Kamery a závody', values: ['Neomezeně', 'Neomezeně', 'Neomezeně', 'Neomezeně'] },
+          {
+            label: 'Kontrolované produkty',
+            values: ['Neomezeně', 'Neomezeně', 'Neomezeně', 'Neomezeně'],
+          },
+          { label: 'Samoobslužné nastavení produktů', values: ['✓', '✓', '✓', '✓'] },
+          { label: 'Počítání kusů a statistiky', values: ['', '✓', '✓', '✓'] },
+          { label: 'Prostoje a takt výroby', values: ['', '✓', '✓', '✓'] },
           {
             label: 'Pokročilá analytika (porovnání závodů, statistiky po jednotlivých kusech)',
-            values: ['', '✓', '✓'],
+            values: ['', '', '✓', '✓'],
           },
         ],
       },
       {
         label: 'Nasazení a podpora',
         rows: [
-          { label: 'Živý přehled výroby na hale', values: ['✓', '✓', '✓'] },
-          { label: 'Tréninky modelu', values: ['5 měsíčně', 'Neomezeně', 'Neomezeně'] },
-          { label: 'Instalace a zaškolení u vás', values: ['', '✓', '✓'] },
-          { label: 'PLC I/O (DI/DO, RS485, EtherCAT, Modbus)', values: ['', '✓', '✓'] },
-          { label: 'Servis a podpora po instalaci', values: ['E-mail', 'Prioritní', '24/7 SLA'] },
-          { label: 'Napojení na ERP / MES', values: ['', '', '✓'] },
-          { label: 'Modely a hardware na míru', values: ['', '', '✓'] },
+          {
+            label: 'Průmyslová kamera a AI PLC v ceně',
+            values: ['Vlastní Raspberry Pi', '✓', '✓', '✓'],
+          },
+          { label: 'Živý přehled výroby na hale', values: ['', '✓', '✓', '✓'] },
+          { label: 'Tréninky modelu', values: ['Na vlastním HW', '5 měsíčně', 'Neomezeně', 'Neomezeně'] },
+          { label: 'Instalace a zaškolení u vás', values: ['', '', '✓', '✓'] },
+          { label: 'PLC I/O (DI/DO, RS485, EtherCAT, Modbus)', values: ['', '', '✓', '✓'] },
+          {
+            label: 'Servis a podpora po instalaci',
+            values: ['Komunitní', 'E-mail', 'Prioritní', '24/7 SLA'],
+          },
+          { label: 'Napojení na ERP / MES', values: ['', '', '', '✓'] },
+          { label: 'Modely a hardware na míru', values: ['', '', '', '✓'] },
         ],
       },
     ],
@@ -854,32 +880,45 @@ const seed = async (): Promise<void> => {
 
   const comparisonEn = {
     heading: 'Compare plans',
-    columns: ['Standard', 'Pro', 'Enterprise'],
+    columns: ['Open source', 'Standard', 'Pro', 'Enterprise'],
     groups: [
       {
         label: 'Inspection',
         rows: [
-          { label: 'Cameras & sites', values: ['Unlimited', 'Unlimited', 'Unlimited'] },
-          { label: 'Inspected products', values: ['Unlimited', 'Unlimited', 'Unlimited'] },
-          { label: 'Self-service product setup', values: ['✓', '✓', '✓'] },
-          { label: 'Piece counting & statistics', values: ['✓', '✓', '✓'] },
-          { label: 'Downtime & production takt', values: ['✓', '✓', '✓'] },
+          { label: 'Cameras & sites', values: ['Unlimited', 'Unlimited', 'Unlimited', 'Unlimited'] },
+          {
+            label: 'Inspected products',
+            values: ['Unlimited', 'Unlimited', 'Unlimited', 'Unlimited'],
+          },
+          { label: 'Self-service product setup', values: ['✓', '✓', '✓', '✓'] },
+          { label: 'Piece counting & statistics', values: ['', '✓', '✓', '✓'] },
+          { label: 'Downtime & production takt', values: ['', '✓', '✓', '✓'] },
           {
             label: 'Advanced analytics (site comparisons, per-part stats)',
-            values: ['', '✓', '✓'],
+            values: ['', '', '✓', '✓'],
           },
         ],
       },
       {
         label: 'Deployment & support',
         rows: [
-          { label: 'Real-time floor dashboard', values: ['✓', '✓', '✓'] },
-          { label: 'Model trainings', values: ['5 / month', 'Unlimited', 'Unlimited'] },
-          { label: 'On-site install & training', values: ['', '✓', '✓'] },
-          { label: 'PLC I/O (DI/DO, RS485, EtherCAT, Modbus)', values: ['', '✓', '✓'] },
-          { label: 'Post-install service & support', values: ['Email', 'Priority', '24/7 SLA'] },
-          { label: 'ERP / MES integration', values: ['', '', '✓'] },
-          { label: 'Custom models & hardware', values: ['', '', '✓'] },
+          {
+            label: 'Industrial camera & AI PLC included',
+            values: ['Your Raspberry Pi', '✓', '✓', '✓'],
+          },
+          { label: 'Real-time floor dashboard', values: ['', '✓', '✓', '✓'] },
+          {
+            label: 'Model trainings',
+            values: ['On your hardware', '5 / month', 'Unlimited', 'Unlimited'],
+          },
+          { label: 'On-site install & training', values: ['', '', '✓', '✓'] },
+          { label: 'PLC I/O (DI/DO, RS485, EtherCAT, Modbus)', values: ['', '', '✓', '✓'] },
+          {
+            label: 'Post-install service & support',
+            values: ['Community', 'Email', 'Priority', '24/7 SLA'],
+          },
+          { label: 'ERP / MES integration', values: ['', '', '', '✓'] },
+          { label: 'Custom models & hardware', values: ['', '', '', '✓'] },
         ],
       },
     ],
@@ -899,6 +938,22 @@ const seed = async (): Promise<void> => {
         tableHeading: '',
         tiers: [
           {
+            name: 'Open source',
+            tagline: 'Provozujte si Robopipe sami na vlastní infrastruktuře.',
+            price: 'Zdarma',
+            period: '',
+            subNote: 'vlastní hardware · komunitní podpora',
+            ctaLabel: 'Zobrazit na GitHubu',
+            ctaUrl: 'https://github.com/robopipe',
+            ctaNewTab: true,
+            ctaVariant: 'outlined' as const,
+            features: [
+              'Celá pipeline: snímání, trénink i vyhodnocování',
+              'Běží na Raspberry Pi',
+              'Komunitní podpora na GitHubu',
+            ],
+          },
+          {
             name: 'Standard',
             tagline: 'Vyzkoušejte si všechno na jedné kameře, než přidáte další.',
             price: '9 900 Kč',
@@ -907,6 +962,7 @@ const seed = async (): Promise<void> => {
             ctaUrl: '/cs/kontakt?tier=standard',
             ctaVariant: 'outlined',
             features: [
+              'Průmyslová kamera s krytím IP67 v ceně',
               'Neomezený počet kamer a produktů',
               'Počítání kusů, statistiky a prostoje',
               'Nové produkty si nastavíte sami v aplikaci Studio',
@@ -948,7 +1004,7 @@ const seed = async (): Promise<void> => {
           },
         ],
         footnote:
-          'Všechny tarify zahrnují hardware s krytím IP67 pro mokré provozy, aktualizace na dálku a neomezený počet operátorů. Ceny jsou uvedené bez DPH.',
+          'Všechny placené tarify zahrnují hardware s krytím IP67 pro mokré provozy, aktualizace na dálku a neomezený počet operátorů. Ceny jsou uvedené bez DPH.',
         logoEyebrow: 'Důvěřují nám výrobní provozy a sklady po celé Evropě',
         comparison: comparisonCs,
         benefits: {
@@ -1004,6 +1060,22 @@ const seed = async (): Promise<void> => {
         tableHeading: '',
         tiers: [
           {
+            name: 'Open source',
+            tagline: 'Run Robopipe yourself on your own infrastructure.',
+            price: 'Free',
+            period: '',
+            subNote: 'Your own hardware · community support',
+            ctaLabel: 'View on GitHub',
+            ctaUrl: 'https://github.com/robopipe',
+            ctaNewTab: true,
+            ctaVariant: 'outlined' as const,
+            features: [
+              'Full pipeline: capture, train and run',
+              'Runs on Raspberry Pi',
+              'Community support on GitHub',
+            ],
+          },
+          {
             name: 'Standard',
             tagline: 'Prove it on one camera before you scale.',
             price: '€390',
@@ -1012,6 +1084,7 @@ const seed = async (): Promise<void> => {
             ctaUrl: '/en/contact?tier=standard',
             ctaVariant: 'outlined',
             features: [
+              'Industrial-grade IP67 camera included',
               'Unlimited cameras & products',
               'Piece counting, statistics & downtime',
               'Self-service product setup in studio app',
@@ -1053,7 +1126,7 @@ const seed = async (): Promise<void> => {
           },
         ],
         footnote:
-          'All plans include IP67 washdown-rated hardware, over-the-air updates and unlimited operators. Prices exclude VAT.',
+          'All paid plans include IP67 washdown-rated hardware, over-the-air updates and unlimited operators. Prices exclude VAT.',
         logoEyebrow: 'Trusted in production and warehouses across Europe',
         comparison: comparisonEn,
         benefits: {
@@ -1950,7 +2023,7 @@ Under the GDPR you have the right to access, correct, delete and port your data,
               { link: { label: 'Blog', type: 'external' as const, url: `/${loc}/blog` } },
               {
                 link: {
-                  label: 'GitHub',
+                  label: 'Open source (GitHub)',
                   type: 'external' as const,
                   url: 'https://github.com/robopipe',
                   newTab: true,

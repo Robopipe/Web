@@ -23,7 +23,11 @@ export const PricingTableComponent: React.FC<PricingTableBlock> = ({
         {text && <p className="mt-4 text-lg text-text-60">{text}</p>}
       </div>
     )}
-    <div className="grid items-start gap-6 lg:grid-cols-3">
+    <div
+      className={`grid items-start gap-6 ${
+        (tiers ?? []).length >= 4 ? 'lg:grid-cols-2 xl:grid-cols-4' : 'lg:grid-cols-3'
+      }`}
+    >
       {(tiers ?? []).map((tier, i) => {
         const dark = Boolean(tier.highlighted)
         return (
