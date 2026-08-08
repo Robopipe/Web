@@ -39,7 +39,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const slugs = await getLocalizedSlugs('posts', post.id)
   return buildMeta({
     title: post.title,
-    seo: post.seo,
+    seo: { ...post.seo, image: post.seo?.image ?? post.heroImage },
     excerpt: post.excerpt,
     collection: 'posts',
     locale,

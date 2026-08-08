@@ -35,8 +35,8 @@ export const PricingTableComponent: React.FC<PricingTableBlock> = ({
             key={i}
             className={
               dark
-                ? 'relative rounded-lg bg-surface-dark p-8 text-text-invert shadow-lift'
-                : 'rounded-lg border border-border-12 bg-white p-8'
+                ? 'relative @container min-w-0 rounded-lg bg-surface-dark p-8 text-text-invert shadow-lift'
+                : '@container min-w-0 rounded-lg border border-border-12 bg-white p-8'
             }
           >
             <div className="flex items-center justify-between gap-3">
@@ -54,7 +54,7 @@ export const PricingTableComponent: React.FC<PricingTableBlock> = ({
             )}
             <div className="mt-5">
               <span
-                className={`font-numbers text-[40px] leading-12 font-semibold ${
+                className={`font-numbers text-[28px] leading-9 font-semibold break-words hyphens-auto @xs:text-[34px] @xs:leading-10 @sm:text-[40px] @sm:leading-12 ${
                   dark ? 'text-text-invert' : 'text-text-heading'
                 }`}
               >

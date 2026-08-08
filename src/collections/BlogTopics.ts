@@ -2,6 +2,7 @@ import { after } from 'next/server'
 import type { CollectionConfig } from 'payload'
 
 import { authenticated } from '@/access'
+import { STALE_JOB_MS } from '@/jobs/generateBlogPost'
 
 export const BlogTopics: CollectionConfig = {
   slug: 'blog-topics',
@@ -34,28 +35,42 @@ export const BlogTopics: CollectionConfig = {
         const { payload } = req
         const topic = await payload.findByID({ collection: 'blog-topics', id, disableErrors: true })
         if (!topic) return Response.json({ message: 'Topic not found' }, { status: 404 })
-        if (topic.status === 'generating') {
-          return Response.json({ message: 'This topic is already generating.' }, { status: 409 })
-        }
 
-        // Reuse a job already queued for this topic (the afterChange hook queues
-        // one whenever status flips to "queued") — queueing another would make
-        // the nightly cron regenerate the post a second time.
+        // The topic's status alone can lie: a run killed by the platform leaves
+        // the topic at "generating" forever. Judge by the job itself — only a
+        // processing job whose row was touched recently is genuinely running.
         const pending = await payload.find({
           collection: 'payload-jobs',
           where: {
             workflowSlug: { equals: 'generate-blog-post' },
             completedAt: { exists: false },
-            processing: { not_equals: true },
           },
-          limit: 50,
+          limit: 100,
           depth: 0,
         })
-        const existing = pending.docs.find(
+        const jobsForTopic = pending.docs.filter(
           (job) => (job.input as { topicId?: number } | undefined)?.topicId === id,
         )
+        const running = jobsForTopic.find((job) => job.processing)
+        if (running) {
+          if (Date.now() - new Date(running.updatedAt).getTime() < STALE_JOB_MS) {
+            return Response.json({ message: 'This topic is already generating.' }, { status: 409 })
+          }
+          // Zombie from a killed run — release it and run it again below.
+          await payload.update({
+            collection: 'payload-jobs',
+            id: running.id,
+            data: { processing: false },
+          })
+        }
+
+        // Reuse a job already queued for this topic (the afterChange hook queues
+        // one whenever status flips to "queued") — queueing another would make
+        // the nightly cron regenerate the post a second time.
         const job =
-          existing ?? (await payload.jobs.queue({ workflow: 'generate-blog-post', input: { topicId: id } }))
+          running ??
+          jobsForTopic[0] ??
+          (await payload.jobs.queue({ workflow: 'generate-blog-post', input: { topicId: id } }))
 
         await payload.update({ collection: 'blog-topics', id, data: { status: 'generating', error: null } })
 

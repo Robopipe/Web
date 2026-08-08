@@ -18,6 +18,14 @@ import { fetchHeroImage } from './pexels'
  * reviews it in the admin and clicks Publish.
  */
 
+/**
+ * A payload-job stuck at processing: true whose row hasn't been touched for
+ * this long is a zombie — the serverless function running it was killed
+ * (maxDuration, deploy) before it could clear the flag. Runs live at most
+ * 300 s (route maxDuration) and every inline-task completion touches the row.
+ */
+export const STALE_JOB_MS = 10 * 60 * 1000
+
 const seoDescription = (value: string) => value.slice(0, 300)
 
 const notify = async (payload: Payload, to: string | null | undefined, subject: string, html: string) => {
@@ -117,7 +125,11 @@ export const generateBlogPost: WorkflowConfig = {
             excerpt: en.excerpt,
             content: contentEn,
             ctaHeadline: en.ctaHeadline,
-            seo: { title: en.seoTitle, description: seoDescription(en.seoDescription) },
+            seo: {
+              title: en.seoTitle,
+              description: seoDescription(en.seoDescription),
+              image: mediaId ?? undefined,
+            },
             heroImage: mediaId ?? undefined,
             heroStyle: 'photo' as const,
             authors: settings.defaultAuthor

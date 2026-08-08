@@ -11,8 +11,9 @@ import {
   REST_PUT,
 } from '@payloadcms/next/routes'
 
-// Blog generation jobs (/api/payload-jobs/run, hit by Vercel Cron) make
-// long-running Claude API calls — allow the full Fluid compute duration.
+// The instant-generate endpoint (/api/blog-topics/:id/generate) keeps making
+// long-running Claude API calls via after() — allow the full Fluid compute
+// duration. The nightly cron runs jobs via /api/cron/run-jobs instead.
 export const maxDuration = 300
 
 export const GET = REST_GET(config)
