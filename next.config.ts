@@ -40,6 +40,31 @@ const legacyRedirects = [
   { source: '/cz/:path*', destination: '/cs', permanent: true },
 ]
 
+// 301/308 map from the decommissioned Shopify store (shop.robopipe.io) to the new
+// marketing site. These are host-scoped via `has` so they never touch robopipe.io,
+// and use absolute destinations because they redirect cross-host. Requires
+// shop.robopipe.io to point at Vercel and be added as a project domain, otherwise
+// the requests never reach this app. Specific product URLs first, then a catch-all
+// that sweeps every other old Shopify path (/account, /pages/*, other collections…)
+// to the homepage so nothing 404s or gets indexed as a duplicate.
+const shopHost = [{ type: 'host' as const, value: 'shop.robopipe.io' }]
+const shopRedirects = [
+  {
+    source: '/products/machine-vision-controller',
+    has: shopHost,
+    destination: 'https://robopipe.io/en/ai-product-tagging',
+    permanent: true,
+  },
+  {
+    source: '/collections/all',
+    has: shopHost,
+    destination: 'https://robopipe.io/en/ai-product-tagging',
+    permanent: true,
+  },
+  { source: '/cart', has: shopHost, destination: 'https://robopipe.io/en/pricing', permanent: true },
+  { source: '/:path*', has: shopHost, destination: 'https://robopipe.io/en', permanent: true },
+]
+
 const nextConfig: NextConfig = {
   images: {
     localPatterns: [
@@ -54,7 +79,9 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  redirects: async () => legacyRedirects,
+  // Shop rules first so the shop host is fully owned by them (incl. the catch-all)
+  // and never falls through into the host-agnostic legacy rules.
+  redirects: async () => [...shopRedirects, ...legacyRedirects],
   webpack: (webpackConfig) => {
     webpackConfig.resolve.extensionAlias = {
       '.cjs': ['.cts', '.cjs'],
