@@ -43,6 +43,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     limit: 500,
     depth: 0,
     select: { slug: true, updatedAt: true, seo: true },
+    // Without this the Local API skips access control and drafts get indexed.
+    overrideAccess: false,
   })
   for (const page of pages.docs) {
     const seo = page.seo as { noIndex?: boolean | null } | undefined

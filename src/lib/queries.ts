@@ -6,6 +6,14 @@ import type { Locale } from '@/i18n/routing'
 /** Payload caches the instance internally — safe to call per request. */
 export const getPayloadClient = () => getPayload({ config })
 
+/**
+ * The Local API bypasses access control unless told otherwise, so every public
+ * read of a drafts-enabled collection (pages, posts, case studies) must opt in
+ * for `publishedOrLoggedIn` to run — without it, unpublished drafts are served
+ * to visitors. Only the draft-preview path may skip it.
+ */
+const PUBLIC_ONLY = { overrideAccess: false } as const
+
 export const getPageBySlug = async (slug: string, locale: Locale, draft = false) => {
   const payload = await getPayloadClient()
   const result = await payload.find({
@@ -39,6 +47,7 @@ export const getPosts = async (
     page: opts.page ?? 1,
     limit: opts.limit ?? 9,
     depth: 2,
+    ...PUBLIC_ONLY,
   })
 }
 
@@ -77,6 +86,7 @@ export const getRelatedPosts = async (
     sort: '-publishedAt',
     limit,
     depth: 2,
+    ...PUBLIC_ONLY,
   })
   return result.docs
 }
@@ -91,6 +101,7 @@ export const getCaseStudies = async (locale: Locale, limit = 50) => {
     sort: 'createdAt',
     limit,
     depth: 2,
+    ...PUBLIC_ONLY,
   })
 }
 

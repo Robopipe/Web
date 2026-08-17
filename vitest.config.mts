@@ -8,5 +8,9 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./vitest.setup.ts'],
     include: ['tests/int/**/*.int.spec.ts'],
+    // Each int file boots its own Payload against the one local database, and in
+    // dev Payload pushes the schema on connect. Run files one at a time so those
+    // pushes cannot race (parallel workers fail on drops the other already did).
+    fileParallelism: false,
   },
 })

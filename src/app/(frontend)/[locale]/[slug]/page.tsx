@@ -28,6 +28,8 @@ export async function generateStaticParams() {
       limit: 200,
       depth: 0,
       select: { slug: true },
+      // Drafts 404 for visitors, so don't prerender routes for them.
+      overrideAccess: false,
     })
     for (const page of pages.docs) {
       if (page.slug && page.slug !== 'home') params.push({ locale, slug: page.slug })
