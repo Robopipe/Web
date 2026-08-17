@@ -118,10 +118,13 @@ export const writeEnglishArticle = async (args: {
               description: 'Best-matching existing blog category, or null when none fits.',
             }
           : { type: 'null', description: 'No categories exist yet — always null.' },
+      // The "avoid generic catch-alls" steer matters: a query like "factory
+      // production line" ranks the same handful of stock photos for every
+      // article, which is how the first generated posts shared one hero image.
       pexelsQuery: {
         type: 'string',
         description:
-          'A 2–4 word English stock-photo search query for a landscape hero image: a concrete, photographable industrial subject (e.g. "food factory conveyor"), not an abstract concept.',
+          'A 2–4 word English stock-photo search query for a landscape hero image: a concrete, photographable subject, not an abstract concept. Make it specific to THIS article\'s subject — name the actual product, material, room or piece of equipment it discusses (e.g. "cheese wheels warehouse", "bottling line closeup", "bakery cooling rack"). Avoid generic catch-alls like "factory production line" or "industrial automation", which return the same handful of stock photos for every article.',
       },
     },
   }
