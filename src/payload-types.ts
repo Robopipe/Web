@@ -2296,6 +2296,14 @@ export interface SiteSetting {
      * Static map screenshot of the HQ.
      */
     mapImage?: (number | null) | Media;
+    /**
+     * Calendly scheduling link, e.g. "https://calendly.com/jan-jelinek/30min". Empty hides the booking card on the contact page.
+     */
+    bookingUrl?: string | null;
+    /**
+     * Who the meeting is booked with, e.g. "Jan Jelínek".
+     */
+    bookingPerson?: string | null;
   };
   socials?:
     | {
@@ -2447,6 +2455,8 @@ export interface SiteSettingsSelect<T extends boolean = true> {
         phoneHours?: T;
         address?: T;
         mapImage?: T;
+        bookingUrl?: T;
+        bookingPerson?: T;
       };
   socials?:
     | T

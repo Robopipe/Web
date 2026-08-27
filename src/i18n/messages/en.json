@@ -72,6 +72,9 @@
     "salesLabel": "Sales",
     "phoneLabel": "Phone",
     "hqLabel": "Headquarters",
+    "bookingLabel": "Book a meeting",
+    "bookingText": "Pick a time that works for you — no email back-and-forth.",
+    "bookingCta": "Pick a time",
     "validation": {
       "nameRequired": "Please enter your name",
       "emailInvalid": "Please enter a valid email",

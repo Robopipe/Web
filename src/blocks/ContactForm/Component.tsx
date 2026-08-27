@@ -4,6 +4,7 @@ import React, { Suspense } from 'react'
 import { Icon } from '@/components/icons'
 import { LeadForm } from '@/components/LeadForm'
 import { Media } from '@/components/Media'
+import { buttonClasses } from '@/components/ui'
 import type { Locale } from '@/i18n/routing'
 import { getGlobals } from '@/lib/queries'
 import type { ContactFormBlock } from '@/payload-types'
@@ -31,6 +32,30 @@ export const ContactFormComponent: React.FC<ContactFormBlock> = async ({
 
         {sidebar && (
           <div className="flex flex-col gap-8">
+            {contact?.bookingUrl && (
+              <div className="rounded-lg border border-border-12 bg-white p-6 sm:p-8">
+                <div className="flex items-start gap-4">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm bg-brand-tint text-brand-fg">
+                    <Icon name="IcoCalendar" size={20} />
+                  </span>
+                  <div>
+                    <p className="text-sm font-semibold text-text-heading">{t('bookingLabel')}</p>
+                    {contact.bookingPerson && (
+                      <p className="text-sm text-text-60">{contact.bookingPerson}</p>
+                    )}
+                  </div>
+                </div>
+                <p className="mt-4 text-sm text-text-60">{t('bookingText')}</p>
+                <a
+                  href={contact.bookingUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={buttonClasses({ className: 'mt-4 w-full' })}
+                >
+                  {t('bookingCta')}
+                </a>
+              </div>
+            )}
             <div className="flex flex-col gap-6 rounded-lg border border-border-12 bg-white p-6 sm:p-8">
               {settings.contactEmail && (
                 <div className="flex items-start gap-4">

@@ -690,7 +690,7 @@ const seed = async (): Promise<void> => {
         chip: 'Kontakt',
         h1: 'Pojďme dát kameru do vašeho provozu.',
         sub: 'Napište nám, co vyrábíte, a do jednoho pracovního dne se vám ozveme — většinou rovnou s první představou, jak by kontrola vašeho produktu mohla vypadat.',
-        formTitle: 'Domluvit demo',
+        formTitle: 'Pošlete nám poptávku',
         microcopy: 'První krok ke kontrole kvality, která běží 24/7.',
       }),
       seo: {
@@ -712,7 +712,7 @@ const seed = async (): Promise<void> => {
         chip: 'Contact',
         h1: "Let's put a camera in your operation.",
         sub: "Tell us what you make and we'll come back within one business day — usually with a first idea of how inspection would work on your product.",
-        formTitle: 'Book a demo',
+        formTitle: 'Send us a message',
         microcopy: 'Your first step to 24/7 visual inspection.',
       }),
       seo: {
@@ -2079,6 +2079,8 @@ Under the GDPR you have the right to access, correct, delete and port your data,
         phoneHours: 'Po–Pá, 8:00–17:00',
         address: 'Robopipe s.r.o.\nThámova 13\n186 00 Praha 8 — Karlín\nCzech Republic',
         mapImage: media.contactMap,
+        bookingUrl: 'https://calendly.com/jan-jelinek/60min',
+        bookingPerson: 'Jan Jelínek',
       },
       socials: [
         { id: 'soc_gh', platform: 'github' as const, url: 'https://github.com/robopipe' },

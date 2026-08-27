@@ -72,6 +72,9 @@
     "salesLabel": "Obchod",
     "phoneLabel": "Telefon",
     "hqLabel": "Sídlo",
+    "bookingLabel": "Rezervovat schůzku",
+    "bookingText": "Vyberte si termín, který vám vyhovuje — bez domlouvání po e-mailu.",
+    "bookingCta": "Vybrat termín",
     "validation": {
       "nameRequired": "Zadejte prosím jméno",
       "emailInvalid": "Zadejte prosím platný e-mail",

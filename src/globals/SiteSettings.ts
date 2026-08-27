@@ -57,6 +57,19 @@ export const SiteSettings: GlobalConfig = {
           relationTo: 'media',
           admin: { description: 'Static map screenshot of the HQ.' },
         },
+        {
+          name: 'bookingUrl',
+          type: 'text',
+          admin: {
+            description:
+              'Calendly scheduling link, e.g. "https://calendly.com/jan-jelinek/30min". Empty hides the booking card on the contact page.',
+          },
+        },
+        {
+          name: 'bookingPerson',
+          type: 'text',
+          admin: { description: 'Who the meeting is booked with, e.g. "Jan Jelínek".' },
+        },
       ],
     },
     {
