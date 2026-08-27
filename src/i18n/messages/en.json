@@ -55,12 +55,12 @@
   "contact": {
     "name": "Name",
     "namePlaceholder": "Jana Nováková",
-    "company": "Company",
+    "company": "Company (optional)",
     "companyPlaceholder": "Your company",
     "email": "Work email",
     "emailPlaceholder": "you@company.com",
-    "phone": "Phone (optional)",
-    "industry": "Industry",
+    "phone": "Phone",
+    "industry": "Industry (optional)",
     "message": "What should we inspect?",
     "messagePlaceholder": "Product, throughput, what goes wrong today…",
     "submit": "Send request",
@@ -78,6 +78,7 @@
     "validation": {
       "nameRequired": "Please enter your name",
       "emailInvalid": "Please enter a valid email",
+      "phoneRequired": "Please enter your phone number",
       "messageRequired": "Please write us a message"
     }
   },

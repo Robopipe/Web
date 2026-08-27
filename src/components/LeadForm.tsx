@@ -32,6 +32,7 @@ export const LeadForm: React.FC<Props> = ({ microcopy }) => {
   const [fieldErrors, setFieldErrors] = React.useState<{
     name?: boolean
     email?: boolean
+    phone?: boolean
     message?: boolean
   }>({})
 
@@ -42,13 +43,14 @@ export const LeadForm: React.FC<Props> = ({ microcopy }) => {
     const errors = {
       name: !String(data.get('name') ?? '').trim(),
       email: !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(data.get('email') ?? '').trim()),
+      phone: !String(data.get('phone') ?? '').trim(),
       message: !String(data.get('message') ?? '').trim(),
     }
     setFieldErrors(errors)
-    if (errors.name || errors.email || errors.message) event.preventDefault()
+    if (errors.name || errors.email || errors.phone || errors.message) event.preventDefault()
   }
 
-  const clearFieldError = (field: 'name' | 'email' | 'message') => () =>
+  const clearFieldError = (field: 'name' | 'email' | 'phone' | 'message') => () =>
     setFieldErrors((prev) => (prev[field] ? { ...prev, [field]: false } : prev))
 
   if (state.status === 'success') {
@@ -151,16 +153,24 @@ export const LeadForm: React.FC<Props> = ({ microcopy }) => {
         </div>
         <div>
           <label htmlFor="lead-phone" className={labelClasses}>
-            {t('phone')}
+            {t('phone')} *
           </label>
           <input
             id="lead-phone"
             name="phone"
             type="tel"
+            required
             maxLength={50}
             placeholder="+420"
             className={inputClasses}
+            aria-invalid={fieldErrors.phone || undefined}
+            onInput={clearFieldError('phone')}
           />
+          {fieldErrors.phone && (
+            <p role="alert" className="mt-1.5 text-sm text-danger">
+              {t('validation.phoneRequired')}
+            </p>
+          )}
         </div>
       </div>
 

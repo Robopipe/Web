@@ -55,12 +55,12 @@
   "contact": {
     "name": "Jméno",
     "namePlaceholder": "Jana Nováková",
-    "company": "Společnost",
+    "company": "Společnost (nepovinné)",
     "companyPlaceholder": "Vaše společnost",
     "email": "Pracovní e-mail",
     "emailPlaceholder": "jana@spolecnost.cz",
-    "phone": "Telefon (nepovinné)",
-    "industry": "Odvětví",
+    "phone": "Telefon",
+    "industry": "Odvětví (nepovinné)",
     "message": "Co máme kontrolovat?",
     "messagePlaceholder": "Produkt, takt linky, co se dnes kazí…",
     "submit": "Odeslat poptávku",
@@ -78,6 +78,7 @@
     "validation": {
       "nameRequired": "Zadejte prosím jméno",
       "emailInvalid": "Zadejte prosím platný e-mail",
+      "phoneRequired": "Zadejte prosím telefonní číslo",
       "messageRequired": "Napište nám prosím zprávu"
     }
   },
