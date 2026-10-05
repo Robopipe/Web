@@ -13,12 +13,12 @@ import { useLocaleHref } from '@/lib/useLocaleHref'
 // the decline copy below is deliberately hardcoded to that other language.
 const COPY: Record<Locale, { headline: string; accept: string; decline: string }> = {
   cs: {
-    headline: 'Vypadá to, že jste z Česka — přepnout do češtiny?',
+    headline: 'Vypadá to, že jste z Česka. Přepnout do češtiny?',
     accept: 'Pokračovat česky',
     decline: 'Stay in English',
   },
   en: {
-    headline: "Looks like you're visiting from elsewhere — switch to English?",
+    headline: "Looks like you're visiting from elsewhere. Switch to English?",
     accept: 'Continue in English',
     decline: 'Zůstat u češtiny',
   },

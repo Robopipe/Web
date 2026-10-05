@@ -33,7 +33,7 @@ export const TestimonialBarComponent: React.FC<TestimonialBarBlock> = ({
                 items[0].personName}
               {inlineLink?.label && (
                 <>
-                  {' — '}
+                  {' · '}
                   <CMSLink
                     link={inlineLink}
                     className="font-medium text-brand-fg hover:text-brand-fg-hover"

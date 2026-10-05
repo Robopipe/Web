@@ -40,7 +40,7 @@
     "emailLabel": "Email",
     "subscribe": "Subscribe",
     "submitting": "Subscribing…",
-    "success": "You're in — see you in your inbox.",
+    "success": "You're in. See you in your inbox.",
     "error": "Subscription failed. Please try again."
   },
   "caseStudies": {
@@ -65,7 +65,7 @@
     "messagePlaceholder": "Product, throughput, what goes wrong today…",
     "submit": "Send request",
     "submitting": "Sending…",
-    "successTitle": "Thanks — we'll be in touch.",
+    "successTitle": "Thanks, we'll be in touch.",
     "successText": "Your request is on its way. Expect a reply within one business day.",
     "sendAnother": "Send another message",
     "error": "Submission failed. Please try again or email us directly.",
@@ -73,7 +73,7 @@
     "phoneLabel": "Phone",
     "hqLabel": "Headquarters",
     "bookingLabel": "Book a meeting",
-    "bookingText": "Pick a time that works for you — no email back-and-forth.",
+    "bookingText": "Pick a time that works for you. No back-and-forth over email.",
     "bookingCta": "Pick a time",
     "validation": {
       "nameRequired": "Please enter your name",

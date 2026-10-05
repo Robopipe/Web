@@ -4,8 +4,8 @@ import type { PlanComparisonBlock } from '@/payload-types'
 
 const Cell: React.FC<{ value: string | null | undefined }> = ({ value }) => {
   const v = value?.trim()
-  if (!v || v === '—' || v === '-') {
-    return <span className="text-text-38">—</span>
+  if (!v || v === '—' || v === '–' || v === '-') {
+    return <span className="text-text-38">–</span>
   }
   if (v === '✓' || v.toLowerCase() === 'yes') {
     return (

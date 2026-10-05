@@ -40,7 +40,7 @@ export const buildMeta = ({
   slugs,
   siteName = 'Robopipe',
 }: DocMetaInput): Metadata => {
-  const metaTitle = seo?.title || (title.includes(siteName) ? title : `${title} — ${siteName}`)
+  const metaTitle = seo?.title || (title.includes(siteName) ? title : `${title} | ${siteName}`)
   const description = seo?.description || excerpt || undefined
   const languages: Record<string, string> = {}
   for (const loc of locales) {
