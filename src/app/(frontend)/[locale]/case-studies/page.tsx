@@ -19,7 +19,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params
   const t = await getTranslations({ locale, namespace: 'caseStudies' })
   return {
-    title: `${t('title')} — Robopipe`,
+    title: `${t('title')} | Robopipe`,
     description: t('description'),
     alternates: {
       canonical: `${SERVER_URL}/${locale}/case-studies`,

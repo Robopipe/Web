@@ -65,7 +65,7 @@
     "messagePlaceholder": "Produkt, takt linky, co se dnes kazí…",
     "submit": "Odeslat poptávku",
     "submitting": "Odesílám…",
-    "successTitle": "Děkujeme — ozveme se.",
+    "successTitle": "Děkujeme, ozveme se.",
     "successText": "Poptávku jsme přijali a ozveme se vám do jednoho pracovního dne.",
     "sendAnother": "Odeslat další zprávu",
     "error": "Odeslání se nezdařilo. Zkuste to prosím znovu, nebo nám napište přímo.",
@@ -73,7 +73,7 @@
     "phoneLabel": "Telefon",
     "hqLabel": "Sídlo",
     "bookingLabel": "Rezervovat schůzku",
-    "bookingText": "Vyberte si termín, který vám vyhovuje — bez domlouvání po e-mailu.",
+    "bookingText": "Vyberte si termín, který vám vyhovuje. Nemusíme nic domlouvat e-mailem.",
     "bookingCta": "Vybrat termín",
     "validation": {
       "nameRequired": "Zadejte prosím jméno",
