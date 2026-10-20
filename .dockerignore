@@ -5,9 +5,9 @@ node_modules
 .env.*
 !.env.example
 media
+seed-assets
 Dockerfile
 docker-compose.yml
-cloudbuild.yaml
 README.md
 tests
 playwright.config.ts

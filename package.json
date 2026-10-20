@@ -25,7 +25,7 @@
     "@payloadcms/live-preview-react": "3.86.0",
     "@payloadcms/next": "3.86.0",
     "@payloadcms/richtext-lexical": "3.86.0",
-    "@payloadcms/storage-vercel-blob": "3.86.0",
+    "@payloadcms/storage-gcs": "3.86.0",
     "@payloadcms/ui": "3.86.0",
     "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
@@ -69,9 +69,6 @@
       "sharp",
       "esbuild",
       "unrs-resolver"
-    ],
-    "patchedDependencies": {
-      "@payloadcms/storage-vercel-blob@3.86.0": "patches/@payloadcms__storage-vercel-blob@3.86.0.patch"
-    }
+    ]
   }
 }

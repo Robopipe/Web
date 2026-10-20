@@ -1,7 +1,7 @@
 import { postgresAdapter } from '@payloadcms/db-postgres'
 import { resendAdapter } from '@payloadcms/email-resend'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
-import { vercelBlobStorage } from '@payloadcms/storage-vercel-blob'
+import { gcsStorage } from '@payloadcms/storage-gcs'
 import path from 'path'
 import { buildConfig } from 'payload'
 import sharp from 'sharp'
@@ -73,8 +73,8 @@ export default buildConfig({
   jobs: {
     workflows: [generateBlogPost],
     access: {
-      // The run endpoint (/api/payload-jobs/run) is hit by Vercel Cron, which
-      // sends the CRON_SECRET env var as a Bearer token automatically.
+      // The run endpoint (/api/payload-jobs/run) authorizes the CRON_SECRET
+      // env var as a Bearer token, for manual/local runs.
       run: ({ req }) => {
         if (req.user) return true
         if (!process.env.CRON_SECRET) return false
@@ -102,25 +102,23 @@ export default buildConfig({
       }
     : {}),
   plugins: [
-    // Registered unconditionally: the plugin then keeps its client-upload
-    // handler in the admin importMap even when `generate:importmap` runs
-    // without env vars (e.g. from the dev server). Without a token the plugin
-    // disables itself and Payload falls back to local ./media storage.
-    vercelBlobStorage({
+    // Without GCS_BUCKET the plugin disables itself and Payload falls back to
+    // local ./media storage. The bucket must also be set at build time: media
+    // URLs are baked into prerendered pages.
+    gcsStorage({
+      enabled: Boolean(process.env.GCS_BUCKET),
       collections: {
-        // Media read access is public, so serve files from the Blob CDN
-        // instead of streaming through /api/media/file/* functions.
+        // Media read access is public, so serve files straight from the
+        // (publicly readable) bucket instead of streaming through
+        // /api/media/file/*.
         media: { disablePayloadAccessControl: true },
       },
-      token: process.env.BLOB_READ_WRITE_TOKEN,
-      // Uploads go browser → Blob directly, bypassing Vercel's ~4.5 MB
-      // serverless request-body limit (Media accepts video/PDF).
-      clientUploads: true,
-      // NB: addRandomSuffix must stay off — the adapter doesn't write the
-      // suffixed names back to imageSizes, so their URLs would 404. The
-      // store is shared by prod and previews: treat preview admin as
-      // read-mostly, uploads there can collide with prod filenames.
-      addRandomSuffix: false,
+      bucket: process.env.GCS_BUCKET || '',
+      // Service-account key JSON. Only needed to write/delete: URLs are
+      // computed locally, so builds can run without it.
+      options: process.env.GCS_CREDENTIALS
+        ? { credentials: JSON.parse(process.env.GCS_CREDENTIALS) }
+        : {},
     }),
   ],
 })
