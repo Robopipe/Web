@@ -2,7 +2,7 @@
 
 Sales-oriented marketing site for [Robopipe](https://robopipe.io) (industrial machine vision by KOALA42).
 
-**Stack:** Next.js 16 (App Router) + Payload CMS 3 embedded in one app · PostgreSQL (Neon) · Tailwind v4 · next-intl (cs/en) · Resend · Vercel Blob media · Vercel Analytics + Speed Insights. Deployed to Vercel.
+**Stack:** Next.js 16 (App Router) + Payload CMS 3 embedded in one app · PostgreSQL · Tailwind v4 · next-intl (cs/en) · Resend · Google Cloud Storage media. Deployed to Coolify as a Docker image.
 
 ## Local development
 
@@ -18,7 +18,7 @@ pnpm dev
 - Site: http://localhost:3000 (redirects to `/cs` or `/en` by browser language)
 - Admin: http://localhost:3000/admin — seeded login `admin@robopipe.io` / `admin`
 
-Optional env: `RESEND_API_KEY` (lead notification emails; logged to console when unset), `BLOB_READ_WRITE_TOKEN` (media storage; local `./media` when unset).
+Optional env: `RESEND_API_KEY` (lead notification emails; logged to console when unset), `GCS_BUCKET` + `GCS_CREDENTIALS` (media storage; local `./media` when unset).
 
 ## Architecture notes
 
@@ -44,7 +44,7 @@ Commit the generated migration and `src/payload-types.ts`.
 
 ## AI-generated blog posts
 
-Editors queue article ideas in **Blog → Blog topics** (short description + optional per-article instructions). A nightly Vercel Cron (03:00 UTC, `vercel.json`) hits Payload's jobs endpoint (`/api/payload-jobs/run`, authorized via `CRON_SECRET`), which runs the `generate-blog-post` workflow (`src/jobs/`):
+Editors queue article ideas in **Blog → Blog topics** (short description + optional per-article instructions). A nightly Coolify scheduled task (03:00 UTC) hits `/api/cron/run-jobs` (authorized via `CRON_SECRET`), which runs the `generate-blog-post` workflow (`src/jobs/`):
 
 1. Claude (`claude-fable-5`, web search enabled, server-side refusal fallback to Opus 4.8) writes the English article as structured JSON, picking a category.
 2. A second call adapts it into Czech (not a literal translation).
@@ -55,13 +55,33 @@ Publishing is always manual — review the draft and hit Publish. Regenerate by 
 
 Required env vars: `ANTHROPIC_API_KEY` (the Anthropic org must allow ≥30-day data retention — Fable requirement), `PEXELS_API_KEY`, `CRON_SECRET`. To run the queue locally: create a topic, then `curl -H "Authorization: Bearer $CRON_SECRET" "http://localhost:3000/api/payload-jobs/run?limit=10"`.
 
-## Deployment (Vercel)
+## Deployment (Coolify)
 
-The Vercel project deploys `master` to production; every other branch/PR gets a preview deployment. The build command (`vercel.json`) is `pnpm payload migrate && pnpm build`, so each deployment migrates its own database before `next build` prerenders against it.
+The app ships as a Docker image (`Dockerfile`, Next.js `standalone` output) deployed with Coolify's **Dockerfile** build pack. The build runs `pnpm payload migrate && pnpm build` against the production database, so each deployment migrates the DB before `next build` prerenders against it.
 
-- **Database** — Neon via the Vercel Marketplace integration, which injects `DATABASE_URL` (pooled; `DATABASE_URL_UNPOOLED` also available as a fallback for migrations). Preview branching is enabled: each preview deployment gets its own Neon branch forked from production, so PR migrations never touch prod data.
-- **Media** — a single Vercel Blob store with **public** access connected to all environments (injects `BLOB_READ_WRITE_TOKEN`; the Payload adapter doesn't support private stores). One shared store is required because Neon preview branches reference blob keys uploaded in production. `addRandomSuffix` must stay off (it breaks imageSizes URLs), so treat preview admin as read-mostly — uploads there share the namespace with prod.
-- **Manual env vars** — `PAYLOAD_SECRET` and `PREVIEW_SECRET` (distinct values per environment), `RESEND_API_KEY` (production only), `NEXT_PUBLIC_SERVER_URL=https://robopipe.io` (production only — previews fall back to their Vercel branch URL).
-- **Analytics** — Vercel Web Analytics + Speed Insights (`<Analytics />` / `<SpeedInsights />` in the frontend layout, cookieless). Both must be enabled per project in the Vercel dashboard, otherwise no data is collected. Custom events (locale-suggestion accept/decline) require the Pro plan.
-- **Geo** — the locale-suggestion feature reads Vercel's `x-vercel-ip-country` header in `src/proxy.ts`; it is dormant in local dev where the header is absent.
-- **Seeding prod** (one-time): pull production env vars locally (`vercel env pull`), then run `pnpm seed` with them exported, and redeploy so prerendered pages pick up the content.
+1. **Database** — a PostgreSQL resource from Coolify's template on the same server/destination as the app. Use its **internal** URL for `DATABASE_URL`: Coolify builds with `--add-host` entries for the destination network's containers, so the internal hostname also resolves during the image build.
+2. **Media** — a Google Cloud Storage bucket with public read (`allUsers` → *Storage Object Viewer*) and a service account with *Storage Object Admin* on it. Media URLs point straight at `https://storage.googleapis.com/<bucket>/…`.
+3. **Application** — new resource → Git repository → build pack *Dockerfile*, port `3000`, domains `https://robopipe.io` and `https://shop.robopipe.io` (the old Shopify host is redirected by `next.config.ts`). Under *Advanced → Build*, prefer **Build secrets → Docker BuildKit secrets** so build-time values don't end up in image metadata; the Dockerfile accepts both secrets and plain build args.
+4. **Environment variables**
+
+   | Variable | Build | Runtime | Notes |
+   |---|---|---|---|
+   | `DATABASE_URL` | ✓ | ✓ | internal URL of the Postgres resource |
+   | `NEXT_PUBLIC_SERVER_URL` | ✓ | ✓ | `https://robopipe.io`, inlined into the client bundle |
+   | `GCS_BUCKET` | ✓ | ✓ | media URLs are baked into prerendered pages |
+   | `PAYLOAD_SECRET` | | ✓ | the build uses a placeholder when it's not available |
+   | `GCS_CREDENTIALS` | | ✓ | service-account key JSON, on one line |
+   | `PREVIEW_SECRET`, `CRON_SECRET`, `RESEND_API_KEY`, `ANTHROPIC_API_KEY`, `PEXELS_API_KEY` | | ✓ | |
+
+   Changing a build-time value needs a redeploy; runtime-only values just a restart.
+5. **Scheduled task** (nightly blog generation) — on the application, *Scheduled Tasks* → add: frequency `0 3 * * *`, timeout `900` s (one article takes ~3–5 min), command:
+
+   ```sh
+   wget -qO- --header="Authorization: Bearer $CRON_SECRET" http://localhost:3000/api/cron/run-jobs
+   ```
+
+- **Build memory** — `pnpm build` raises the Node heap to 8 GB; the Coolify server needs that much free RAM during builds (or lower `--max-old-space-size` in `package.json`).
+- **Single instance** — the lead/newsletter rate limits are in-memory and ISR caches on the container filesystem; run one replica.
+- **Analytics** — `<Analytics />` / `<SpeedInsights />` in the frontend layout are Vercel-only and collect nothing on Coolify; replace them (e.g. self-hosted Plausible/Umami) or remove them.
+- **Geo** — the locale-suggestion feature reads Vercel's `x-vercel-ip-country` header in `src/proxy.ts`, so it stays dormant on Coolify unless that header is provided (e.g. mapped from Cloudflare's `cf-ipcountry`).
+- **Seeding prod** (one-time): run `pnpm seed` locally with the production `DATABASE_URL` (expose the Postgres resource publicly for the duration) and the GCS variables exported, then redeploy so prerendered pages pick up the content.

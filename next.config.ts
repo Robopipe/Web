@@ -43,7 +43,7 @@ const legacyRedirects = [
 // 301/308 map from the decommissioned Shopify store (shop.robopipe.io) to the new
 // marketing site. These are host-scoped via `has` so they never touch robopipe.io,
 // and use absolute destinations because they redirect cross-host. Requires
-// shop.robopipe.io to point at Vercel and be added as a project domain, otherwise
+// shop.robopipe.io to point at this app and be added as one of its domains, otherwise
 // the requests never reach this app. Specific product URLs first, then a catch-all
 // that sweeps every other old Shopify path (/account, /pages/*, other collections…)
 // to the homepage so nothing 404s or gets indexed as a duplicate.
@@ -66,18 +66,24 @@ const shopRedirects = [
 ]
 
 const nextConfig: NextConfig = {
+  // Self-contained server bundle for the Docker image (see Dockerfile).
+  output: 'standalone',
   images: {
     localPatterns: [
       {
         pathname: '/api/media/file/**',
       },
     ],
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: '*.public.blob.vercel-storage.com',
-      },
-    ],
+    // Media is served straight from the public GCS bucket (payload.config.ts).
+    remotePatterns: process.env.GCS_BUCKET
+      ? [
+          {
+            protocol: 'https',
+            hostname: 'storage.googleapis.com',
+            pathname: `/${process.env.GCS_BUCKET}/**`,
+          },
+        ]
+      : [],
   },
   // Shop rules first so the shop host is fully owned by them (incl. the catch-all)
   // and never falls through into the host-agnostic legacy rules.
