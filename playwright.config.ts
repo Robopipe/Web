@@ -6,8 +6,11 @@ import { defineConfig, devices } from '@playwright/test'
  */
 import 'dotenv/config'
 
-// E2E_BASE_URL points the tests at a server on another port (default :3000).
-const baseURL = process.env.E2E_BASE_URL || 'http://localhost:3000'
+/**
+ * Server under test. E2E_BASE_URL wins (any host and port). Otherwise PORT
+ * picks a local port when 3000 is taken.
+ */
+const baseURL = process.env.E2E_BASE_URL || `http://localhost:${process.env.PORT || '3000'}`
 const port = new URL(baseURL).port || '3000'
 
 /**
@@ -19,8 +22,9 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
+  /* One worker: specs that boot Payload against the one local database would
+     race on the dev schema push (same reason as fileParallelism in vitest). */
+  workers: 1,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: 'html',
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */

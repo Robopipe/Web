@@ -16,7 +16,7 @@ import config from '../../src/payload.config.js'
  * so a page missing from the sitemap fails the sitemap test.
  */
 
-const baseURL = process.env.E2E_BASE_URL || 'http://localhost:3000'
+const baseURL = process.env.E2E_BASE_URL || `http://localhost:${process.env.PORT || '3000'}`
 // Absolute URLs in canonical, hreflang, sitemap and llms.txt use the server URL.
 const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || baseURL
 
