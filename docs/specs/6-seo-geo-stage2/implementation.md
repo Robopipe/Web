@@ -98,7 +98,7 @@ V zsh dej každý přepínač jako samostatné slovo. Proměnná `$st="--dry-run
 
 ## 7. Známá omezení
 
-1. **LinkedIn.** `site-settings.socials` v produkci odkazuje na `linkedin.com/company/koala42`. `Organization.sameAs` tak tvrdí, že jde o stejnou firmu. Data nemění nikdo, dokud Filip neodpoví na otázku 3.
+1. **LinkedIn.** `site-settings.socials` v produkci odkazuje na `linkedin.com/company/koala42`. `Organization.sameAs` tak tvrdí, že jde o stejnou firmu. Filip u otázky 3 nenamítal. Data proto zůstávají beze změny.
 2. **Odstraněné stránky v databázi.** Když skript etapy 1 v produkci poběží dřív, tři stránky zůstanou publikované. Skript vypíše `obsolete`. Přesměrování podle 9.8 přidá Arthur po souhlasu Filipa.
 3. **Úprava textů existující stránky.** Skript u existující stránky jen doplní chybějící bloky. Nový hero text stránky řešení a nové odkazy v jejím textu se při pořadí 11.3 neprojeví (11.3 to předpokládá).
 4. **Seed adresy.** Lokální seed má jinou adresu (Thámova 13) než produkce (Sokolovská 81/55). Skript adresu nemění.
