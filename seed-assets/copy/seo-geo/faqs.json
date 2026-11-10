@@ -231,11 +231,11 @@
   },
   "aa-data": {
     "cs": {
-      "q": "Můžeme automatickou anotaci provozovat bez cloudu?",
+      "q": "Jde automatickou anotaci provozovat offline nebo přímo u nás?",
       "a": "Ano. Pro automatickou anotaci můžete použít offline model. Případně Robopipe nasadí celé řešení přímo u vás (on-premise)."
     },
     "en": {
-      "q": "Can we run auto annotation without the cloud?",
+      "q": "Can we run auto annotation offline or at our own site?",
       "a": "Yes. You can use an offline model for auto annotation. Alternatively, Robopipe can deploy the whole solution at your site (on-premise)."
     }
   },

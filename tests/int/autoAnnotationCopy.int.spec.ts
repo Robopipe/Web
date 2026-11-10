@@ -26,7 +26,7 @@ describe('auto annotation copy', () => {
     for (const name of ALL_COPY) {
       const text = read(name)
       expect(text, name).not.toContain('[ověřit]')
-      expect(text, name).not.toMatch(/google|gemini|vertex|openai|v cloudu|in the cloud/i)
+      expect(text, name).not.toMatch(/google|gemini|vertex|openai|cloud/i)
     }
   })
 

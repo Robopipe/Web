@@ -58,7 +58,7 @@ Detaily článků blogu (úkol 4): v produkci mají hreflang `cs` a `en` už dne
 8. **Publikace publikuje poslední koncept.** Režim `--status=published` nejdřív doplní prázdná pole jako koncept a pak publikuje poslední koncept úvodu, 5 nových stránek a 4 studií. Bez toho by se koncepty z běhu `--status=draft` nikdy nepublikovaly. Když někdo mezitím upravil koncept těchto dokumentů v administraci, publikuje se i jeho úprava.
 9. **Klíč překladu `nav.caseStudies`.** Architektura píše `common.caseStudies`. Klíč je v `nav`.
 10. **Fakta o auto anotaci se liší od tabulky v kapitole 1.** Ve větvi `release` (merge 1c0b6530, 30. 10. 2026) SAM 3 není, byl odstraněn 18. 9. a 15. 10. Anotace jednoho snímku neběží jako úloha na pozadí, ale jako jedno volání modelu s průběžným vysíláním rámečků. Kontrola po jednotlivých rámečcích (přijmout/odmítnout) neexistuje: uživatel rámečky upraví nebo smaže a schválí celý snímek. Texty se řídí kódem.
-11. **Testy a konfigurace.** `playwright.config.ts` čte `E2E_BASE_URL` (výchozí `http://localhost:3000`) a volitelně `PLAYWRIGHT_CHROMIUM_PATH`. Admin e2e test používá relativní URL a jeho test výpisu povoluje query string (`?depth=1&limit=10`). Původní test kvůli němu selhával. `vitest.config.mts` má `hookTimeout: 60 s`, protože start Payload trval na vytíženém stroji déle než 10 s.
+11. **Testy a konfigurace.** `playwright.config.ts` čte `E2E_BASE_URL`. Bez něj platí `PORT` z `master` (PR #4), výchozí je `http://localhost:3000`. Volitelně čte `PLAYWRIGHT_CHROMIUM_PATH`. Admin e2e test používá relativní URL a jeho test výpisu povoluje query string (`?depth=1&limit=10`). Původní test kvůli němu selhával. `vitest.config.mts` má `hookTimeout: 60 s`, protože start Payload trval na vytíženém stroji déle než 10 s.
 
 ## 4. Jak ověřit lokálně
 
@@ -121,6 +121,9 @@ Koncept článku o auto anotaci skript nikdy nepublikuje. Filip ho publikuje v a
 8. **Režim `--status=published` publikuje poslední koncept** spravovaných dokumentů (odchylka 8).
 9. **Výkon na mobilu** je v Lighthouse 78 až 81. Kritérium se ho netýká.
 10. **Prostředí testů.** Stažení Chromium 1208 pro Playwright se na tomto stroji zaseklo při rozbalování. E2e testy, Lighthouse a screenshoty běžely s Chromium 1248 přes `PLAYWRIGHT_CHROMIUM_PATH`.
+11. **Známá chyba L1 z issue #3.** Test `Blog featured card › keeps the photo inside the card on mobile with a long unbroken title` přišel z `master` (PR #4) a selhává záměrně, dokud L1 nikdo neopraví. Selhává i na `master`. Na mobilu má mřížka karty jen implicitní sloupec a dlouhé slovo bez mezery ho roztáhne (fotka 750 px na kartě 358 px). Oprava patří do #3, ne do tohoto PR.
+12. **Ověření 10. 11. večer (kolo G až J, po sloučení `master`).** `test:int` 46 prošlo, 0 selhalo. `test:e2e` 47 prošlo, 1 selhal (L1, bod 11). Lint 0 chyb (2 stávající varování), typecheck a build projdou. Screenshoty: `output/robopipe-web/seo/auto-annotation-{cs,en}-{desktop,mobile}-v2.png`.
+13. **Next.js drží předrenderované stránky z buildu.** Po novém seedu je potřeba nový build, jinak `next start` ukazuje staré FAQ.
 
 ## 8. Seznam `[ověřit]`
 
