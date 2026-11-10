@@ -87,4 +87,26 @@ test.describe('Blog featured card', () => {
       expect(photo.height).toBeLessThan(photo.width)
     })
   }
+
+  // Tester (#3): one long unbroken word in the title widens the stacked grid
+  // column below lg, so the photo box grows past the card (979 px on a 358 px card).
+  test('keeps the photo inside the card on mobile with a long unbroken title', async ({ page }) => {
+    const longTitle = 'E2E Superkalifragilistikexpialidociozniautomatizacevyrobnichlinek'
+    await payload.update({ collection: 'posts', id: postId, locale: 'en', data: { title: longTitle } })
+    try {
+      await page.setViewportSize({ width: 390, height: 844 })
+      await page.goto('/en/blog')
+
+      const card = page.locator('article').first()
+      await expect(card.locator('h2')).toHaveText(longTitle)
+      const cardBox = await card.boundingBox()
+      const photo = await card.locator('img').first().boundingBox()
+      if (!cardBox || !photo) throw new Error('featured card is not rendered')
+
+      expect(photo.width).toBeLessThanOrEqual(cardBox.width + 1)
+      expect(Math.abs(photo.height - (photo.width * 9) / 16)).toBeLessThan(2)
+    } finally {
+      await payload.update({ collection: 'posts', id: postId, locale: 'en', data: { title: TITLE } })
+    }
+  })
 })

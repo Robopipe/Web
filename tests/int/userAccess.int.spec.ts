@@ -96,6 +96,44 @@ describe('user access', () => {
     expect(stored.role).toBe('editor')
   })
 
+  it('limits an editor bulk update to their own account', async () => {
+    const result = await payload.update({
+      collection: 'users',
+      where: { id: { in: [editor.id, otherEditor.id, admin.id] } },
+      data: { name: 'Bulk rename' },
+      user: editor,
+      overrideAccess: false,
+    })
+    expect(result.docs.map((doc) => doc.id)).toEqual([editor.id])
+
+    const other = await payload.findByID({ collection: 'users', id: otherEditor.id })
+    expect(other.name).toBe('Int test other-editor')
+    const stored = await payload.findByID({ collection: 'users', id: admin.id })
+    expect(stored.name).toBe('Int test admin')
+  })
+
+  it('stops an editor from creating or deleting users', async () => {
+    await expect(
+      payload.create({
+        collection: 'users',
+        data: {
+          email: `${EMAIL_PREFIX}-created-by-editor@example.com`,
+          password: 'initial-password',
+          name: 'Created by editor',
+          role: 'admin',
+        },
+        user: editor,
+        overrideAccess: false,
+      }),
+    ).rejects.toBeInstanceOf(Forbidden)
+
+    for (const id of [otherEditor.id, editor.id]) {
+      await expect(
+        payload.delete({ collection: 'users', id, user: editor, overrideAccess: false }),
+      ).rejects.toBeInstanceOf(Forbidden)
+    }
+  })
+
   it('lets an admin edit any user, role included', async () => {
     const updated = await payload.update({
       collection: 'users',
