@@ -1,7 +1,7 @@
 import { convertLexicalToPlaintext } from '@payloadcms/richtext-lexical/plaintext'
 
 import type { Locale } from '@/i18n/routing'
-import type { Faq, Page, Post, SiteSetting } from '@/payload-types'
+import type { Faq, Page, Post, PricingTableBlock, SiteSetting } from '@/payload-types'
 
 import { ogImageUrl } from './meta'
 import { absoluteUrl, SERVER_URL } from './paths'
@@ -69,8 +69,52 @@ export const websiteLd = (settings: SiteSetting, locale: Locale): JsonLdObject =
   publisher: organizationRef,
 })
 
-/** The product is the home page offer. No `offers`: prices have one source, the pricing page. */
-export const productLd = (home: Page, locale: Locale): JsonLdObject =>
+const CURRENCIES: [RegExp, string][] = [
+  [/kč|czk/i, 'CZK'],
+  [/€|eur/i, 'EUR'],
+  [/\$|usd/i, 'USD'],
+]
+
+/** "9 900 Kč" → { price: "9900", priceCurrency: "CZK" }. Text without an amount and a currency gives null. */
+export const parsePrice = (text: string | null | undefined) => {
+  if (!text) return null
+  const currency = CURRENCIES.find(([pattern]) => pattern.test(text))?.[1]
+  const digits = text.replace(/[^\d,.]/g, '').replace(',', '.')
+  if (!currency || !/\d/.test(digits)) return null
+  return { price: String(Number(digits)), priceCurrency: currency }
+}
+
+export type Pricing = { path: string; tiers: PricingTableBlock['tiers'] }
+
+/**
+ * Offers from the pricing table on the pricing page. Tiers without an amount
+ * and a currency ("Zdarma", "Individuálně") are left out.
+ */
+export const offersFromPricing = (pricing: Pricing | null): JsonLdObject[] =>
+  (pricing?.tiers ?? []).flatMap((tier) => {
+    const price = parsePrice(tier.price)
+    if (!price) return []
+    return [
+      compact({
+        '@type': 'Offer',
+        name: tier.name,
+        ...price,
+        url: absoluteUrl(pricing!.path),
+        priceSpecification: compact({
+          '@type': 'UnitPriceSpecification',
+          ...price,
+          unitText: tier.period?.replace(/^\/\s*/, ''),
+        }),
+      }),
+    ]
+  })
+
+/** The product is the home page offer. Prices come only from the pricing page content. */
+export const productLd = (
+  home: Page,
+  locale: Locale,
+  pricing: Pricing | null = null,
+): JsonLdObject =>
   compact({
     '@context': CONTEXT,
     '@type': 'Product',
@@ -80,6 +124,7 @@ export const productLd = (home: Page, locale: Locale): JsonLdObject =>
     url: absoluteUrl(`/${locale}`),
     brand: organizationRef,
     manufacturer: organizationRef,
+    offers: offersFromPricing(pricing),
   })
 
 export const blogPostingLd = (post: Post, locale: Locale, path: string): JsonLdObject => {

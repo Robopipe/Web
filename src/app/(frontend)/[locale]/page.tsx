@@ -12,7 +12,7 @@ import { routing, type Locale } from '@/i18n/routing'
 import { faqPageLd, faqsFromLayout, productLd } from '@/lib/jsonLd'
 import { buildMeta } from '@/lib/meta'
 import { localizedPaths } from '@/lib/paths'
-import { getGlobals, getLocalizedSlugs, getPageBySlug } from '@/lib/queries'
+import { getGlobals, getLocalizedSlugs, getPageBySlug, getPricing } from '@/lib/queries'
 
 export const revalidate = 600
 
@@ -47,11 +47,12 @@ export default async function HomePage({ params }: Props) {
   const { isEnabled: draft } = await draftMode()
   const page = await getPageBySlug('home', locale, draft)
   if (!page) notFound()
+  const pricing = await getPricing(locale)
 
   return (
     <>
       {draft && <LivePreviewListener />}
-      <JsonLd data={[productLd(page, locale), faqPageLd(faqsFromLayout(page.layout))]} />
+      <JsonLd data={[productLd(page, locale, pricing), faqPageLd(faqsFromLayout(page.layout))]} />
       <RenderBlocks blocks={page.layout} />
     </>
   )

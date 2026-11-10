@@ -67,7 +67,7 @@ test.afterAll(async () => {
   await api.dispose()
 })
 
-test.describe('root redirect follows Accept-Language only', () => {
+test.describe('root redirect: stored choice, then Accept-Language', () => {
   const rootTarget = async (headers: Record<string, string>, path = '/') => {
     const response = await api.get(path, { headers, maxRedirects: 0 })
     expect(response.status()).toBe(307)
@@ -75,26 +75,45 @@ test.describe('root redirect follows Accept-Language only', () => {
     return location.pathname + location.search
   }
 
-  test('cs and sk go to /cs, de and no header go to /en', async () => {
+  test('without a cookie: cs and sk go to /cs, de and no header go to /en', async () => {
     expect(await rootTarget({ 'Accept-Language': 'cs' })).toBe('/cs')
     expect(await rootTarget({ 'Accept-Language': 'sk' })).toBe('/cs')
     expect(await rootTarget({ 'Accept-Language': 'de' })).toBe('/en')
     expect(await rootTarget({ 'Accept-Language': '' })).toBe('/en')
   })
 
-  test('an old NEXT_LOCALE=en cookie is ignored', async () => {
-    expect(await rootTarget({ 'Accept-Language': 'cs', Cookie: 'NEXT_LOCALE=en' })).toBe('/cs')
+  test('a stored choice wins over Accept-Language, an invalid one is ignored', async () => {
+    expect(await rootTarget({ 'Accept-Language': 'cs', Cookie: 'NEXT_LOCALE=en' })).toBe('/en')
+    expect(await rootTarget({ 'Accept-Language': 'en', Cookie: 'NEXT_LOCALE=cs' })).toBe('/cs')
+    expect(await rootTarget({ 'Accept-Language': 'cs', Cookie: 'NEXT_LOCALE=de' })).toBe('/cs')
   })
 
   test('the query string is kept', async () => {
     expect(await rootTarget({ 'Accept-Language': 'cs' }, '/?utm_source=x')).toBe('/cs?utm_source=x')
+    expect(await rootTarget({ Cookie: 'NEXT_LOCALE=cs' }, '/?utm_source=x')).toBe(
+      '/cs?utm_source=x',
+    )
   })
 
-  test('visiting /en does not set a NEXT_LOCALE cookie', async () => {
+  test('visiting /en does not store a choice', async () => {
     const response = await api.get('/en', { headers: { 'Accept-Language': 'cs' } })
     expect(response.status()).toBe(200)
     const cookies = response.headersArray().filter((h) => h.name.toLowerCase() === 'set-cookie')
     expect(cookies.map((c) => c.value).join('\n')).not.toContain('NEXT_LOCALE')
+  })
+
+  test('switching the language in the footer stores the choice for the root', async ({
+    browser,
+  }) => {
+    const context = await browser.newContext({ locale: 'cs-CZ' })
+    const page = await context.newPage()
+    await page.goto('/')
+    await expect(page).toHaveURL(/\/cs$/)
+    await page.locator('footer nav a', { hasText: 'EN' }).click()
+    await expect(page).toHaveURL(/\/en$/)
+    await page.goto('/')
+    await expect(page).toHaveURL(/\/en$/)
+    await context.close()
   })
 })
 
@@ -243,4 +262,20 @@ test('a path with a dot outside every route answers 404, /llms.txt still 200', a
   expect((await api.get('/ads.txt')).status()).toBe(404)
   expect((await api.get('/llms.txt')).status()).toBe(200)
   expect((await api.get('/cs/neexistuje')).status()).toBe(404)
+})
+
+test('Product offers on the home page come from the pricing table', async ({ page }) => {
+  for (const [path, currency] of [
+    ['/cs', 'CZK'],
+    ['/en', 'EUR'],
+  ] as const) {
+    await page.goto(path)
+    const blocks = await page.locator('script[type="application/ld+json"]').allTextContents()
+    const product = blocks.map((json) => JSON.parse(json)).find((ld) => ld['@type'] === 'Product')
+    expect(product.offers.length, path).toBeGreaterThan(0)
+    for (const offer of product.offers) {
+      expect(offer).toMatchObject({ '@type': 'Offer', priceCurrency: currency })
+      expect(Number(offer.price)).toBeGreaterThan(0)
+    }
+  }
 })

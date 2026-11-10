@@ -33,7 +33,11 @@ export const Footer: React.FC<Props> = ({ footer, settings }) => {
 
   return (
     <footer className="bg-surface-dark text-text-invert-60">
-      <div className="container-site grid gap-10 py-16 md:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
+      {/* One track for the brand column plus one per link column (up to 4). */}
+      <div
+        className="container-site grid gap-10 py-16 md:grid-cols-2 lg:grid-cols-[1.4fr_repeat(var(--footer-columns),minmax(0,1fr))]"
+        style={{ '--footer-columns': Math.max(columns.length, 1) } as React.CSSProperties}
+      >
         <div className="space-y-5">
           <Link href={`/${locale}`} aria-label="Robopipe" className="inline-block">
             <Image

@@ -1,11 +1,14 @@
+import { hasLocale } from 'next-intl'
 import createMiddleware from 'next-intl/middleware'
-import type { NextRequest } from 'next/server'
+import { NextResponse, type NextRequest } from 'next/server'
 
-import { routing } from './i18n/routing'
+import { LOCALE_COOKIE, routing } from './i18n/routing'
 
-// Locale detection order: an explicit path prefix always wins. Otherwise the
-// browser's Accept-Language is negotiated against cs/en (sk counts as cs), then en.
-// No cookie is read or set (routing.localeCookie is false). `routing.defaultLocale` (Czech) stays
+// Locale detection order: an explicit path prefix always wins. On the root `/`,
+// a stored choice (NEXT_LOCALE, written only when the visitor picks a language
+// in the footer or the locale suggestion) comes next. Otherwise the browser's
+// Accept-Language is negotiated against cs/en (sk counts as cs), then en.
+// next-intl itself neither reads nor writes the cookie (routing.localeCookie). `routing.defaultLocale` (Czech) stays
 // the site's canonical default for slugs, sitemaps, etc., but when a visitor's
 // browser names neither cs nor en we land them on English rather than Czech.
 const intlMiddleware = createMiddleware({ ...routing, defaultLocale: 'en' })
@@ -16,8 +19,17 @@ const GEO_COOKIE = 'geo-country'
 const GEO_HEADER = 'x-vercel-ip-country'
 const VALID_COUNTRY = /^[A-Z]{2}$/
 
+const rootRedirect = (request: NextRequest): NextResponse | undefined => {
+  if (request.nextUrl.pathname !== '/') return undefined
+  const stored = request.cookies.get(LOCALE_COOKIE)?.value
+  if (!hasLocale(routing.locales, stored)) return undefined
+  const url = request.nextUrl.clone()
+  url.pathname = `/${stored}`
+  return NextResponse.redirect(url, 307)
+}
+
 export default function proxy(request: NextRequest) {
-  const response = intlMiddleware(request)
+  const response = rootRedirect(request) ?? intlMiddleware(request)
 
   const country = request.headers.get(GEO_HEADER)
   const isNewCountry = country && request.cookies.get(GEO_COOKIE)?.value !== country

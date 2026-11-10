@@ -22,7 +22,7 @@ If the feedback is a rule for the whole project, Robopipe Vision suggests saving
 - Auto annotation draws boxes today (object detection). Segmentation is coming soon.
 - No proposal is saved without your approval. A person reviews every box.
 - Robopipe Vision is a language model that understands images, and it runs in the cloud. Images are therefore sent to the model provider for processing. [ověřit]
-- The pricing page lists automatic AI image annotation on the Pro and Enterprise plans. [ověřit]
+- All Robopipe Studio customers have auto annotation. It is a feature of Robopipe Studio, the open-source edition does not include it.
 
 ## Where annotation fits
 

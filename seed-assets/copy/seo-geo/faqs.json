@@ -318,5 +318,15 @@
       "q": "How many packs does Robopipe check?",
       "a": "Every one. Packaging is checked 100%, with no extra person needed on the line."
     }
+  },
+  "aa-availability": {
+    "cs": {
+      "q": "Mají automatickou anotaci všichni zákazníci?",
+      "a": "Ano. Automatickou anotaci mají všichni zákazníci Robopipe Studia. Je to funkce Robopipe Studia, open-source verze ji neobsahuje."
+    },
+    "en": {
+      "q": "Do all customers have auto annotation?",
+      "a": "Yes. All Robopipe Studio customers have auto annotation. It is a feature of Robopipe Studio, the open-source edition does not include it."
+    }
   }
 }

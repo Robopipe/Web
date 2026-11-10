@@ -4,6 +4,8 @@ import { cache } from 'react'
 
 import type { Locale } from '@/i18n/routing'
 
+import { pathFor } from './paths'
+
 /** Payload caches the instance internally — safe to call per request. */
 export const getPayloadClient = () => getPayload({ config })
 
@@ -119,6 +121,31 @@ export const getCaseStudyBySlug = async (slug: string, locale: Locale, draft = f
     overrideAccess: draft,
   })
   return result.docs[0] ?? null
+}
+
+/**
+ * The published page with the pricing table and its tiers. The pricing page
+ * content is the one source of prices (Product offers in JSON-LD).
+ */
+export const getPricing = async (locale: Locale) => {
+  const payload = await getPayloadClient()
+  const pages = await payload.find({
+    collection: 'pages',
+    locale,
+    fallbackLocale: false,
+    where: { slug: { exists: true } },
+    limit: 200,
+    depth: 0,
+    select: { slug: true, layout: true },
+    ...PUBLIC_ONLY,
+  })
+  for (const page of pages.docs) {
+    const table = page.layout?.find((block) => block.blockType === 'pricingTable')
+    if (page.slug && table?.blockType === 'pricingTable') {
+      return { path: pathFor('pages', page.slug, locale), tiers: table.tiers ?? [] }
+    }
+  }
+  return null
 }
 
 /** Localized slugs of a document in every locale — for hreflang and the language switcher. */

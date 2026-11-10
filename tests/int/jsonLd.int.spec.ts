@@ -4,9 +4,12 @@ import {
   breadcrumbLd,
   faqPageLd,
   faqsFromLayout,
+  offersFromPricing,
   organizationLd,
+  parsePrice,
   serializeJsonLd,
   type FaqItem,
+  type Pricing,
 } from '@/lib/jsonLd'
 import { SERVER_URL } from '@/lib/paths'
 import type { Page, SiteSetting } from '@/payload-types'
@@ -128,5 +131,41 @@ describe('organizationLd', () => {
   it('leaves out memberOf when there are no memberships', () => {
     const ld = organizationLd({ id: 1, siteName: 'Robopipe' } as SiteSetting)
     expect(ld).not.toHaveProperty('memberOf')
+  })
+})
+
+describe('Product offers from the pricing table', () => {
+  it('parses amounts and currencies from the price text', () => {
+    expect(parsePrice('9 900 Kč')).toEqual({ price: '9900', priceCurrency: 'CZK' })
+    expect(parsePrice('€390')).toEqual({ price: '390', priceCurrency: 'EUR' })
+    expect(parsePrice('Zdarma')).toBeNull()
+    expect(parsePrice('Individuálně')).toBeNull()
+  })
+
+  it('builds one Offer per priced tier and leaves the rest out', () => {
+    const offers = offersFromPricing({
+      path: '/cs/cenik',
+      tiers: [
+        { name: 'Open source', price: 'Zdarma' },
+        { name: 'Standard', price: '9 900 Kč', period: '/ kamera / měsíc' },
+        { name: 'Enterprise', price: 'Individuálně' },
+      ] as Pricing['tiers'],
+    })
+    expect(offers).toEqual([
+      {
+        '@type': 'Offer',
+        name: 'Standard',
+        price: '9900',
+        priceCurrency: 'CZK',
+        url: `${SERVER_URL}/cs/cenik`,
+        priceSpecification: {
+          '@type': 'UnitPriceSpecification',
+          price: '9900',
+          priceCurrency: 'CZK',
+          unitText: 'kamera / měsíc',
+        },
+      },
+    ])
+    expect(offersFromPricing(null)).toEqual([])
   })
 })

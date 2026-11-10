@@ -7,7 +7,7 @@ seoDescription: Jak funguje automatická anotace v Robopipe Studiu: popis štít
 ---
 Každý model pro kontrolu kvality začíná u označených snímků. U detekce to znamená nakreslit rámeček kolem každé vady, každé suroviny nebo každé kapsle. Na desítkách snímků je to otrava. Na stovkách je to týden práce.
 
-Od vydání 30. 10. 2026 má aplikace Robopipe Studio automatickou anotaci. Rámečky navrhne Robopipe Vision a člověk je jen zkontroluje. [ověřit]
+Od vydání 30. 10. 2026 má aplikace Robopipe Studio automatickou anotaci. Rámečky navrhne Robopipe Vision a člověk je jen zkontroluje.
 
 ## Začíná se popisem štítku
 
@@ -33,6 +33,6 @@ Když návrh nesedí, napíšete Robopipe Vision, co je špatně. Anotace probě
 
 ## Co je dobré vědět
 
-Robopipe Vision je jazykový model, který rozumí obrazu, a běží v cloudu. Snímky se proto ke zpracování posílají poskytovateli modelu. [ověřit] Ceník uvádí automatické AI anotování obrázků v tarifech Pro a Enterprise. [ověřit]
+Robopipe Vision je jazykový model, který rozumí obrazu, a běží v cloudu. Snímky se proto ke zpracování posílají poskytovateli modelu. [ověřit] Automatickou anotaci mají všichni zákazníci Robopipe Studia. Je to funkce Robopipe Studia, open-source verze ji neobsahuje.
 
 Podrobný popis najdete na stránce [automatická anotace](/cs/automaticka-anotace). Jak z označených snímků vznikne kontrola na lince, popisuje stránka [AI kontrola kvality](/cs/ai-kontrola-kvality).

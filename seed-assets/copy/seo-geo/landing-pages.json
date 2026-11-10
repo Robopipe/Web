@@ -148,7 +148,7 @@
         },
         "hero": {
           "eyebrow": "AI kontrola kvality",
-          "heading": "AI kontrola kvality, kterou svůj produkt naučíte sami",
+          "heading": "AI kontrola kvality, která se učí na vašich výrobcích",
           "text": "Místo ručně psaných pravidel se model učí ze snímků vašich výrobků. Nový produkt přidáte do kontroly za pár minut.",
           "button": "Domluvit demo"
         },
@@ -206,7 +206,7 @@
         },
         "hero": {
           "eyebrow": "AI quality inspection",
-          "heading": "AI quality inspection your own team trains",
+          "heading": "AI quality inspection that learns from your products",
           "text": "Instead of hand-written rules, the model learns from images of your products. You add a new product to inspection in minutes.",
           "button": "Book a demo"
         },
@@ -489,6 +489,7 @@
       "caseStudies": [],
       "faqs": [
         "aa-what",
+        "aa-availability",
         "aa-approve",
         "aa-descriptions",
         "aa-batch",

@@ -51,10 +51,11 @@ type CaseStudySections = Record<'problem' | 'solution' | 'result' | 'technique',
 type CaseStudyCopy = { faqs: string[] } & Localized<CaseStudySections>
 
 type HomeCopy = {
+  /** New home SEO texts. A field changes only when it is empty or still has the replaceIf value. */
   seo: Localized<{
-    title: string
-    description: string
-    replaceIf: { title: string; description: string }
+    title?: string
+    description?: string
+    replaceIf: { title?: string; description?: string }
   }>
   memberships: {
     blockName: string
@@ -370,6 +371,8 @@ export const applySeoGeo = async (
       continue
     }
     report.created.push(`page ${page.cs.slug}`)
+    // Built before the write check, so a dry run also lists the FAQs and media.
+    const layouts = { cs: await landingLayout(page, 'cs'), en: await landingLayout(page, 'en') }
     if (!write) continue
     const pageData = (locale: Locale) => ({
       title: page[locale].title,
@@ -380,7 +383,7 @@ export const applySeoGeo = async (
       collection: 'pages',
       locale: 'cs',
       draft: true,
-      data: { ...pageData('cs'), layout: await landingLayout(page, 'cs'), _status: 'draft' },
+      data: { ...pageData('cs'), layout: layouts.cs, _status: 'draft' },
     })
     await saveDraft('pages', doc.id, 'en', {
       ...pageData('en'),
@@ -460,10 +463,9 @@ export const applySeoGeo = async (
       const copy = home.seo[locale]
       const out: Record<string, string> = {}
       for (const field of ['title', 'description'] as const) {
+        const next = copy[field]
         const value = seo?.[field]?.[locale]
-        if (!value || value === copy.replaceIf[field]) {
-          if (value !== copy[field]) out[field] = copy[field]
-        }
+        if (next && (!value || value === copy.replaceIf[field]) && value !== next) out[field] = next
       }
       return out
     }

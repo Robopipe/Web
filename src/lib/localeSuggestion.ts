@@ -1,4 +1,4 @@
-import type { Locale } from '@/i18n/routing'
+import { LOCALE_COOKIE, type Locale } from '@/i18n/routing'
 
 const GEO_COOKIE = 'geo-country'
 const SUPPRESS_COOKIE = 'locale-suggest'
@@ -24,15 +24,9 @@ export function isLocaleSuggestionSuppressed(): boolean {
   return readCookie(SUPPRESS_COOKIE) !== undefined
 }
 
-/**
- * Silences the suggestion prompt for a year. The root `/` follows Accept-Language
- * only (routing.localeCookie is off), so the chosen locale is not stored.
- */
-export function commitLocaleChoice(): void {
+/** Silences the suggestion prompt for a year and records the visitor's locale choice. */
+export function commitLocaleChoice(locale: Locale): void {
+  writeCookie(LOCALE_COOKIE, locale, ONE_YEAR_SECONDS)
   writeCookie(SUPPRESS_COOKIE, '1', ONE_YEAR_SECONDS)
 }
 
-/** Used by the footer switcher: an explicit manual switch silences the suggestion too. */
-export function suppressLocaleSuggestion(): void {
-  writeCookie(SUPPRESS_COOKIE, '1', ONE_YEAR_SECONDS)
-}
