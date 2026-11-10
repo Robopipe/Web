@@ -9,8 +9,10 @@ import React from 'react'
 
 import { Footer } from '@/components/Footer'
 import { Header } from '@/components/Header'
+import { JsonLd } from '@/components/JsonLd'
 import { LocaleSuggestion } from '@/components/LocaleSuggestion'
 import { routing, type Locale } from '@/i18n/routing'
+import { organizationLd, websiteLd } from '@/lib/jsonLd'
 import { SERVER_URL } from '@/lib/paths'
 import { getGlobals } from '@/lib/queries'
 
@@ -65,6 +67,7 @@ export default async function LocaleLayout({ children, params }: Props) {
       className={`${spaceGrotesk.variable} ${barlow.variable} ${spaceMono.variable} ${inter.variable}`}
     >
       <body className="flex min-h-screen flex-col">
+        <JsonLd data={[organizationLd(settings), websiteLd(settings, locale as Locale)]} />
         <NextIntlClientProvider>
           <Header header={header} />
           <main className="flex-1">{children}</main>

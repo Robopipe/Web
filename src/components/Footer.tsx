@@ -4,6 +4,7 @@ import Link from 'next/link'
 import React from 'react'
 
 import { Icon, iconData, type IconName } from '@/components/icons'
+import { Media } from '@/components/Media'
 import type { Locale } from '@/i18n/routing'
 import type { Footer as FooterType, SiteSetting } from '@/payload-types'
 
@@ -27,6 +28,7 @@ export const Footer: React.FC<Props> = ({ footer, settings }) => {
   const t = useTranslations('footer')
   const columns = footer.columns ?? []
   const legalLinks = footer.legalLinks ?? []
+  const memberships = settings.memberships ?? []
   const year = new Date().getFullYear()
 
   return (
@@ -66,6 +68,29 @@ export const Footer: React.FC<Props> = ({ footer, settings }) => {
                   </a>
                 )
               })}
+            </div>
+          )}
+          {memberships.length > 0 && (
+            <div>
+              <p className="mb-3 text-sm font-semibold text-text-invert">{t('memberOf')}</p>
+              <div className="flex flex-wrap items-center gap-4">
+                {memberships.map((membership, i) => (
+                  <a
+                    key={i}
+                    href={membership.url}
+                    target="_blank"
+                    rel="noopener"
+                    aria-label={membership.name}
+                    className="opacity-80 transition-opacity hover:opacity-100"
+                  >
+                    {/* The logo is a three-line wordmark: at icon height (20px) it is unreadable. */}
+                    <Media
+                      media={membership.logoOnDark || membership.logo}
+                      className="h-10 w-auto"
+                    />
+                  </a>
+                ))}
+              </div>
             </div>
           )}
         </div>

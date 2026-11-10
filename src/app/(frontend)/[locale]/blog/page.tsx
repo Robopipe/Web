@@ -3,13 +3,15 @@ import { getTranslations, setRequestLocale } from 'next-intl/server'
 import Link from 'next/link'
 import React from 'react'
 
+import { JsonLd } from '@/components/JsonLd'
 import { NewsletterForm } from '@/components/NewsletterForm'
 import { PostCard } from '@/components/PostCard'
 import { Chip } from '@/components/ui'
 import type { Locale } from '@/i18n/routing'
-import { locales } from '@/i18n/routing'
-import { SERVER_URL } from '@/lib/paths'
-import { getPosts } from '@/lib/queries'
+import { breadcrumbLd } from '@/lib/jsonLd'
+import { buildMeta } from '@/lib/meta'
+import { sectionPaths } from '@/lib/paths'
+import { getGlobals, getPosts } from '@/lib/queries'
 
 export const revalidate = 600
 
@@ -20,15 +22,17 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params
-  const t = await getTranslations({ locale, namespace: 'blog' })
-  return {
-    title: `${t('title')} | Robopipe`,
-    description: t('description'),
-    alternates: {
-      canonical: `${SERVER_URL}/${locale}/blog`,
-      languages: Object.fromEntries(locales.map((loc) => [loc, `${SERVER_URL}/${loc}/blog`])),
-    },
-  }
+  const [t, { settings }] = await Promise.all([
+    getTranslations({ locale, namespace: 'blog' }),
+    getGlobals(locale),
+  ])
+  return buildMeta({
+    title: t('title'),
+    seo: { description: t('description') },
+    locale,
+    paths: sectionPaths('/blog'),
+    fallbackImage: settings.defaultSeo?.image,
+  })
 }
 
 export default async function BlogPage({ params, searchParams }: Props) {
@@ -37,6 +41,7 @@ export default async function BlogPage({ params, searchParams }: Props) {
   const t = await getTranslations('blog')
   const tNewsletter = await getTranslations('newsletter')
   const tPagination = await getTranslations('pagination')
+  const tCommon = await getTranslations('common')
 
   const { page: pageParam } = await searchParams
   const page = Math.max(1, Number(pageParam) || 1)
@@ -47,6 +52,14 @@ export default async function BlogPage({ params, searchParams }: Props) {
 
   return (
     <>
+      <JsonLd
+        data={[
+          breadcrumbLd([
+            { name: tCommon('home'), path: `/${locale}` },
+            { name: t('title'), path: `/${locale}/blog` },
+          ]),
+        ]}
+      />
       <div className="container-site pt-16 pb-16 lg:pt-20">
         <header className="mx-auto mb-12 flex max-w-2xl flex-col items-center gap-5 text-center">
           <Chip>{t('title')}</Chip>

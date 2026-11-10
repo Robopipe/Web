@@ -3,9 +3,9 @@ import type { NextRequest } from 'next/server'
 
 import { routing } from './i18n/routing'
 
-// Locale detection order: an explicit path prefix or a stored preference (cookie,
-// set once a visitor uses the footer switcher) always wins. Otherwise the browser's
-// Accept-Language is negotiated against cs/en. `routing.defaultLocale` (Czech) stays
+// Locale detection order: an explicit path prefix always wins. Otherwise the
+// browser's Accept-Language is negotiated against cs/en (sk counts as cs), then en.
+// No cookie is read or set (routing.localeCookie is false). `routing.defaultLocale` (Czech) stays
 // the site's canonical default for slugs, sitemaps, etc., but when a visitor's
 // browser names neither cs nor en we land them on English rather than Czech.
 const intlMiddleware = createMiddleware({ ...routing, defaultLocale: 'en' })

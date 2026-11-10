@@ -1,0 +1,74 @@
+{
+  "crocodille-line-quality": {
+    "faqs": [
+      "cs-crocodille-checks",
+      "cs-crocodille-products"
+    ],
+    "cs": {
+      "problem": "Crocodille vyrábí čerstvé sendviče a bagety tempem 3 600 kusů za hodinu na každé lince. Na každé bagetě je potřeba ohlídat 19 různých věcí. V takovém tempu člověk každý kus nezkontroluje.",
+      "solution": "Nad linku jsme namontovali kameru. Obsluha vidí výsledky své práce v reálném čase na displeji přímo na hale a je podle nich hodnocená.\n\nTýmu jsme ukázali, jak označit první produkt. Každý další produkt si tým přidal sám.",
+      "result": "Kvalita samotné výroby šla nahoru. Crocodille nasadila Robopipe na tři sendvičové linky a v prvním měsíci snížila zmetkovitost zhruba o třetinu.\n\n> „Na směnový report už nikdo nečeká. Když skóre klesne, někdo tam prostě dojde a příčinu do pár minut odstraní.“ Vedoucí kvality, Crocodille",
+      "technique": "- Detekce vad s přesností 95 %\n- 19 různých kontrol na každé bagetě\n- Živý displej kvality přímo na hale"
+    },
+    "en": {
+      "problem": "Crocodille produces fresh sandwiches and baguettes at 3,600 pieces per hour per line. Every baguette has 19 different things to check. At that speed, no person can check every piece.",
+      "solution": "We mounted a camera over the line. Operators see the quality of their work in real time on the floor display, and they are evaluated on it.\n\nWe showed the team how to label one product. They added every product since themselves.",
+      "result": "Production quality itself went up. Crocodille deployed Robopipe on three sandwich lines and cut its reject rate by roughly a third in the first month.\n\n> \"Nobody waits for the end-of-shift report anymore. If the score dips, someone walks over and fixes the cause within minutes.\" Head of Quality, Crocodille",
+      "technique": "- Defect detection with 95% precision\n- 19 different checks per baguette\n- Live quality display on the floor"
+    }
+  },
+  "wolfberry-capsule-counting": {
+    "faqs": [
+      "cs-wolfberry-precision",
+      "cs-wolfberry-records"
+    ],
+    "cs": {
+      "problem": "Wolfberry plní doplňky stravy do dóz. Každá dóza musí odejít se správným počtem kapslí. Špatně naplněná dóza se nesmí dostat k zákazníkovi.",
+      "solution": "Robopipe hlídá plnicí linku a u každé dózy ověří, že odchází se správným počtem kapslí. Každé plnění je navíc doložené snímkem.",
+      "result": "Přesnost počítání je 99,5 % a zdokumentovaných je 100 % dóz. Špatně naplněná dóza se k zákazníkovi vůbec nedostane.",
+      "technique": "- Počítání kapslí v každé dóze\n- Obrazový záznam každého plnění"
+    },
+    "en": {
+      "problem": "Wolfberry fills supplement capsules into jars. Every jar must leave with the exact capsule count. A miscounted jar must never reach a customer.",
+      "solution": "Robopipe watches the filling line and verifies that every jar leaves with the exact number of capsules. Every fill also has an image record.",
+      "result": "Counting precision is 99.5% and 100% of jars are documented. Miscounted jars never reach a customer.",
+      "technique": "- Capsule counting in every jar\n- An image record of every fill"
+    }
+  },
+  "ai-product-tagging": {
+    "faqs": [
+      "cs-tagging-time",
+      "cs-tagging-steps"
+    ],
+    "cs": {
+      "problem": "Zalistování nových produktů dřív vytížilo jednoho člověka na plný úvazek. Produkt bylo potřeba vyfotit, poznat, dohledat parametry na webu a všechno přepsat do systému, a to pořád dokola.",
+      "solution": "Dnes Robopipe fotku pořídí, položku rozpozná, informace si dohledá na internetu a záznam vyplní sám.",
+      "result": "Zalistování jedné položky trvá méně než minutu. AI převzala práci na celý úvazek.",
+      "technique": "- Klasifikace produktu z fotografie\n- Dohledání informací o produktu na internetu\n- Automatické vyplnění záznamu"
+    },
+    "en": {
+      "problem": "Listing a product used to be one person's entire job: photograph it, identify it, search the web for specs and type it all into the system, again and again.",
+      "solution": "Robopipe now captures the photo, classifies the item, finds the information online and fills in the listing automatically.",
+      "result": "Listing one item takes less than a minute. AI took over a full-time role.",
+      "technique": "- Product classification from a photo\n- Online lookup of product information\n- Automatic listing entry"
+    }
+  },
+  "mg-servis-packaging-checks": {
+    "faqs": [
+      "cs-mgservis-checks",
+      "cs-mgservis-coverage"
+    ],
+    "cs": {
+      "problem": "Zákazníci vracejí každý kus, který není stoprocentní. Ruční kontrola je přitom drahá a stejně nikdy nezachytí všechno.",
+      "solution": "Robopipe kontroluje každé balení: těsnost svaru, fazole správně zabalené ve slanině i to, že se do obalu nedostal žádný cizí předmět.",
+      "result": "Kontrola balení je stoprocentní, bez jediného člověka u pásu navíc. Přesnost detekce je 95 %.",
+      "technique": "- Detekce vad a cizích předmětů\n- Kontrola těsnosti svaru a zabalení výrobku\n- 5 různých kontrol na každém balení"
+    },
+    "en": {
+      "problem": "Customers return products that aren't 100%. Manual quality checks are expensive and never catch everything.",
+      "solution": "Robopipe inspects every pack: seal tightness, beans properly wrapped in bacon and no foreign objects inside the packaging.",
+      "result": "Packaging is checked 100%, without the cost of manual inspection. Detection precision is 95%.",
+      "technique": "- Detection of defects and foreign objects\n- Seal tightness and wrapping checks\n- 5 different checks per pack"
+    }
+  }
+}

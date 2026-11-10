@@ -1,0 +1,25 @@
+{
+  "renameLabels": {
+    "cs": {
+      "from": "Případové studie",
+      "to": "Případy užití"
+    },
+    "en": {
+      "from": "Case studies",
+      "to": "Use cases"
+    }
+  },
+  "footerColumn": {
+    "title": {
+      "cs": "Řešení",
+      "en": "Solutions"
+    },
+    "pages": [
+      "camera-quality-inspection",
+      "ai-quality-inspection",
+      "computer-vision",
+      "machine-vision",
+      "auto-annotation"
+    ]
+  }
+}

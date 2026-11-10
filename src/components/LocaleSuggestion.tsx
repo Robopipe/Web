@@ -44,13 +44,13 @@ export const LocaleSuggestion: React.FC = () => {
   const copy = COPY[suggestion]
 
   const decline = () => {
-    commitLocaleChoice(locale)
+    commitLocaleChoice()
     trackEvent('Locale Suggest: Declined', { suggested: suggestion })
     setSuggestion(null)
   }
 
   const accept = () => {
-    commitLocaleChoice(suggestion)
+    commitLocaleChoice()
     trackEvent('Locale Suggest: Accepted', { suggested: suggestion })
   }
 

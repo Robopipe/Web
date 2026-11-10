@@ -2,8 +2,6 @@ import type { Locale } from '@/i18n/routing'
 
 const GEO_COOKIE = 'geo-country'
 const SUPPRESS_COOKIE = 'locale-suggest'
-// Must match next-intl's default localeCookie name (src/i18n/routing.ts doesn't override it).
-const LOCALE_COOKIE = 'NEXT_LOCALE'
 const ONE_YEAR_SECONDS = 60 * 60 * 24 * 365
 
 function readCookie(name: string): string | undefined {
@@ -26,9 +24,11 @@ export function isLocaleSuggestionSuppressed(): boolean {
   return readCookie(SUPPRESS_COOKIE) !== undefined
 }
 
-/** Silences the suggestion prompt for a year and records the visitor's locale choice. */
-export function commitLocaleChoice(locale: Locale): void {
-  writeCookie(LOCALE_COOKIE, locale, ONE_YEAR_SECONDS)
+/**
+ * Silences the suggestion prompt for a year. The root `/` follows Accept-Language
+ * only (routing.localeCookie is off), so the chosen locale is not stored.
+ */
+export function commitLocaleChoice(): void {
   writeCookie(SUPPRESS_COOKIE, '1', ONE_YEAR_SECONDS)
 }
 

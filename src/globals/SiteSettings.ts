@@ -90,6 +90,25 @@ export const SiteSettings: GlobalConfig = {
       ],
     },
     {
+      name: 'memberships',
+      type: 'array',
+      admin: {
+        description:
+          'Programmes and associations Robopipe is part of. Shown in the footer, in logo bands set to "Memberships" and in Organization structured data.',
+      },
+      fields: [
+        { name: 'name', type: 'text', required: true },
+        { name: 'url', type: 'text', required: true },
+        { name: 'logo', type: 'upload', relationTo: 'media', required: true },
+        {
+          name: 'logoOnDark',
+          type: 'upload',
+          relationTo: 'media',
+          admin: { description: 'Light variant for the dark footer. Falls back to logo.' },
+        },
+      ],
+    },
+    {
       name: 'defaultSeo',
       type: 'group',
       fields: [

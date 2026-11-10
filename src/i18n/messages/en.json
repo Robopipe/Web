@@ -6,12 +6,13 @@
     "publishedOn": "Published {date}",
     "by": "By {name}",
     "language": "Language",
-    "skipToContent": "Skip to content"
+    "skipToContent": "Skip to content",
+    "home": "Home"
   },
   "nav": {
     "home": "Home",
     "blog": "Blog",
-    "caseStudies": "Case studies",
+    "caseStudies": "Use cases",
     "menu": "Menu",
     "closeMenu": "Close menu"
   },
@@ -44,13 +45,20 @@
     "error": "Subscription failed. Please try again."
   },
   "caseStudies": {
-    "title": "Case studies",
-    "headline": "Machine vision case studies: real operations, measured results.",
-    "description": "How producers and operators across Europe run deep-learning inspection on their own lines.",
+    "title": "Use cases",
+    "headline": "Machine vision use cases: real operations, measured results.",
+    "description": "How producers and operators across Europe run AI quality inspection on their own lines.",
     "ctaHeading": "Your line could be next.",
     "ctaText": "Book a 30-minute demo and we'll walk through a deployment on a line like yours.",
     "ctaButton": "Book a demo",
-    "ctaHref": "/en/contact"
+    "ctaHref": "/en/contact",
+    "metaTitle": "AI quality inspection use cases | Robopipe",
+    "problem": "The problem",
+    "solution": "The solution",
+    "result": "The result",
+    "technique": "Techniques used",
+    "faq": "Frequently asked questions",
+    "backToList": "All use cases"
   },
   "contact": {
     "name": "Name",
@@ -83,7 +91,8 @@
     }
   },
   "footer": {
-    "rights": "All rights reserved."
+    "rights": "All rights reserved.",
+    "memberOf": "Part of"
   },
   "notFound": {
     "title": "Page not found",

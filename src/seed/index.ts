@@ -8,6 +8,7 @@ import { getPayload, type Payload } from 'payload'
 import type { IconName } from '@/components/icons'
 
 import { MEDIA_ALT_CS } from './csCopyFixes'
+import { applySeoGeo } from './seoGeo'
 
 /**
  * Development/staging seed: the full site content from the approved design
@@ -2116,6 +2117,13 @@ Under the GDPR you have the right to access, correct, delete and port your data,
       },
     },
   })
+
+  // SEO and GEO content (issue #2), the same files the production script reads.
+  // SKIP_SEO_GEO=1 leaves the database as production is before that script runs.
+  if (process.env.SKIP_SEO_GEO !== '1') {
+    const report = await applySeoGeo(payload, { status: 'published' })
+    payload.logger.info(`SEO/GEO content: ${report.created.length} created, ${report.updated.length} updated.`)
+  }
 
   payload.logger.info('Seed complete. Admin login: admin@robopipe.io / admin')
   process.exit(0)

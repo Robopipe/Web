@@ -52,13 +52,13 @@ const shopRedirects = [
   {
     source: '/products/machine-vision-controller',
     has: shopHost,
-    destination: 'https://robopipe.io/en/ai-product-tagging',
+    destination: 'https://robopipe.io/en/case-studies/ai-product-tagging',
     permanent: true,
   },
   {
     source: '/collections/all',
     has: shopHost,
-    destination: 'https://robopipe.io/en/ai-product-tagging',
+    destination: 'https://robopipe.io/en/case-studies/ai-product-tagging',
     permanent: true,
   },
   { source: '/cart', has: shopHost, destination: 'https://robopipe.io/en/pricing', permanent: true },

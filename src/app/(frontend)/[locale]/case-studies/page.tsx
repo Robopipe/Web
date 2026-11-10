@@ -4,10 +4,13 @@ import Link from 'next/link'
 import React from 'react'
 
 import { CaseStudyCard } from '@/components/CaseStudyCard'
+import { JsonLd } from '@/components/JsonLd'
 import { buttonClasses, Chip } from '@/components/ui'
-import { locales, type Locale } from '@/i18n/routing'
-import { SERVER_URL } from '@/lib/paths'
-import { getCaseStudies, getPayloadClient } from '@/lib/queries'
+import type { Locale } from '@/i18n/routing'
+import { breadcrumbLd } from '@/lib/jsonLd'
+import { buildMeta } from '@/lib/meta'
+import { sectionPaths } from '@/lib/paths'
+import { getCaseStudies, getGlobals, getPayloadClient } from '@/lib/queries'
 
 export const revalidate = 600
 
@@ -17,23 +20,24 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params
-  const t = await getTranslations({ locale, namespace: 'caseStudies' })
-  return {
-    title: `${t('title')} | Robopipe`,
-    description: t('description'),
-    alternates: {
-      canonical: `${SERVER_URL}/${locale}/case-studies`,
-      languages: Object.fromEntries(
-        locales.map((loc) => [loc, `${SERVER_URL}/${loc}/case-studies`]),
-      ),
-    },
-  }
+  const [t, { settings }] = await Promise.all([
+    getTranslations({ locale, namespace: 'caseStudies' }),
+    getGlobals(locale),
+  ])
+  return buildMeta({
+    title: t('title'),
+    seo: { title: t('metaTitle'), description: t('description') },
+    locale,
+    paths: sectionPaths('/case-studies'),
+    fallbackImage: settings.defaultSeo?.image,
+  })
 }
 
 export default async function CaseStudiesPage({ params }: Props) {
   const { locale } = await params
   setRequestLocale(locale)
   const t = await getTranslations('caseStudies')
+  const tCommon = await getTranslations('common')
 
   const caseStudies = await getCaseStudies(locale)
   const featured = caseStudies.docs.find((cs) => cs.featured) ?? caseStudies.docs[0]
@@ -51,6 +55,14 @@ export default async function CaseStudiesPage({ params }: Props) {
 
   return (
     <>
+      <JsonLd
+        data={[
+          breadcrumbLd([
+            { name: tCommon('home'), path: `/${locale}` },
+            { name: t('title'), path: `/${locale}/case-studies` },
+          ]),
+        ]}
+      />
       <div className="container-site pt-16 pb-16 lg:pt-20">
         <header className="mx-auto mb-12 flex max-w-2xl flex-col items-center gap-5 text-center">
           <Chip>{t('title')}</Chip>
