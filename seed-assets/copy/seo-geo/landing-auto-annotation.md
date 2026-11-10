@@ -15,11 +15,11 @@ Auto annotation in the Robopipe Studio app turns this around. Robopipe Vision pr
 
 When a proposal is off, tell Robopipe Vision what went wrong. It runs again and returns a corrected set of boxes.
 
-If the feedback is a rule for the whole project, Robopipe Vision suggests saving it as a project note. You save or exclude the note. Saved notes are used in every later run. You can also write notes yourself.
+If the feedback is a rule for the whole project, Robopipe Vision saves it as a project note. You can exclude the note. Saved notes are used in every later run.
 
 ## Good to know
 
-- Auto annotation draws boxes today (object detection). Segmentation is coming soon.
+- Auto annotation draws boxes today (object detection).
 - A person always reviews, edits and approves the proposed boxes. No proposal is saved without your approval.
 - You can use an offline model for auto annotation. Alternatively, Robopipe can deploy the whole solution at your site (on-premise).
 - Auto annotation is part of the [Pro and Enterprise](/en/pricing) plans. The open-source edition and the Standard plan do not include it.

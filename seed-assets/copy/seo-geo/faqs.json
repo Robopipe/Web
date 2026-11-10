@@ -162,21 +162,21 @@
   "mv-integrator": {
     "cs": {
       "q": "Potřebujeme k nasazení integrátora?",
-      "a": "Ne. Kameru namontujeme a zprovozníme sami přímo u vás. Nové produkty pak přidáváte sami v aplikaci Studio."
+      "a": "Ne. V tarifech Pro a Enterprise kameru namontujeme a zprovozníme sami přímo u vás. Nové produkty pak přidáváte sami v aplikaci Studio."
     },
     "en": {
       "q": "Do we need an integrator?",
-      "a": "No. We mount and commission the camera on site ourselves. You then add new products yourself in the Studio app."
+      "a": "No. On the Pro and Enterprise plans we mount and commission the camera on site ourselves. You then add new products yourself in the Studio app."
     }
   },
   "mv-vs-classic": {
     "cs": {
       "q": "Čím se Robopipe liší od klasických systémů strojového vidění?",
-      "a": "Klasické systémy kontrolují podle pravidel. Robopipe se učí ze snímků vašich výrobků, takže nový produkt přidáte bez programování."
+      "a": "Klasické systémy kontrolují podle pravidel. Robopipe se učí ze snímků vašich výrobků, takže nový produkt přidáte bez psaní pravidel."
     },
     "en": {
       "q": "How is Robopipe different from classic machine vision systems?",
-      "a": "Classic systems check against rules. Robopipe learns from images of your products, so you add a new product without programming."
+      "a": "Classic systems check against rules. Robopipe learns from images of your products, so you add a new product without writing rules."
     }
   },
   "mv-wet": {

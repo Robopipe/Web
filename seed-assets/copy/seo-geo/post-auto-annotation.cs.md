@@ -25,11 +25,11 @@ Víc snímků najednou spustíte ze seznamu dat. Vyberete snímky a zvolíte aut
 
 Návrhy se neukládají jako hotové anotace. Čekají na kontrolu. Jednotlivé rámečky upravíte nebo smažete a tlačítkem Schválit je uložíte.
 
-> Automatická anotace dnes kreslí rámečky, tedy detekci objektů. Segmentace bude brzy k dispozici.
+> Automatická anotace dnes kreslí rámečky, tedy detekci objektů.
 
 ## Zpětná vazba, která se pamatuje
 
-Když návrh nesedí, napíšete Robopipe Vision, co je špatně. Anotace proběhne znovu a vrátí opravenou sadu rámečků. Pokud vaše připomínka platí pro celý projekt, Robopipe Vision ji navrhne uložit jako poznámku projektu. Uložené poznámky pak dostane při každé další anotaci.
+Když návrh nesedí, napíšete Robopipe Vision, co je špatně. Anotace proběhne znovu a vrátí opravenou sadu rámečků. Pokud vaše připomínka platí pro celý projekt, Robopipe Vision ji uloží jako poznámku projektu. Poznámku můžete vyřadit. Uložené poznámky pak dostane při každé další anotaci.
 
 ## Co je dobré vědět
 

@@ -15,11 +15,11 @@ Automatická anotace v aplikaci Robopipe Studio tuto práci obrací. Rámečky n
 
 Když návrh nesedí, napíšete Robopipe Vision, co je špatně. Anotace proběhne znovu a vrátí opravenou sadu rámečků.
 
-Pokud zpětná vazba platí pro celý projekt, Robopipe Vision ji navrhne uložit jako poznámku projektu. Poznámku uložíte nebo vyřadíte. Uložené poznámky se použijí při každé další anotaci. Poznámky můžete psát i sami.
+Pokud zpětná vazba platí pro celý projekt, Robopipe Vision ji uloží jako poznámku projektu. Poznámku můžete vyřadit. Uložené poznámky se použijí při každé další anotaci.
 
 ## Co je dobré vědět
 
-- Automatická anotace dnes kreslí rámečky (detekce objektů). Segmentace bude brzy k dispozici.
+- Automatická anotace dnes kreslí rámečky (detekce objektů).
 - Návrhy rámečků vždy kontroluje, upravuje a schvaluje člověk. Žádný návrh se neuloží bez vašeho schválení.
 - Pro automatickou anotaci můžete použít offline model. Případně Robopipe nasadí celé řešení přímo u vás (on-premise).
 - Automatická anotace je v tarifech [Pro a Enterprise](/cs/cenik). Open-source verze ani tarif Standard ji neobsahují.

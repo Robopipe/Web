@@ -15,7 +15,7 @@ Machine vision is the industrial use of [computer vision](/en/computer-vision). 
 Classic machine vision systems are set up with rules. Every new product or change in appearance means new rules. Robopipe takes a different approach:
 
 - **Learning instead of rules.** The model learns from images of your products. You add a new product yourself in minutes. The [AI quality inspection](/en/ai-quality-inspection) page has the details.
-- **No integrator.** We mount the camera and commission it on site. Most lines start inspecting within a day of installation.
+- **No integrator.** On the Pro and Enterprise plans we mount the camera and commission it on site. Most lines start inspecting within a day of installation.
 - **Hardware included.** The camera and the AI PLC controller come with every paid plan as a rental. You pay a fixed monthly price per camera.
 - **An open system.** You can read the configurations, export the datasets and take your models with you. No black box stands between you and your quality decisions.
 

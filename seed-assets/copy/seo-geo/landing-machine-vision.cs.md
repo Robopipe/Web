@@ -15,7 +15,7 @@ Strojové vidění (machine vision) je průmyslové použití [počítačového 
 Klasické systémy strojového vidění se nastavují pravidly. Každý nový produkt nebo změna vzhledu znamená nová pravidla. Robopipe stojí na jiném přístupu:
 
 - **Učení místo pravidel.** Model se učí ze snímků vašich výrobků. Nový produkt přidáte sami za pár minut. Podrobnosti popisuje stránka [AI kontrola kvality](/cs/ai-kontrola-kvality).
-- **Bez integrátora.** Kameru namontujeme a zprovozníme přímo u vás. Většina linek začne kontrolovat do jednoho dne od instalace.
+- **Bez integrátora.** V tarifech Pro a Enterprise kameru namontujeme a zprovozníme přímo u vás. Většina linek začne kontrolovat do jednoho dne od instalace.
 - **Hardware v ceně.** Kamera i řídicí jednotka AI PLC jsou v placených tarifech zahrnuté formou pronájmu. Platíte pevnou měsíční cenu za kameru.
 - **Otevřený systém.** Konfigurace si přečtete, datasety vyexportujete a modely si odnesete s sebou. Mezi vámi a rozhodnutím o kvalitě nestojí žádná černá skříňka.
 

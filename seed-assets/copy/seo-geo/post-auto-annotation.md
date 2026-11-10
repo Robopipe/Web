@@ -25,11 +25,11 @@ You run several images at once from the data source list. Select the images and 
 
 Proposals are not saved as finished annotations. They wait for review. You edit or delete individual boxes and save them with Approve.
 
-> Auto annotation draws boxes today, which means object detection. Segmentation is coming soon.
+> Auto annotation draws boxes today, which means object detection.
 
 ## Feedback that sticks
 
-When a proposal is off, tell Robopipe Vision what went wrong. It runs again and returns a corrected set of boxes. If your comment applies to the whole project, Robopipe Vision suggests saving it as a project note. Saved notes go with every later run.
+When a proposal is off, tell Robopipe Vision what went wrong. It runs again and returns a corrected set of boxes. If your comment applies to the whole project, Robopipe Vision saves it as a project note. You can exclude the note. Saved notes go with every later run.
 
 ## Good to know
 
