@@ -12,6 +12,7 @@ import { Media } from '@/components/Media'
 import { RichText } from '@/components/RichText'
 import { buttonClasses, Chip } from '@/components/ui'
 import { locales, type Locale } from '@/i18n/routing'
+import { checkedParams } from '@/lib/checkedParams'
 import { breadcrumbLd, faqPageLd } from '@/lib/jsonLd'
 import { buildMeta } from '@/lib/meta'
 import { localizedPaths, pathFor } from '@/lib/paths'
@@ -40,7 +41,7 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { locale, slug } = await params
+  const { locale, slug } = await checkedParams(params)
   const caseStudy = await getCaseStudyBySlug(slug, locale)
   if (!caseStudy) return {}
   const [slugs, { settings }] = await Promise.all([
@@ -62,7 +63,7 @@ const populatedFaqs = (faqs: CaseStudy['faqs']) =>
   (faqs ?? []).filter((f): f is Exclude<typeof f, number> => typeof f !== 'number')
 
 export default async function CaseStudyPage({ params }: Props) {
-  const { locale, slug } = await params
+  const { locale, slug } = await checkedParams(params)
   setRequestLocale(locale)
 
   const { isEnabled: draft } = await draftMode()

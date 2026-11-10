@@ -504,7 +504,7 @@
         },
         "hero": {
           "eyebrow": "Automatická anotace",
-          "heading": "Automatická anotace: rámečky navrhne AI, vy je jen schválíte",
+          "heading": "Automatická anotace: rámečky navrhne AI, vy je zkontrolujete a schválíte",
           "text": "Robopipe Vision v aplikaci Studio najde na snímku objekty podle popisu vašich štítků a nakreslí kolem nich rámečky. Vy je zkontrolujete a schválíte.",
           "button": "Domluvit demo"
         },
@@ -544,7 +544,7 @@
         },
         "hero": {
           "eyebrow": "Auto annotation",
-          "heading": "Auto annotation: AI proposes the boxes, you approve them",
+          "heading": "Auto annotation: AI proposes the boxes, you review and approve them",
           "text": "Robopipe Vision in the Studio app finds objects in an image from your label descriptions and draws boxes around them. You review and approve them.",
           "button": "Book a demo"
         },

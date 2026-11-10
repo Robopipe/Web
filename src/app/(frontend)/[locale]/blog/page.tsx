@@ -8,6 +8,7 @@ import { NewsletterForm } from '@/components/NewsletterForm'
 import { PostCard } from '@/components/PostCard'
 import { Chip } from '@/components/ui'
 import type { Locale } from '@/i18n/routing'
+import { checkedParams } from '@/lib/checkedParams'
 import { breadcrumbLd } from '@/lib/jsonLd'
 import { buildMeta } from '@/lib/meta'
 import { sectionPaths } from '@/lib/paths'
@@ -21,7 +22,7 @@ type Props = {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { locale } = await params
+  const { locale } = await checkedParams(params)
   const [t, { settings }] = await Promise.all([
     getTranslations({ locale, namespace: 'blog' }),
     getGlobals(locale),
@@ -36,7 +37,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function BlogPage({ params, searchParams }: Props) {
-  const { locale } = await params
+  const { locale } = await checkedParams(params)
   setRequestLocale(locale)
   const t = await getTranslations('blog')
   const tNewsletter = await getTranslations('newsletter')

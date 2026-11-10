@@ -12,6 +12,7 @@ import { PostCard } from '@/components/PostCard'
 import { RichText } from '@/components/RichText'
 import { buttonClasses, Chip } from '@/components/ui'
 import { locales, type Locale } from '@/i18n/routing'
+import { checkedParams } from '@/lib/checkedParams'
 import { blogPostingLd, breadcrumbLd } from '@/lib/jsonLd'
 import { buildMeta } from '@/lib/meta'
 import { localizedPaths, pathFor } from '@/lib/paths'
@@ -41,7 +42,7 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { locale, slug } = await params
+  const { locale, slug } = await checkedParams(params)
   const post = await getPostBySlug(slug, locale)
   if (!post) return {}
   const [slugs, { settings }] = await Promise.all([
@@ -61,7 +62,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function PostPage({ params }: Props) {
-  const { locale, slug } = await params
+  const { locale, slug } = await checkedParams(params)
   setRequestLocale(locale)
 
   const { isEnabled: draft } = await draftMode()

@@ -75,13 +75,28 @@ const CURRENCIES: [RegExp, string][] = [
   [/\$|usd/i, 'USD'],
 ]
 
+/**
+ * "1,290" or "9.900" → "1290" and "9900"; "1 490,50" → "1490.50". The last
+ * separator is the decimal one when another kind comes before it or when it is
+ * not followed by exactly three digits. Every other separator groups thousands.
+ */
+const normaliseAmount = (digits: string): string => {
+  const last = Math.max(digits.lastIndexOf(','), digits.lastIndexOf('.'))
+  if (last < 0) return digits
+  const separator = digits[last]
+  const other = separator === ',' ? '.' : ','
+  const isDecimal = digits.slice(0, last).includes(other) || !/^\d{3}$/.test(digits.slice(last + 1))
+  if (!isDecimal) return digits.replace(/[,.]/g, '')
+  return `${digits.slice(0, last).replace(/[,.]/g, '')}.${digits.slice(last + 1)}`
+}
+
 /** "9 900 Kč" → { price: "9900", priceCurrency: "CZK" }. Text without an amount and a currency gives null. */
 export const parsePrice = (text: string | null | undefined) => {
   if (!text) return null
   const currency = CURRENCIES.find(([pattern]) => pattern.test(text))?.[1]
-  const digits = text.replace(/[^\d,.]/g, '').replace(',', '.')
+  const digits = text.replace(/[^\d,.]/g, '')
   if (!currency || !/\d/.test(digits)) return null
-  return { price: String(Number(digits)), priceCurrency: currency }
+  return { price: String(Number(normaliseAmount(digits))), priceCurrency: currency }
 }
 
 export type Pricing = { path: string; tiers: PricingTableBlock['tiers'] }

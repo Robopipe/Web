@@ -4,7 +4,10 @@ const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '::1', '[::1]'])
 export const isLocalDatabaseUrl = (url: string | undefined): boolean => {
   if (!url) return false
   try {
-    return LOCAL_HOSTS.has(new URL(url).hostname)
+    const parsed = new URL(url)
+    // node-postgres takes `?host=` over the host in the URL, so check both.
+    const hosts = [parsed.hostname, ...parsed.searchParams.getAll('host')]
+    return hosts.every((host) => LOCAL_HOSTS.has(host))
   } catch {
     return false
   }

@@ -8,6 +8,7 @@ import { RenderBlocks } from '@/blocks/RenderBlocks'
 import { JsonLd } from '@/components/JsonLd'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
 import { locales, type Locale } from '@/i18n/routing'
+import { checkedParams } from '@/lib/checkedParams'
 import { breadcrumbLd, faqPageLd, faqsFromLayout } from '@/lib/jsonLd'
 import { buildMeta } from '@/lib/meta'
 import { localizedPaths, pathFor } from '@/lib/paths'
@@ -43,7 +44,7 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { locale, slug } = await params
+  const { locale, slug } = await checkedParams(params)
   const page = await getPageBySlug(slug, locale)
   if (!page) return {}
   const [slugs, { settings }] = await Promise.all([
@@ -60,7 +61,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function CMSPage({ params }: Props) {
-  const { locale, slug } = await params
+  const { locale, slug } = await checkedParams(params)
   setRequestLocale(locale)
 
   // Home renders at the locale root, never at /home.

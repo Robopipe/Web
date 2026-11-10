@@ -122,8 +122,21 @@ Koncept článku o auto anotaci skript nikdy nepublikuje. Filip ho publikuje v a
 9. **Výkon na mobilu** je v Lighthouse 78 až 81. Kritérium se ho netýká.
 10. **Prostředí testů.** Stažení Chromium 1208 pro Playwright se na tomto stroji zaseklo při rozbalování. E2e testy, Lighthouse a screenshoty běžely s Chromium 1248 přes `PLAYWRIGHT_CHROMIUM_PATH`.
 11. **Známá chyba L1 z issue #3.** Test `Blog featured card › keeps the photo inside the card on mobile with a long unbroken title` přišel z `master` (PR #4) a selhává záměrně, dokud L1 nikdo neopraví. Selhává i na `master`. Na mobilu má mřížka karty jen implicitní sloupec a dlouhé slovo bez mezery ho roztáhne (fotka 750 px na kartě 358 px). Oprava patří do #3, ne do tohoto PR.
-12. **Ověření 10. 11. večer (kolo G až J, po sloučení `master`).** `test:int` 46 prošlo, 0 selhalo. `test:e2e` 47 prošlo, 1 selhal (L1, bod 11). Lint 0 chyb (2 stávající varování), typecheck a build projdou. Screenshoty: `output/robopipe-web/seo/auto-annotation-{cs,en}-{desktop,mobile}-v2.png`.
+12. **Ověření 10. 11. večer (kolo G až J, sloučení `master`, opravy po testerovi).** `test:int` 55 prošlo, 0 selhalo. `test:e2e` 49 prošlo, 1 selhal (L1, bod 11). Lint 0 chyb (2 stávající varování), typecheck a build projdou. Screenshoty: `output/robopipe-web/seo/auto-annotation-{cs,en}-{desktop,mobile}-v2.png`.
 13. **Next.js drží předrenderované stránky z buildu.** Po novém seedu je potřeba nový build, jinak `next start` ukazuje staré FAQ.
+
+### Opravy podle `test-report.md` (tester, 10. 11.)
+
+| Chyba | Závažnost | Oprava |
+|---|---|---|
+| T1 slovenský prohlížeč skončí na `/en` | střední | `src/lib/acceptLanguage.ts`: na `/` bez uložené volby proxy vybere první jazyk podle `q` a pořadí, který web má (`cs`, `sk` → cs, `en`). Hlavička bez nich vede na `/en` jako dřív. Unit test a e2e test testera. |
+| T2 `[ověřit]` na veřejné stránce | vysoká | Značky jsou pryč (rozhodnutí I). Hlídají to testy testera a `autoAnnotationCopy.int.spec.ts`. |
+| T3 `parsePrice` a oddělovač tisíců | nízká | Poslední oddělovač je desetinný, jen když před ním je jiný druh nebo za ním nejsou právě tři číslice. |
+| T4 `/foo.txt/bar` vrací 500 | nízká | `src/lib/checkedParams.ts` vrátí 404 dřív, než se vnořená stránka zeptá Payload. |
+| T6 pojistka databáze a `?host=` | nízká | `isLocalDatabaseUrl` kontroluje i parametr `host`. |
+| nadpis „vy je jen schválíte“ (jazyková kontrola) | — | „vy je zkontrolujete a schválíte“, en „you review and approve them“ (rozhodnutí H). |
+
+Zbývají nízké chyby T5, T7, T8, T9, T10, T11, T12 a obsahové body z kapitoly 5 zprávy. Ty rozhodne Filip.
 
 ## 8. Seznam `[ověřit]`
 
