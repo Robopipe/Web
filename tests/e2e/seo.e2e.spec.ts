@@ -3,6 +3,7 @@ import {
   request as playwrightRequest,
   test,
   type APIRequestContext,
+  type Page,
 } from '@playwright/test'
 import { getPayload } from 'payload'
 
@@ -52,7 +53,26 @@ const EXPECTED_TYPES: [string[], string[]][] = [
   [BLOG_POST, [...SITE_TYPES, 'BreadcrumbList', 'BlogPosting']],
 ]
 
+/** Page kinds that are not new in this work but must also have a valid og:image. */
+const OTHER_PAGES = ['/cs/blog', '/en/blog', '/cs/cenik', '/en/pricing']
+
+const CLAIM = {
+  cs: 'AI kontrola kvality, která se váš produkt naučí sama.',
+  en: 'AI quality control that learns your product on its own.',
+}
+
 const abs = (path: string) => `${SERVER_URL}${path}`
+/** A URL the site writes with SERVER_URL, rewritten to the server under test. */
+const local = (url: string) => url.replace(SERVER_URL, baseURL)
+
+/** og:image is one absolute URL, not doubled (https://robopipe.iohttps//...), and the image answers 200. */
+const expectValidOgImage = async (page: Page, path: string) => {
+  const ogImage = await page.locator('meta[property="og:image"]').first().getAttribute('content')
+  expect(ogImage, path).toMatch(/^https?:\/\//)
+  expect(ogImage, path).not.toMatch(/^https?:\/\/.*https?:\/?\//)
+  expect(() => new URL(ogImage!), path).not.toThrow()
+  expect((await api.get(local(ogImage!))).status(), `${path} ${ogImage}`).toBe(200)
+}
 const partnerOf = (path: string) => {
   const pair = [...NEW_PAIRS, LISTINGS, BLOG_POST, ['/cs', '/en']].find((p) => p.includes(path))!
   return { cs: pair[0], en: pair[1] }
@@ -141,12 +161,7 @@ test.describe('metadata and structured data', () => {
       expect(await hreflang('en')).toBe(abs(en))
       expect(await hreflang('x-default')).toBe(abs(en))
 
-      const ogImage = await page
-        .locator('meta[property="og:image"]')
-        .first()
-        .getAttribute('content')
-      expect(ogImage).toMatch(/^https?:\/\//)
-      expect(ogImage).not.toMatch(/^https?:\/\/.*https?:\/?\//)
+      await expectValidOgImage(page, path)
       expect(await page.locator('meta[property="og:url"]').getAttribute('content')).toBe(abs(path))
 
       const blocks = await page.locator('script[type="application/ld+json"]').allTextContents()
@@ -155,6 +170,13 @@ test.describe('metadata and structured data', () => {
       for (const type of expected) expect(types).toContain(type)
     })
   }
+
+  test('blog listing and pricing pages have a valid og:image', async ({ page }) => {
+    for (const path of OTHER_PAGES) {
+      expect((await page.goto(path))?.status(), path).toBe(200)
+      await expectValidOgImage(page, path)
+    }
+  })
 })
 
 test.describe('use cases', () => {
@@ -200,9 +222,9 @@ test.describe('use cases', () => {
       maxRedirects: 0,
     })
     expect(response.status()).toBe(308)
-    expect(response.headers().location).toBe(
-      'https://robopipe.io/en/case-studies/ai-product-tagging',
-    )
+    const location = response.headers().location
+    expect(location).toBe('https://robopipe.io/en/case-studies/ai-product-tagging')
+    expect((await api.get(new URL(location).pathname)).status()).toBe(200)
   })
 })
 
@@ -277,5 +299,23 @@ test('Product offers on the home page come from the pricing table', async ({ pag
       expect(offer).toMatchObject({ '@type': 'Offer', priceCurrency: currency })
       expect(Number(offer.price)).toBeGreaterThan(0)
     }
+
+    // Every offer is a tier the pricing page shows, with the same amount.
+    const pricing = await page.context().newPage()
+    await pricing.goto(new URL(product.offers[0].url).pathname)
+    const text = (await pricing.locator('main').innerText()).replace(/\s/g, '')
+    for (const offer of product.offers) {
+      expect(text, `${path} ${offer.name}`).toContain(offer.name.replace(/\s/g, ''))
+      expect(text, `${path} ${offer.name}`).toContain(offer.price)
+    }
+    await pricing.close()
+  }
+})
+
+test('the home page shows the claim in the heading and the title', async ({ page }) => {
+  for (const locale of ['cs', 'en'] as const) {
+    await page.goto(`/${locale}`)
+    await expect(page.locator('h1').first()).toHaveText(CLAIM[locale])
+    expect(await page.title()).toContain(CLAIM[locale].replace(/\.$/, ''))
   }
 })

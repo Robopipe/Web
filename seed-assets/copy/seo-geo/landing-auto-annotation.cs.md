@@ -20,9 +20,9 @@ Pokud zpětná vazba platí pro celý projekt, Robopipe Vision ji navrhne uloži
 ## Co je dobré vědět
 
 - Automatická anotace dnes kreslí rámečky (detekce objektů). Segmentace bude brzy k dispozici.
-- Žádný návrh se neuloží bez vašeho schválení. Každý rámeček kontroluje člověk.
-- Robopipe Vision je jazykový model, který rozumí obrazu, a běží v cloudu. Snímky se proto ke zpracování posílají poskytovateli modelu. [ověřit]
-- Automatickou anotaci mají všichni zákazníci Robopipe Studia. Je to funkce Robopipe Studia, open-source verze ji neobsahuje.
+- Návrhy rámečků vždy kontroluje, upravuje a schvaluje člověk. Žádný návrh se neuloží bez vašeho schválení.
+- Pro automatickou anotaci můžete použít offline model. Případně Robopipe nasadí celé řešení přímo u vás (on-premise).
+- Automatická anotace je v tarifech [Pro a Enterprise](/cs/cenik). Open-source verze ani tarif Standard ji neobsahují.
 
 ## Kde se anotace hodí
 

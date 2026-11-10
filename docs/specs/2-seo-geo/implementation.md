@@ -31,7 +31,7 @@ Detaily článků blogu (úkol 4): v produkci mají hreflang `cs` a `en` už dne
 | Rozhodnutí | Zapracování |
 |---|---|
 | A1 koncepty v produkci smí vzniknout po dokončení PR | Postup v kapitole 5. Tato práce do produkce nic nezapsala. |
-| A2 předanotaci mají všichni zákazníci | Text stránky, článku a FAQ `aa-availability` to říká. Ceník ale uvádí „Automatické AI anotování obrázků“ jen u Pro a Enterprise. Viz kapitola 7, bod 2. |
+| A2 předanotaci mají všichni zákazníci | Zrušeno rozhodnutím G. |
 | A3 adresa `/case-studies` zůstává | Beze změny URL. |
 | A4 ceny v `Product.offers`, jeden zdroj | `offersFromPricing()` čte blok `pricingTable` z publikované stránky ceníku. Tarify bez částky a měny („Zdarma“, „Individuálně“) vynechá. V kódu nejsou žádné ceny. |
 | A5 cílové výrazy v titulcích úvodu a výpisu | Výpis: `caseStudies.metaTitle`. Úvod: titulek nechávám podle rozhodnutí F (už obsahuje „AI kontrola kvality“). Skript mění jen meta popis úvodu (dnes 183 znaků, nový 135). |
@@ -41,6 +41,10 @@ Detaily článků blogu (úkol 4): v produkci mají hreflang `cs` a `en` už dne
 | D rozbitý `og:image` | `ogImageUrl()` přidá `SERVER_URL` jen k relativní URL. Platí pro všechny stránky včetně blogu. Hlídá to unit test i e2e. |
 | E přesměrování ze starého obchodu | Oba cíle vedou na `/en/case-studies/ai-product-tagging`. E2e test s hlavičkou `Host: shop.robopipe.io`. |
 | F nový claim | Seed má nový claim v nadpisu, `title` a `seo.title` úvodu a v `defaultSeo.title`. Z `csCopyFixes.ts` jsem odstranil dvojice, které by claim při novém spuštění oprav vrátily. |
+| G auto anotace jen v tarifech Pro a Enterprise (ruší A2) | Tarify jsou podle ceníku v produkci (sloupce Open source, Standard, Pro, Enterprise, řádek „Automatické AI anotování obrázků“). Stránka (cs, en), článek a FAQ `aa-availability` říkají: tarify Pro a Enterprise, open-source verze ani tarif Standard ji neobsahují. Stránka a článek odkazují na ceník. |
+| H claim zůstává, člověk návrhy kontroluje | Stránka, článek a FAQ `aa-approve` říkají, že návrhy rámečků vždy kontroluje, upravuje a schvaluje člověk. |
+| I poskytovatel a umístění dat se nejmenují | Věta s `[ověřit]` je pryč. Stránka, článek a FAQ `aa-data` říkají: zákazník může použít offline model, případně Robopipe nasadí řešení u zákazníka (on-premise). V textech není žádné `[ověřit]`. Hlídá to `tests/int/autoAnnotationCopy.int.spec.ts`. |
+| J akceptační kritéria | Doplněná v `product.md`. Testy: og:image na všech typech stránek včetně výpisu blogu a ceníku a odpověď 200 na obrázek (e2e), cíl přesměrování z obchodu vrací 200 (e2e), každá nabídka v `Product.offers` je tarif s cenou ze stránky ceníku (e2e, unit), claim v seedu a v opravách textů (`tests/int/claim.int.spec.ts`) a na úvodní stránce (e2e), hreflang s `x-default` na detailu článku (e2e). |
 
 ## 3. Odchylky od architektury
 
@@ -108,7 +112,7 @@ Koncept článku o auto anotaci skript nikdy nepublikuje. Filip ho publikuje v a
 ## 7. Známá omezení
 
 1. **Dvojitá hlavička `Location`.** Při prvním renderu na vyžádání, který skončí přesměrováním z kolekce `redirects`, pošle Next.js hlavičku `Location` dvakrát se stejnou hodnotou. Další požadavky ji mají jednou. Stávající route `[slug]` se chová stejně. Prohlížeče stejné hodnoty přijmou. E2e test bere první hodnotu.
-2. **Ceník a dostupnost auto anotace.** Ceník uvádí „Automatické AI anotování obrázků“ jen v tarifech Pro a Enterprise. Podle rozhodnutí A2 ji mají všichni zákazníci. Text ceníku je obsah v Payload a tato práce ho nemění. Rozhodne Filip.
+2. **Ceník v seedu nemá auto anotaci.** Produkční ceník má sloupec Open source a řádek „Automatické AI anotování obrázků“ u Pro a Enterprise. Seed ceníku (`seed-assets/copy/pricing.json`) je starší a obojí chybí. Texty o auto anotaci se řídí produkcí. Seed ceníku tato práce nemění.
 3. **Na anglickém webu je české logo platformy.** Členství nejsou lokalizovaná (architektura 4.2). Anglické logo je v mediakitu jen jako PNG.
 4. **Logo pro tmavou patičku** je odvozené z oficiálního SVG „CZ Purple_Black“: fialový symbol a bílý text. Tuto variantu ukazuje logomanuál na straně 4. Jako SVG v mediakitu není.
 5. **Obrázek `annotate-ui.png`** na stránce auto anotace, v bloku na úvodu a u konceptu článku je stávající snímek anotačního rozhraní, ne snímek funkce auto anotace.
@@ -120,14 +124,12 @@ Koncept článku o auto anotaci skript nikdy nepublikuje. Filip ho publikuje v a
 
 ## 8. Seznam `[ověřit]`
 
-Značka `[ověřit]` je přímo v textu, aby ji Filip viděl v náhledu.
-
-1. **Kam jdou snímky z auto anotace.** Text říká, že Robopipe Vision běží v cloudu a snímky jdou ke zpracování poskytovateli modelu. Kód posílá snímky do Google Vertex AI (Gemini, výchozí, globální endpoint mimo EU) nebo do OpenAI. Mají texty jmenovat poskytovatele a zmínit, že data opouštějí EU? Soubory: `landing-auto-annotation.cs.md`, `landing-auto-annotation.md`, `post-auto-annotation.cs.md`, `post-auto-annotation.md`, `faqs.json` (`aa-data`).
+V textech už žádná značka `[ověřit]` není. Bod o cloudu a poskytovateli modelu vyřešilo rozhodnutí I. Rozpor ceníku a A2 vyřešilo rozhodnutí G.
 
 Body bez značky v textu, které potvrdí Filip:
 
-2. Rozpor ceníku a rozhodnutí A2 (omezení 2).
-3. Obrázek `annotate-ui.png` u auto anotace (omezení 5).
-4. Odvozené logo pro tmavou patičku a české logo na anglickém webu (omezení 3 a 4).
-5. Obecná srovnání s pravidlovým strojovým viděním na stránkách „AI kontrola kvality“ a „Strojové vidění“. Nejsou to fakta z webu, ale obecný popis oboru. Neobsahují žádná jména konkurentů ani čísla.
-6. Úvodní stránka má dva tmavé bloky `processSteps` za sebou („AI kontrola v provozu“ a nový blok o auto anotaci). Pořadí určuje architektura 6.3.
+1. Obrázek `annotate-ui.png` u auto anotace (omezení 5).
+2. Odvozené logo pro tmavou patičku a české logo na anglickém webu (omezení 3 a 4).
+3. Obecná srovnání s pravidlovým strojovým viděním na stránkách „AI kontrola kvality“ a „Strojové vidění“. Nejsou to fakta z webu, ale obecný popis oboru. Neobsahují žádná jména konkurentů ani čísla.
+4. Úvodní stránka má dva tmavé bloky `processSteps` za sebou („AI kontrola v provozu“ a nový blok o auto anotaci). Pořadí určuje architektura 6.3.
+5. Seed ceníku nemá auto anotaci ani sloupec Open source (omezení 2).

@@ -202,11 +202,11 @@
   "aa-approve": {
     "cs": {
       "q": "Uloží se návrhy samy?",
-      "a": "Ne. Návrhy čekají na kontrolu. Rámečky upravíte nebo smažete a uložíte je až tlačítkem Schválit."
+      "a": "Ne. Návrhy rámečků vždy kontroluje člověk. Rámečky upravíte nebo smažete a uložíte je až tlačítkem Schválit."
     },
     "en": {
       "q": "Are the proposals saved automatically?",
-      "a": "No. The proposals wait for review. You edit or delete boxes and save them only with Approve."
+      "a": "No. A person always reviews the proposed boxes. You edit or delete boxes and save them only with Approve."
     }
   },
   "aa-descriptions": {
@@ -231,12 +231,12 @@
   },
   "aa-data": {
     "cs": {
-      "q": "Kam se posílají naše snímky?",
-      "a": "Robopipe Vision běží v cloudu, takže se snímky ke zpracování posílají poskytovateli modelu. [ověřit]"
+      "q": "Můžeme automatickou anotaci provozovat bez cloudu?",
+      "a": "Ano. Pro automatickou anotaci můžete použít offline model. Případně Robopipe nasadí celé řešení přímo u vás (on-premise)."
     },
     "en": {
-      "q": "Where are our images sent?",
-      "a": "Robopipe Vision runs in the cloud, so images are sent to the model provider for processing. [ověřit]"
+      "q": "Can we run auto annotation without the cloud?",
+      "a": "Yes. You can use an offline model for auto annotation. Alternatively, Robopipe can deploy the whole solution at your site (on-premise)."
     }
   },
   "cs-crocodille-checks": {
@@ -321,12 +321,12 @@
   },
   "aa-availability": {
     "cs": {
-      "q": "Mají automatickou anotaci všichni zákazníci?",
-      "a": "Ano. Automatickou anotaci mají všichni zákazníci Robopipe Studia. Je to funkce Robopipe Studia, open-source verze ji neobsahuje."
+      "q": "Ve kterém tarifu je automatická anotace?",
+      "a": "Automatická anotace je v tarifech Pro a Enterprise. Open-source verze ani tarif Standard ji neobsahují."
     },
     "en": {
-      "q": "Do all customers have auto annotation?",
-      "a": "Yes. All Robopipe Studio customers have auto annotation. It is a feature of Robopipe Studio, the open-source edition does not include it."
+      "q": "Which plans include auto annotation?",
+      "a": "Auto annotation is part of the Pro and Enterprise plans. The open-source edition and the Standard plan do not include it."
     }
   }
 }

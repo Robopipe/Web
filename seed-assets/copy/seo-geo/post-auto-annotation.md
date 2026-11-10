@@ -1,13 +1,13 @@
 ---
 title: Automatic data annotation: how Robopipe Vision labels images for you
 slug: automatic-data-annotation
-excerpt: Labelling images is the most laborious part of preparing a model. Robopipe Studio can now propose the boxes itself. A person only reviews and approves them.
+excerpt: Labelling images is the most laborious part of preparing a model. Robopipe Studio can now propose the boxes itself. A person reviews, edits and approves them.
 seoTitle: Automatic data annotation for model training | Robopipe
 seoDescription: How auto annotation works in Robopipe Studio: label descriptions, boxes proposed by Robopipe Vision, review and approval by a person.
 ---
 Every quality inspection model starts with labelled images. For detection, that means drawing a box around every defect, every ingredient or every capsule. On dozens of images it is tedious. On hundreds it is a week of work.
 
-Since the release of 30 October 2026, the Robopipe Studio app has auto annotation. Robopipe Vision proposes the boxes and a person only reviews them.
+Since the release of 30 October 2026, the Robopipe Studio app has auto annotation. Robopipe Vision proposes the boxes. A person reviews, edits and approves them.
 
 ## It starts with a label description
 
@@ -33,6 +33,6 @@ When a proposal is off, tell Robopipe Vision what went wrong. It runs again and 
 
 ## Good to know
 
-Robopipe Vision is a language model that understands images, and it runs in the cloud. Images are therefore sent to the model provider for processing. [ověřit] All Robopipe Studio customers have auto annotation. It is a feature of Robopipe Studio, the open-source edition does not include it.
+You can use an offline model for auto annotation. Alternatively, Robopipe can deploy the whole solution at your site (on-premise). Auto annotation is part of the [Pro and Enterprise](/en/pricing) plans. The open-source edition and the Standard plan do not include it.
 
 The [auto annotation](/en/auto-annotation) page has the full description. The [AI quality inspection](/en/ai-quality-inspection) page shows how labelled images become inspection on the line.
