@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { hasLocale } from 'next-intl'
 import { setRequestLocale } from 'next-intl/server'
 import { draftMode } from 'next/headers'
 import { notFound } from 'next/navigation'
@@ -7,7 +8,7 @@ import React from 'react'
 import { RenderBlocks } from '@/blocks/RenderBlocks'
 import { JsonLd } from '@/components/JsonLd'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
-import type { Locale } from '@/i18n/routing'
+import { routing, type Locale } from '@/i18n/routing'
 import { faqPageLd, faqsFromLayout, productLd } from '@/lib/jsonLd'
 import { buildMeta } from '@/lib/meta'
 import { localizedPaths } from '@/lib/paths'
@@ -21,6 +22,8 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params
+  // Paths such as /foo.txt arrive here as locale "foo.txt". The layout answers 404.
+  if (!hasLocale(routing.locales, locale)) return {}
   const page = await getPageBySlug('home', locale)
   if (!page) return {}
   const [slugs, { settings }] = await Promise.all([
@@ -38,6 +41,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function HomePage({ params }: Props) {
   const { locale } = await params
+  if (!hasLocale(routing.locales, locale)) notFound()
   setRequestLocale(locale)
 
   const { isEnabled: draft } = await draftMode()

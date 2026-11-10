@@ -237,3 +237,10 @@ test.describe('mobile layout', () => {
     }
   })
 })
+
+test('a path with a dot outside every route answers 404, /llms.txt still 200', async () => {
+  expect((await api.get('/foo.txt')).status()).toBe(404)
+  expect((await api.get('/ads.txt')).status()).toBe(404)
+  expect((await api.get('/llms.txt')).status()).toBe(200)
+  expect((await api.get('/cs/neexistuje')).status()).toBe(404)
+})
