@@ -19,6 +19,8 @@ export async function GET(): Promise<Response> {
     descriptions: { cs: description.cs, en: description.en },
     contactEmail: settings.contactEmail,
     phone: settings.contact?.phone,
+    legalName: settings.company?.legalName,
+    companyId: settings.company?.companyId,
   })
   return new Response(body, { headers: { 'Content-Type': 'text/plain; charset=utf-8' } })
 }

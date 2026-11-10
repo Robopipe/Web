@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { buildMeta, ogImageUrl } from '@/lib/meta'
+import { buildMeta, ogImageUrl, verificationMeta } from '@/lib/meta'
 import { alternatesFor, SERVER_URL } from '@/lib/paths'
 import type { Media } from '@/payload-types'
 
@@ -78,5 +78,34 @@ describe('buildMeta', () => {
     })
     expect(fallback.openGraph).toMatchObject({ images: `${SERVER_URL}/fallback.jpg` })
     expect(fallback.robots).toEqual({ index: false, follow: false })
+  })
+})
+
+describe('verificationMeta (issue #6)', () => {
+  it('renders both tokens', () => {
+    expect(verificationMeta({ verification: { bing: 'B1', seznam: 'S1' } })).toEqual({
+      other: { 'msvalidate.01': 'B1', 'seznam-wmt': 'S1' },
+    })
+  })
+
+  it('renders only the token that has a value', () => {
+    expect(verificationMeta({ verification: { bing: 'B1', seznam: '' } })).toEqual({
+      other: { 'msvalidate.01': 'B1' },
+    })
+    expect(verificationMeta({ verification: { bing: null, seznam: 'S1' } })).toEqual({
+      other: { 'seznam-wmt': 'S1' },
+    })
+  })
+
+  it('renders nothing without a token', () => {
+    expect(verificationMeta({})).toBeUndefined()
+    expect(verificationMeta({ verification: null })).toBeUndefined()
+    expect(verificationMeta({ verification: { bing: '', seznam: null } })).toBeUndefined()
+  })
+
+  it('trims spaces and treats a blank token as empty', () => {
+    expect(verificationMeta({ verification: { bing: '  B1 ', seznam: '   ' } })).toEqual({
+      other: { 'msvalidate.01': 'B1' },
+    })
   })
 })

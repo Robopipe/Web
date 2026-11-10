@@ -9,17 +9,15 @@
       "to": "Use cases"
     }
   },
-  "footerColumn": {
-    "title": {
-      "cs": "Řešení",
-      "en": "Solutions"
+  "removeFooterColumn": {
+    "cs": "Řešení",
+    "en": "Solutions"
+  },
+  "aboutLink": {
+    "column": {
+      "cs": "Společnost",
+      "en": "Company"
     },
-    "pages": [
-      "camera-quality-inspection",
-      "ai-quality-inspection",
-      "computer-vision",
-      "machine-vision",
-      "auto-annotation"
-    ]
+    "page": "about"
   }
 }

@@ -3,6 +3,7 @@ import { getPayload } from 'payload'
 import { cache } from 'react'
 
 import type { Locale } from '@/i18n/routing'
+import type { Media, Page } from '@/payload-types'
 
 import { pathFor } from './paths'
 
@@ -36,10 +37,7 @@ export const getPageBySlug = async (slug: string, locale: Locale, draft = false)
  * fallbackLocale is disabled so untranslated docs have no slug in this locale
  * and are filtered out — no Czech text leaking into the English blog.
  */
-export const getPosts = async (
-  locale: Locale,
-  opts: { page?: number; limit?: number } = {},
-) => {
+export const getPosts = async (locale: Locale, opts: { page?: number; limit?: number } = {}) => {
   const payload = await getPayloadClient()
   return payload.find({
     collection: 'posts',
@@ -127,7 +125,7 @@ export const getCaseStudyBySlug = async (slug: string, locale: Locale, draft = f
  * The published page with the pricing table and its tiers. The pricing page
  * content is the one source of prices (Product offers in JSON-LD).
  */
-export const getPricing = async (locale: Locale) => {
+export const getPricing = async (locale: Locale, { depth = 0 }: { depth?: 0 | 1 } = {}) => {
   const payload = await getPayloadClient()
   const pages = await payload.find({
     collection: 'pages',
@@ -135,12 +133,16 @@ export const getPricing = async (locale: Locale) => {
     fallbackLocale: false,
     where: { slug: { exists: true } },
     limit: 200,
-    depth: 0,
+    // depth 1 resolves the tier buttons' page links, for rendering the tiers elsewhere.
+    depth,
     select: { slug: true, layout: true },
     ...PUBLIC_ONLY,
   })
   for (const page of pages.docs) {
-    const table = page.layout?.find((block) => block.blockType === 'pricingTable')
+    // A table with source "pricingPage" (solution pages) only shows these tiers. It has none of its own.
+    const table = page.layout?.find(
+      (block) => block.blockType === 'pricingTable' && block.source !== 'pricingPage',
+    )
     if (page.slug && table?.blockType === 'pricingTable') {
       return { path: pathFor('pages', page.slug, locale), tiers: table.tiers ?? [] }
     }
@@ -188,4 +190,60 @@ export const getGlobals = cache(async (locale: Locale) => {
     payload.findGlobal({ slug: 'site-settings', locale, depth: 2 }),
   ])
   return { header, footer, settings }
+})
+
+export type SolutionPage = {
+  title: string
+  path: string
+  description: string | null
+  image: Media | null
+}
+
+type SolutionDoc = Pick<Page, 'id' | 'title' | 'slug' | 'seo' | 'layout'>
+
+/**
+ * Orders the published solution pages as in site-settings.solutions. A page
+ * without a slug in this locale is left out, so no link leads to a 404.
+ */
+export const solutionPagesFrom = (
+  ids: number[],
+  docs: SolutionDoc[],
+  locale: Locale,
+): SolutionPage[] =>
+  ids.flatMap((id) => {
+    const doc = docs.find((d) => d.id === id)
+    if (!doc?.slug) return []
+    const hero = doc.layout?.find((block) => block.blockType === 'hero')
+    const image = [doc.seo?.image, hero?.blockType === 'hero' ? hero.image : null].find(
+      (value): value is Media => typeof value === 'object' && value !== null,
+    )
+    return [
+      {
+        title: doc.title,
+        path: pathFor('pages', doc.slug, locale),
+        description: doc.seo?.description || null,
+        image: image ?? null,
+      },
+    ]
+  })
+
+/** The solution and task pages from site-settings.solutions: footer, card blocks, use cases listing. */
+export const getSolutionPages = cache(async (locale: Locale): Promise<SolutionPage[]> => {
+  const { settings } = await getGlobals(locale)
+  const ids = (settings.solutions ?? []).map((value) =>
+    typeof value === 'number' ? value : value.id,
+  )
+  if (!ids.length) return []
+  const payload = await getPayloadClient()
+  const result = await payload.find({
+    collection: 'pages',
+    where: { id: { in: ids } },
+    locale,
+    fallbackLocale: false,
+    limit: ids.length,
+    depth: 1,
+    select: { title: true, slug: true, seo: true, layout: true },
+    ...PUBLIC_ONLY,
+  })
+  return solutionPagesFrom(ids, result.docs as SolutionDoc[], locale)
 })

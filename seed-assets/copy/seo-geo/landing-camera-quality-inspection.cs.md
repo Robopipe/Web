@@ -21,4 +21,4 @@ Kamera i řídicí jednotka jsou v placených tarifech zahrnuté formou pronájm
 
 ## Kamera je oko, rozhoduje model
 
-O tom, co na snímku je, rozhoduje model hlubokého učení. Jak se model učí na vašich vzorcích, popisuje stránka [AI kontrola kvality](/cs/ai-kontrola-kvality). Obecný úvod do oboru najdete na stránkách [počítačové vidění](/cs/pocitacove-videni) a [strojové vidění](/cs/strojove-videni).
+O tom, co na snímku je, rozhoduje model hlubokého učení. Jak AI kontrola kvality funguje od snímku po výsledek, ukazuje [úvodní stránka](/cs). Obecný úvod do oboru, tedy co je strojové vidění (anglicky machine vision) a počítačové vidění (anglicky computer vision), najdete v [průvodci vizuálními systémy](/cs/blog/co-je-vizualni-system-srozumitelny-pruvodce-strojovym-videnim-ve-vyrobe).

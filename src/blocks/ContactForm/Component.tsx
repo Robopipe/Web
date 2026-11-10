@@ -18,6 +18,7 @@ export const ContactFormComponent: React.FC<ContactFormBlock> = async ({
   const t = await getTranslations('contact')
   const { settings } = await getGlobals(locale)
   const contact = settings.contact
+  const company = settings.company
   const sidebar = showSidebar !== false
 
   return (
@@ -101,6 +102,16 @@ export const ContactFormComponent: React.FC<ContactFormBlock> = async ({
                     <p className="text-sm font-semibold text-text-heading">{t('hqLabel')}</p>
                     <p className="text-sm whitespace-pre-line text-text-60">{contact.address}</p>
                   </div>
+                </div>
+              )}
+              {(company?.companyId || company?.registration) && (
+                <div className="space-y-1 text-xs leading-relaxed text-text-60">
+                  {company.companyId && (
+                    <p>
+                      {t('companyIdLabel')} {company.companyId}
+                    </p>
+                  )}
+                  {company.registration && <p>{company.registration}</p>}
                 </div>
               )}
             </div>

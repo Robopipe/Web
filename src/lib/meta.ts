@@ -81,3 +81,24 @@ export const buildMeta = ({
     ...(seo?.noIndex ? { robots: { index: false, follow: false } } : {}),
   }
 }
+
+type VerificationSettings = {
+  verification?: { bing?: string | null; seznam?: string | null } | null
+}
+
+/**
+ * Bing and Seznam site verification from site-settings.verification. An empty
+ * token renders no tag. No token at all gives undefined.
+ */
+export const verificationMeta = (
+  settings: VerificationSettings,
+): Metadata['verification'] | undefined => {
+  const tags: [string, string | null | undefined][] = [
+    ['msvalidate.01', settings.verification?.bing],
+    ['seznam-wmt', settings.verification?.seznam],
+  ]
+  const other = Object.fromEntries(
+    tags.flatMap(([name, value]) => (value?.trim() ? [[name, value.trim()]] : [])),
+  )
+  return Object.keys(other).length ? { other } : undefined
+}

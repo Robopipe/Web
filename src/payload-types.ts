@@ -590,23 +590,29 @@ export interface Testimonial {
 export interface IndustryCardsBlock {
   heading?: string | null;
   text?: string | null;
-  cards: {
-    image?: (number | null) | Media;
-    title: string;
-    text?: string | null;
-    link?: {
-      label?: string | null;
-      type?: ('internal' | 'external') | null;
-      page?: (number | null) | Page;
-      url?: string | null;
-      newTab?: boolean | null;
-    };
-    /**
-     * Card link label, e.g. "Explore". Rendered with an arrow.
-     */
-    exploreLabel?: string | null;
-    id?: string | null;
-  }[];
+  /**
+   * Solutions shows the solution pages from Site settings, the same as the footer.
+   */
+  source?: ('custom' | 'solutions') | null;
+  cards?:
+    | {
+        image?: (number | null) | Media;
+        title: string;
+        text?: string | null;
+        link?: {
+          label?: string | null;
+          type?: ('internal' | 'external') | null;
+          page?: (number | null) | Page;
+          url?: string | null;
+          newTab?: boolean | null;
+        };
+        /**
+         * Card link label, e.g. "Explore". Rendered with an arrow.
+         */
+        exploreLabel?: string | null;
+        id?: string | null;
+      }[]
+    | null;
   id?: string | null;
   blockName?: string | null;
   blockType: 'industryCards';
@@ -689,52 +695,58 @@ export interface ProcessStepsBlock {
 export interface PricingTableBlock {
   heading?: string | null;
   text?: string | null;
-  tiers: {
-    name: string;
-    /**
-     * One-liner under the name, e.g. "Prove it on one camera before you scale."
-     */
-    tagline?: string | null;
-    /**
-     * E.g. "€390" / "9 900 Kč" or "Custom".
-     */
-    price: string;
-    /**
-     * E.g. "/ camera". Optional.
-     */
-    period?: string | null;
-    /**
-     * Billing note, e.g. "3-month minimum · hardware rental included".
-     */
-    subNote?: string | null;
-    /**
-     * Bold lead-in above features, e.g. "Everything in Standard and".
-     */
-    featuresLeadIn?: string | null;
-    features?:
-      | {
-          text: string;
-          id?: string | null;
-        }[]
-      | null;
-    cta: {
-      label: string;
-      type?: ('internal' | 'external') | null;
-      page?: (number | null) | Page;
-      url?: string | null;
-      newTab?: boolean | null;
-    };
-    ctaVariant?: ('filled' | 'outlined') | null;
-    /**
-     * Renders as the dark "Most popular" card.
-     */
-    highlighted?: boolean | null;
-    /**
-     * Badge on the highlighted card, e.g. "Most popular".
-     */
-    badge?: string | null;
-    id?: string | null;
-  }[];
+  /**
+   * Pricing page shows the tiers of the pricing page, so prices have one source.
+   */
+  source?: ('custom' | 'pricingPage') | null;
+  tiers?:
+    | {
+        name: string;
+        /**
+         * One-liner under the name, e.g. "Prove it on one camera before you scale."
+         */
+        tagline?: string | null;
+        /**
+         * E.g. "€390" / "9 900 Kč" or "Custom".
+         */
+        price: string;
+        /**
+         * E.g. "/ camera". Optional.
+         */
+        period?: string | null;
+        /**
+         * Billing note, e.g. "3-month minimum · hardware rental included".
+         */
+        subNote?: string | null;
+        /**
+         * Bold lead-in above features, e.g. "Everything in Standard and".
+         */
+        featuresLeadIn?: string | null;
+        features?:
+          | {
+              text: string;
+              id?: string | null;
+            }[]
+          | null;
+        cta: {
+          label: string;
+          type?: ('internal' | 'external') | null;
+          page?: (number | null) | Page;
+          url?: string | null;
+          newTab?: boolean | null;
+        };
+        ctaVariant?: ('filled' | 'outlined') | null;
+        /**
+         * Renders as the dark "Most popular" card.
+         */
+        highlighted?: boolean | null;
+        /**
+         * Badge on the highlighted card, e.g. "Most popular".
+         */
+        badge?: string | null;
+        id?: string | null;
+      }[]
+    | null;
   /**
    * Small print below the table, e.g. VAT note.
    */
@@ -1656,6 +1668,7 @@ export interface TestimonialBarBlockSelect<T extends boolean = true> {
 export interface IndustryCardsBlockSelect<T extends boolean = true> {
   heading?: T;
   text?: T;
+  source?: T;
   cards?:
     | T
     | {
@@ -1750,6 +1763,7 @@ export interface ProcessStepsBlockSelect<T extends boolean = true> {
 export interface PricingTableBlockSelect<T extends boolean = true> {
   heading?: T;
   text?: T;
+  source?: T;
   tiers?:
     | T
     | {
@@ -2314,10 +2328,6 @@ export interface Footer {
         id?: string | null;
       }[]
     | null;
-  /**
-   * Legal entity for the © line, e.g. "Robopipe s.r.o." (year is added automatically).
-   */
-  copyright?: string | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -2387,6 +2397,40 @@ export interface SiteSetting {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Solution and task pages in display order. Shown in the footer "Solutions" column, in card blocks set to "Solutions" and on the use cases listing.
+   */
+  solutions?: (number | Page)[] | null;
+  /**
+   * Company facts for Organization structured data, the footer and the contact sidebar.
+   */
+  company?: {
+    /**
+     * Exactly as in the commercial register. Also used in the footer © line.
+     */
+    legalName?: string | null;
+    /**
+     * IČO.
+     */
+    companyId?: string | null;
+    /**
+     * Registered office and register entry, one line.
+     */
+    registration?: string | null;
+  };
+  /**
+   * Search engine site verification. Empty value = no tag.
+   */
+  verification?: {
+    /**
+     * content of <meta name="msvalidate.01">
+     */
+    bing?: string | null;
+    /**
+     * content of <meta name="seznam-wmt">
+     */
+    seznam?: string | null;
+  };
   defaultSeo?: {
     /**
      * Default meta title, also used as suffix: "Page — Robopipe".
@@ -2510,7 +2554,6 @@ export interface FooterSelect<T extends boolean = true> {
             };
         id?: T;
       };
-  copyright?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
@@ -2548,6 +2591,20 @@ export interface SiteSettingsSelect<T extends boolean = true> {
         logo?: T;
         logoOnDark?: T;
         id?: T;
+      };
+  solutions?: T;
+  company?:
+    | T
+    | {
+        legalName?: T;
+        companyId?: T;
+        registration?: T;
+      };
+  verification?:
+    | T
+    | {
+        bing?: T;
+        seznam?: T;
       };
   defaultSeo?:
     | T

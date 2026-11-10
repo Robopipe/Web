@@ -6,6 +6,7 @@ import React from 'react'
 import { Icon, iconData, type IconName } from '@/components/icons'
 import { Media } from '@/components/Media'
 import type { Locale } from '@/i18n/routing'
+import type { SolutionPage } from '@/lib/queries'
 import type { Footer as FooterType, SiteSetting } from '@/payload-types'
 
 import { CMSLink } from './CMSLink'
@@ -21,9 +22,11 @@ const SOCIAL_ICONS: Record<string, IconName> = {
 type Props = {
   footer: FooterType
   settings: SiteSetting
+  /** site-settings.solutions, resolved by the layout. Empty = no "Solutions" column. */
+  solutions: SolutionPage[]
 }
 
-export const Footer: React.FC<Props> = ({ footer, settings }) => {
+export const Footer: React.FC<Props> = ({ footer, settings, solutions }) => {
   const locale = useLocale() as Locale
   const t = useTranslations('footer')
   const columns = footer.columns ?? []
@@ -33,10 +36,14 @@ export const Footer: React.FC<Props> = ({ footer, settings }) => {
 
   return (
     <footer className="bg-surface-dark text-text-invert-60">
-      {/* One track for the brand column plus one per link column (up to 4). */}
+      {/* One track for the brand column plus one per link column, the Solutions column included. */}
       <div
         className="container-site grid gap-10 py-16 md:grid-cols-2 lg:grid-cols-[1.4fr_repeat(var(--footer-columns),minmax(0,1fr))]"
-        style={{ '--footer-columns': Math.max(columns.length, 1) } as React.CSSProperties}
+        style={
+          {
+            '--footer-columns': Math.max(columns.length + (solutions.length ? 1 : 0), 1),
+          } as React.CSSProperties
+        }
       >
         <div className="space-y-5">
           <Link href={`/${locale}`} aria-label="Robopipe" className="inline-block">
@@ -114,12 +121,30 @@ export const Footer: React.FC<Props> = ({ footer, settings }) => {
             </ul>
           </div>
         ))}
+
+        {solutions.length > 0 && (
+          <div>
+            <h2 className="mb-4 text-sm font-semibold text-text-invert">{t('solutions')}</h2>
+            <ul className="space-y-2.5">
+              {solutions.map((page) => (
+                <li key={page.path}>
+                  <Link
+                    href={page.path}
+                    className="text-sm text-text-invert-60 transition-colors hover:text-text-invert"
+                  >
+                    {page.title}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
 
       <div className="border-t border-border-invert-12">
         <div className="container-site flex flex-col items-start justify-between gap-2 py-5 text-xs text-text-invert-60 sm:flex-row sm:items-center">
           <p>
-            © {year} {footer.copyright || settings.siteName || 'Robopipe'}. {t('rights')}
+            © {year} {settings.company?.legalName || settings.siteName || 'Robopipe'}. {t('rights')}
           </p>
           <div className="flex items-center gap-5">
             {legalLinks.length > 0 && (

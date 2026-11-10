@@ -3,6 +3,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server'
 import Link from 'next/link'
 import React from 'react'
 
+import { IndustryCardsComponent } from '@/blocks/IndustryCards/Component'
 import { CaseStudyCard } from '@/components/CaseStudyCard'
 import { JsonLd } from '@/components/JsonLd'
 import { buttonClasses, Chip } from '@/components/ui'
@@ -84,6 +85,8 @@ export default async function CaseStudiesPage({ params }: Props) {
           )}
         </div>
       </div>
+
+      <IndustryCardsComponent blockType="industryCards" source="solutions" heading={t('byTask')} />
 
       {quote && (
         <section className="container-site pb-16">

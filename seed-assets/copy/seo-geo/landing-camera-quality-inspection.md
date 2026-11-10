@@ -21,4 +21,4 @@ The camera and the controller come with every paid plan as a rental. Start with 
 
 ## The camera sees, the model decides
 
-A deep-learning model decides what is in the image. The [AI quality inspection](/en/ai-quality-inspection) page explains how the model learns from your own samples. For a general introduction, see [computer vision](/en/computer-vision) and [machine vision](/en/machine-vision).
+A deep-learning model decides what is in the image. The [home page](/en) shows how AI quality inspection works from image to verdict. For a general introduction to machine vision and computer vision, see the [guide to vision systems](/en/blog/what-is-a-vision-system-a-plain-english-guide-to-machine-vision-in-manufacturing).

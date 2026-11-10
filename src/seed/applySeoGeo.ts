@@ -5,15 +5,18 @@ import { getPayload } from 'payload'
 
 import { assertLocalDatabase } from '@/lib/dbGuard'
 
+import { createRemoteClient, type SeoGeoClient } from './remoteClient'
 import { applySeoGeo } from './seoGeo'
 
 /**
- * CLI for the SEO and GEO content (issue #2).
+ * CLI for the SEO and GEO content (issues #2 and #6).
  *
  *   pnpm seed:seo-geo                      drafts in the local database
  *   pnpm seed:seo-geo --status=published   publish in the local database
  *   pnpm seed:seo-geo --dry-run            only list the planned changes
  *   pnpm seed:seo-geo --production ...     allow a remote DATABASE_URL
+ *   pnpm seed:seo-geo --remote=<URL> ...   through the Payload REST API, no database access.
+ *                                          Account from SEED_REMOTE_EMAIL and SEED_REMOTE_PASSWORD.
  */
 const run = async (): Promise<void> => {
   const args = process.argv.slice(2)
@@ -21,18 +24,39 @@ const run = async (): Promise<void> => {
   if (statusArg !== 'draft' && statusArg !== 'published') {
     throw new Error(`--status must be draft or published, not "${statusArg}".`)
   }
-  assertLocalDatabase(process.env.DATABASE_URL, args.includes('--production'))
+  const dryRun = args.includes('--dry-run')
+  const remote = args.find((arg) => arg.startsWith('--remote='))?.slice('--remote='.length)
 
-  const payload = await getPayload({ config })
-  const report = await applySeoGeo(payload, {
-    status: statusArg,
-    dryRun: args.includes('--dry-run'),
-  })
+  let client: SeoGeoClient
+  let log: (line: string) => void
+  if (remote) {
+    const email = process.env.SEED_REMOTE_EMAIL
+    const password = process.env.SEED_REMOTE_PASSWORD
+    if (!email || !password) {
+      throw new Error('--remote needs SEED_REMOTE_EMAIL and SEED_REMOTE_PASSWORD.')
+    }
+    // The config is only needed to convert Markdown. Payload does not connect to a database.
+    client = await createRemoteClient({
+      baseUrl: remote,
+      email,
+      password,
+      config: await config,
+      readOnly: dryRun,
+    })
+    log = (line) => console.log(line)
+    log(`Remote ${new URL(remote).origin} as ${email}`)
+  } else {
+    assertLocalDatabase(process.env.DATABASE_URL, args.includes('--production'))
+    const payload = await getPayload({ config })
+    client = payload
+    log = (line) => payload.logger.info(line)
+  }
 
-  const heading = args.includes('--dry-run') ? 'Planned changes (dry run)' : 'Done'
-  payload.logger.info(`${heading}, status=${statusArg}`)
+  const report = await applySeoGeo(client, { status: statusArg, dryRun })
+
+  log(`${dryRun ? 'Planned changes (dry run)' : 'Done'}, status=${statusArg}`)
   for (const [kind, items] of Object.entries(report)) {
-    payload.logger.info(`${kind} (${items.length}): ${items.join(', ') || '-'}`)
+    log(`${kind} (${items.length}): ${items.join(', ') || '-'}`)
   }
   process.exit(0)
 }

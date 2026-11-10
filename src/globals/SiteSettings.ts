@@ -109,6 +109,59 @@ export const SiteSettings: GlobalConfig = {
       ],
     },
     {
+      name: 'solutions',
+      type: 'relationship',
+      relationTo: 'pages',
+      hasMany: true,
+      // getGlobals reads site-settings with depth 2. Without this limit every request would load whole pages.
+      maxDepth: 0,
+      admin: {
+        description:
+          'Solution and task pages in display order. Shown in the footer "Solutions" column, in card blocks set to "Solutions" and on the use cases listing.',
+      },
+    },
+    {
+      name: 'company',
+      type: 'group',
+      admin: {
+        description:
+          'Company facts for Organization structured data, the footer and the contact sidebar.',
+      },
+      fields: [
+        {
+          name: 'legalName',
+          type: 'text',
+          admin: {
+            description: 'Exactly as in the commercial register. Also used in the footer © line.',
+          },
+        },
+        { name: 'companyId', type: 'text', admin: { description: 'IČO.' } },
+        {
+          name: 'registration',
+          type: 'textarea',
+          localized: true,
+          admin: { description: 'Registered office and register entry, one line.' },
+        },
+      ],
+    },
+    {
+      name: 'verification',
+      type: 'group',
+      admin: { description: 'Search engine site verification. Empty value = no tag.' },
+      fields: [
+        {
+          name: 'bing',
+          type: 'text',
+          admin: { description: 'content of <meta name="msvalidate.01">' },
+        },
+        {
+          name: 'seznam',
+          type: 'text',
+          admin: { description: 'content of <meta name="seznam-wmt">' },
+        },
+      ],
+    },
+    {
       name: 'defaultSeo',
       type: 'group',
       fields: [

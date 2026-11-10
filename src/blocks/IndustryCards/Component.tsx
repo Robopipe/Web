@@ -1,16 +1,47 @@
-'use client'
-
-import { useLocale } from 'next-intl'
+import { getLocale, getTranslations } from 'next-intl/server'
 import Link from 'next/link'
 import React from 'react'
 
 import { hrefFor } from '@/components/CMSLink'
 import { Media } from '@/components/Media'
 import type { Locale } from '@/i18n/routing'
-import type { IndustryCardsBlock } from '@/payload-types'
+import { getSolutionPages } from '@/lib/queries'
+import type { IndustryCardsBlock, Media as MediaType } from '@/payload-types'
 
-export const IndustryCardsComponent: React.FC<IndustryCardsBlock> = ({ heading, text, cards }) => {
-  const locale = useLocale() as Locale
+type Card = {
+  title: string
+  text?: string | null
+  image?: MediaType | null
+  href: string | null
+  linkLabel?: string | null
+}
+
+/** `source: 'solutions'` shows site-settings.solutions, the same pages as the footer column. */
+const cardsFor = async (block: IndustryCardsBlock, locale: Locale): Promise<Card[]> => {
+  if (block.source === 'solutions') {
+    const t = await getTranslations({ locale, namespace: 'common' })
+    return (await getSolutionPages(locale)).map((page) => ({
+      title: page.title,
+      text: page.description,
+      image: page.image,
+      href: page.path,
+      linkLabel: t('readMore'),
+    }))
+  }
+  return (block.cards ?? []).map((card) => ({
+    title: card.title,
+    text: card.text,
+    image: card.image && typeof card.image !== 'number' ? card.image : null,
+    href: hrefFor(card.link, locale),
+    linkLabel: card.exploreLabel,
+  }))
+}
+
+export const IndustryCardsComponent: React.FC<IndustryCardsBlock> = async (block) => {
+  const { heading, text } = block
+  const locale = (await getLocale()) as Locale
+  const cards = await cardsFor(block, locale)
+  if (!cards.length) return null
 
   return (
     <section className="container-site py-16 lg:py-24">
@@ -20,12 +51,14 @@ export const IndustryCardsComponent: React.FC<IndustryCardsBlock> = ({ heading, 
           {text && <p className="mt-4 text-lg text-text-60">{text}</p>}
         </div>
       )}
-      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        {(cards ?? []).map((card, i) => {
-          const href = hrefFor(card.link, locale)
+      {/* Six solution pages fill two rows of three. Otherwise four per row, as before. */}
+      <div
+        className={`grid gap-5 sm:grid-cols-2 ${cards.length % 3 === 0 && cards.length % 4 !== 0 ? 'lg:grid-cols-3' : 'lg:grid-cols-4'}`}
+      >
+        {cards.map((card, i) => {
           const body = (
             <>
-              {card.image && typeof card.image !== 'number' && (
+              {card.image && (
                 <div className="aspect-4/3 overflow-hidden">
                   <Media media={card.image} size="card" className="h-full w-full object-cover" />
                 </div>
@@ -35,9 +68,9 @@ export const IndustryCardsComponent: React.FC<IndustryCardsBlock> = ({ heading, 
                 {card.text && (
                   <p className="text-[13px] leading-relaxed text-text-60">{card.text}</p>
                 )}
-                {href && card.exploreLabel && (
+                {card.href && card.linkLabel && (
                   <span className="mt-auto pt-2 text-sm font-medium text-brand-fg">
-                    {card.exploreLabel} →
+                    {card.linkLabel} →
                   </span>
                 )}
               </div>
@@ -45,8 +78,8 @@ export const IndustryCardsComponent: React.FC<IndustryCardsBlock> = ({ heading, 
           )
           const cardClasses =
             'flex flex-col overflow-hidden rounded-lg border border-border-12 bg-white transition-shadow'
-          return href ? (
-            <Link key={i} href={href} className={`${cardClasses} hover:shadow-lift`}>
+          return card.href ? (
+            <Link key={i} href={card.href} className={`${cardClasses} hover:shadow-lift`}>
               {body}
             </Link>
           ) : (

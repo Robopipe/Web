@@ -26,4 +26,4 @@ Pokud zpětná vazba platí pro celý projekt, Robopipe Vision ji uloží jako p
 
 ## Kde se anotace hodí
 
-Označené snímky jsou základ [AI kontroly kvality](/cs/ai-kontrola-kvality). Čím dřív je máte, tím dřív může na vaší lince začít [kamerová kontrola kvality](/cs/kamerova-kontrola-kvality).
+Označené snímky jsou základ [AI kontroly kvality](/cs). Čím dřív je máte, tím dřív může na vaší lince začít [kamerová kontrola kvality](/cs/kamerova-kontrola-kvality).

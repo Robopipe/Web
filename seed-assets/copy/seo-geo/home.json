@@ -70,5 +70,16 @@
       ],
       "button": "How auto annotation works"
     }
+  },
+  "solutions": {
+    "blockName": "seo-geo-solutions",
+    "cs": {
+      "heading": "Kontrola kvality ve výrobě podle úlohy",
+      "text": "Jedna AI kamera nad linkou, různé úlohy. Vyberte tu, kterou řešíte."
+    },
+    "en": {
+      "heading": "Quality control in production, by task",
+      "text": "One AI camera over the line, many tasks. Pick the one you need."
+    }
   }
 }

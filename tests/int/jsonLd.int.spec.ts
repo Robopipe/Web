@@ -169,3 +169,31 @@ describe('Product offers from the pricing table', () => {
     expect(offersFromPricing(null)).toEqual([])
   })
 })
+
+describe('organizationLd company facts (issue #6)', () => {
+  const base = { id: 1, siteName: 'Robopipe' } as SiteSetting
+
+  it('adds legalName, the IČO identifier and the description', () => {
+    const ld = organizationLd({
+      ...base,
+      company: { legalName: 'robopipe s.r.o.', companyId: '24111791', registration: 'Zápis.' },
+      defaultSeo: { description: 'AI kontrola kvality.' },
+    })
+    expect(ld).toMatchObject({
+      '@id': `${SERVER_URL}/#organization`,
+      name: 'Robopipe',
+      legalName: 'robopipe s.r.o.',
+      description: 'AI kontrola kvality.',
+      identifier: { '@type': 'PropertyValue', propertyID: 'IČO', value: '24111791' },
+    })
+  })
+
+  it('leaves out empty company facts', () => {
+    for (const company of [undefined, {}, { legalName: '', companyId: '' }]) {
+      const ld = organizationLd({ ...base, company })
+      expect(ld).not.toHaveProperty('legalName')
+      expect(ld).not.toHaveProperty('identifier')
+      expect(ld).not.toHaveProperty('description')
+    }
+  })
+})

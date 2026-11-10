@@ -58,7 +58,8 @@
     "result": "The result",
     "technique": "Techniques used",
     "faq": "Frequently asked questions",
-    "backToList": "All use cases"
+    "backToList": "All use cases",
+    "byTask": "Solutions by task"
   },
   "contact": {
     "name": "Name",
@@ -88,11 +89,13 @@
       "emailInvalid": "Please enter a valid email",
       "phoneRequired": "Please enter your phone number",
       "messageRequired": "Please write us a message"
-    }
+    },
+    "companyIdLabel": "Company ID"
   },
   "footer": {
     "rights": "All rights reserved.",
-    "memberOf": "Part of"
+    "memberOf": "Part of",
+    "solutions": "Solutions"
   },
   "notFound": {
     "title": "Page not found",

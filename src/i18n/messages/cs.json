@@ -58,7 +58,8 @@
     "result": "Výsledek",
     "technique": "Použitá technika",
     "faq": "Časté otázky",
-    "backToList": "Všechny případy užití"
+    "backToList": "Všechny případy užití",
+    "byTask": "Řešení podle úlohy"
   },
   "contact": {
     "name": "Jméno",
@@ -88,11 +89,13 @@
       "emailInvalid": "Zadejte prosím platný e-mail",
       "phoneRequired": "Zadejte prosím telefonní číslo",
       "messageRequired": "Napište nám prosím zprávu"
-    }
+    },
+    "companyIdLabel": "IČO"
   },
   "footer": {
     "rights": "Všechna práva vyhrazena.",
-    "memberOf": "Jsme součástí"
+    "memberOf": "Jsme součástí",
+    "solutions": "Řešení"
   },
   "notFound": {
     "title": "Stránka nenalezena",

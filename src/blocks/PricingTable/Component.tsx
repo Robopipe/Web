@@ -1,7 +1,10 @@
+import { getLocale } from 'next-intl/server'
 import React from 'react'
 
 import { CMSLink } from '@/components/CMSLink'
 import { buttonClasses } from '@/components/ui'
+import type { Locale } from '@/i18n/routing'
+import { getPricing } from '@/lib/queries'
 import type { PricingTableBlock } from '@/payload-types'
 
 const CheckIcon: React.FC<{ className?: string }> = ({ className }) => (
@@ -10,12 +13,22 @@ const CheckIcon: React.FC<{ className?: string }> = ({ className }) => (
   </svg>
 )
 
-export const PricingTableComponent: React.FC<PricingTableBlock> = ({
-  heading,
-  text,
-  tiers,
-  footnote,
-}) => (
+/** `source: 'pricingPage'` shows the tiers of the pricing page, so prices have one source. */
+const tiersFor = async (block: PricingTableBlock): Promise<PricingTableBlock['tiers'] | null> => {
+  if (block.source !== 'pricingPage') return block.tiers
+  return (await getPricing((await getLocale()) as Locale, { depth: 1 }))?.tiers ?? null
+}
+
+export const PricingTableComponent: React.FC<PricingTableBlock> = async (block) => {
+  const { heading, text, footnote } = block
+  const tiers = await tiersFor(block)
+  if (!tiers?.length) return null
+  return <PricingTiers heading={heading} text={text} tiers={tiers} footnote={footnote} />
+}
+
+const PricingTiers: React.FC<
+  Pick<PricingTableBlock, 'heading' | 'text' | 'tiers' | 'footnote'>
+> = ({ heading, text, tiers, footnote }) => (
   <section className="container-site py-16 lg:py-24">
     {(heading || text) && (
       <div className="mx-auto mb-12 max-w-2xl text-center">

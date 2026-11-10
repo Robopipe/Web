@@ -2061,7 +2061,6 @@ Under the GDPR you have the right to access, correct, delete and port your data,
             },
           },
         ],
-        copyright: 'Robopipe s.r.o.',
       },
       'ftr',
     )

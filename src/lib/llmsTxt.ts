@@ -9,6 +9,9 @@ export type LlmsTxtSettings = {
   descriptions: Partial<Record<Locale, string | null | undefined>>
   contactEmail?: string | null
   phone?: string | null
+  /** site-settings.company */
+  legalName?: string | null
+  companyId?: string | null
 }
 
 const SECTIONS: { collection: IndexableDoc['collection']; heading: string }[] = [
@@ -53,7 +56,15 @@ export const buildLlmsTxt = (docs: IndexableDoc[], settings: LlmsTxtSettings): s
   }
 
   const contact = [settings.contactEmail, settings.phone].filter(Boolean)
-  if (contact.length) out.push('## Kontakt / Contact', `- ${contact.join(', ')}`, '')
+  const company = [settings.legalName, settings.companyId && `IČO ${settings.companyId}`].filter(
+    Boolean,
+  )
+  if (contact.length || company.length) {
+    out.push('## Kontakt / Contact')
+    if (company.length) out.push(`- ${company.join(', ')}`)
+    if (contact.length) out.push(`- ${contact.join(', ')}`)
+    out.push('')
+  }
 
   return out.join('\n')
 }

@@ -1,0 +1,22 @@
+{
+  "pricing": {
+    "slug": "cenik",
+    "faqs": [
+      "price-camera-inspection",
+      "price-included",
+      "price-auto-annotation"
+    ]
+  },
+  "guide": {
+    "slug": "co-je-vizualni-system-srozumitelny-pruvodce-strojovym-videnim-ve-vyrobe",
+    "heading": {
+      "replaceIf": "Vizuální systém, strojové vidění, computer vision — v čem je rozdíl?",
+      "value": "Vizuální systém, strojové vidění a počítačové vidění: v čem je rozdíl?"
+    },
+    "seoTitle": {
+      "replaceIf": "Co je vizuální systém? Strojové vidění srozumitelně",
+      "value": "Strojové a počítačové vidění: co je vizuální systém"
+    },
+    "paragraph": "guide-vision-terms.cs.md"
+  }
+}
