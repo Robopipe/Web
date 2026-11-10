@@ -15,7 +15,7 @@ pnpm seed                   # demo content in cs+en, admin user
 pnpm dev
 ```
 
-- Site: http://localhost:3000 (redirects to `/cs` or `/en` by browser language)
+- Site: http://localhost:3000 (`/` redirects to the stored language choice, else by browser language, see below)
 - Admin: http://localhost:3000/admin — seeded login `admin@robopipe.io` / `admin`
 
 Optional env: `RESEND_API_KEY` (lead notification emails; logged to console when unset), `GCS_BUCKET` + `GCS_CREDENTIALS` (media storage; local `./media` when unset).
@@ -27,7 +27,10 @@ Optional env: `RESEND_API_KEY` (lead notification emails; logged to console when
 - **Pages** are block-based (`src/blocks/*`): hero, feature grid, content, media, stats, logo cloud, testimonials, use-case cards, pricing table, FAQ accordion, case-study grid, blog teaser, CTA banner, contact form.
 - **Leads** — the contact form posts a server action (`src/actions/submitLead.ts`): zod validation, honeypot + per-IP rate limit, stored in the `leads` collection (public REST create is closed), notification via Resend to `site-settings.leadNotificationEmail`.
 - **Revalidation** — any published change triggers coarse site-wide ISR revalidation (`src/hooks/revalidate.ts`); pages also refresh every 10 min.
-- **SEO** — localized sitemap with hreflang, robots, per-locale RSS (`/{locale}/blog/rss.xml`), Article JSON-LD, 301 map from the old Webflow URLs in `next.config.ts` plus an editor-managed `redirects` collection.
+- **Root language** — `/` goes to the language stored in the `NEXT_LOCALE` cookie. Only an explicit choice writes it (footer switcher, locale suggestion). Without it, `Accept-Language` decides: `cs` and `sk` go to `/cs`, everything else to `/en` (`src/proxy.ts`). next-intl itself does not read or write the cookie (`localeCookie: false`).
+- **SEO and GEO** (issue #2, `docs/specs/2-seo-geo/`) — `buildMeta()` (`src/lib/meta.ts`) gives every page a self canonical, hreflang with `x-default` (the English URL) and Open Graph. JSON-LD comes from one module (`src/lib/jsonLd.ts`): Organization and WebSite on every page, Product (offers read from the pricing table in Payload) on the home page, BlogPosting, FAQPage from the visible FAQs, BreadcrumbList. The sitemap and `/llms.txt` read one list of indexable documents (`src/lib/indexable.ts`). Plus robots, per-locale RSS (`/{locale}/blog/rss.xml`), the 301 map from the old Webflow and Shopify URLs in `next.config.ts` and an editor-managed `redirects` collection.
+- **Use cases** — case studies are shown as "Případy užití" / "Use cases" at the same URLs: listing `/{locale}/case-studies`, detail `/{locale}/case-studies/{slug}` with problem, solution, result, technique and FAQ sections (fields on the collection, empty sections are skipped).
+- **Memberships** — `site-settings.memberships` (e.g. Česká inovační platforma) feeds the footer, logo bands with `source: memberships` and `Organization.memberOf`.
 - **Draft preview** — Payload live-preview + `/next/preview?secret=…` (draft mode), exit via `/next/exit-preview`.
 
 ## Schema changes
@@ -41,6 +44,27 @@ pnpm generate:types
 ```
 
 Commit the generated migration and `src/payload-types.ts`.
+
+## Tests
+
+```bash
+pnpm test:int                                   # vitest, writes to the local DATABASE_URL
+E2E_BASE_URL=http://localhost:3310 pnpm test:e2e  # playwright against a running, seeded server
+```
+
+Integration tests stop when `DATABASE_URL` is not localhost (`vitest.setup.ts`). `E2E_BASE_URL` defaults to `http://localhost:3000`. `PLAYWRIGHT_CHROMIUM_PATH` points Playwright at another Chromium binary if the downloaded one does not start.
+
+## SEO and GEO content script
+
+The landing pages, the auto annotation page, the case study sections, FAQs, home page blocks, navigation, memberships and the auto annotation blog draft live as files in `seed-assets/copy/seo-geo/`. `pnpm seed` applies them to a fresh local database. `pnpm seed:seo-geo` applies them to an existing one:
+
+```bash
+pnpm seed:seo-geo --dry-run             # list planned changes only
+pnpm seed:seo-geo                       # drafts only, published content and globals unchanged
+pnpm seed:seo-geo --status=published    # publish pages, case studies and globals
+```
+
+The script is idempotent: it finds existing documents and never overwrites a field that has a value. The blog post always stays a draft. It refuses a `DATABASE_URL` outside localhost unless you pass `--production`. Production steps are in `docs/specs/2-seo-geo/implementation.md`.
 
 ## AI-generated blog posts
 

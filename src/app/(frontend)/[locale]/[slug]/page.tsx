@@ -1,14 +1,19 @@
 import type { Metadata } from 'next'
-import { setRequestLocale } from 'next-intl/server'
+import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { draftMode } from 'next/headers'
-import { notFound, permanentRedirect, redirect } from 'next/navigation'
+import { redirect } from 'next/navigation'
 import React from 'react'
 
 import { RenderBlocks } from '@/blocks/RenderBlocks'
+import { JsonLd } from '@/components/JsonLd'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
 import { locales, type Locale } from '@/i18n/routing'
+import { checkedParams } from '@/lib/checkedParams'
+import { breadcrumbLd, faqPageLd, faqsFromLayout } from '@/lib/jsonLd'
 import { buildMeta } from '@/lib/meta'
-import { getLocalizedSlugs, getPageBySlug, getPayloadClient, getRedirect } from '@/lib/queries'
+import { localizedPaths, pathFor } from '@/lib/paths'
+import { getGlobals, getLocalizedSlugs, getPageBySlug, getPayloadClient } from '@/lib/queries'
+import { redirectOrNotFound } from '@/lib/redirects'
 
 export const revalidate = 600
 
@@ -39,21 +44,24 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { locale, slug } = await params
+  const { locale, slug } = await checkedParams(params)
   const page = await getPageBySlug(slug, locale)
   if (!page) return {}
-  const slugs = await getLocalizedSlugs('pages', page.id)
+  const [slugs, { settings }] = await Promise.all([
+    getLocalizedSlugs('pages', page.id),
+    getGlobals(locale),
+  ])
   return buildMeta({
     title: page.title,
     seo: page.seo,
-    collection: 'pages',
     locale,
-    slugs,
+    paths: localizedPaths('pages', slugs),
+    fallbackImage: settings.defaultSeo?.image,
   })
 }
 
 export default async function CMSPage({ params }: Props) {
-  const { locale, slug } = await params
+  const { locale, slug } = await checkedParams(params)
   setRequestLocale(locale)
 
   // Home renders at the locale root, never at /home.
@@ -62,21 +70,24 @@ export default async function CMSPage({ params }: Props) {
   const { isEnabled: draft } = await draftMode()
   const page = await getPageBySlug(slug, locale, draft)
 
-  if (!page) {
-    // Also match unprefixed entries: old-site URLs reach here with whichever
-    // locale prefix the middleware guessed (e.g. /old-page → /cs/old-page).
-    const redirectDoc =
-      (await getRedirect(`/${locale}/${slug}`)) ?? (await getRedirect(`/${slug}`))
-    if (redirectDoc) {
-      if (redirectDoc.permanent) permanentRedirect(redirectDoc.to)
-      redirect(redirectDoc.to)
-    }
-    notFound()
-  }
+  // Also match unprefixed entries: old-site URLs reach here with whichever
+  // locale prefix the middleware guessed (e.g. /old-page → /cs/old-page).
+  if (!page) return redirectOrNotFound([`/${locale}/${slug}`, `/${slug}`])
+
+  const t = await getTranslations('common')
 
   return (
     <>
       {draft && <LivePreviewListener />}
+      <JsonLd
+        data={[
+          breadcrumbLd([
+            { name: t('home'), path: `/${locale}` },
+            { name: page.title, path: pathFor('pages', slug, locale) },
+          ]),
+          faqPageLd(faqsFromLayout(page.layout)),
+        ]}
+      />
       <RenderBlocks blocks={page.layout} />
     </>
   )

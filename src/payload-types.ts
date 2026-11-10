@@ -522,12 +522,18 @@ export interface LogoCloudBlock {
    * E.g. "Trusted by manufacturing teams".
    */
   heading?: string | null;
-  logos: {
-    logo: number | Media;
-    name: string;
-    url?: string | null;
-    id?: string | null;
-  }[];
+  /**
+   * Memberships shows the logos from Site settings, the same as the footer.
+   */
+  source?: ('custom' | 'memberships') | null;
+  logos?:
+    | {
+        logo: number | Media;
+        name: string;
+        url?: string | null;
+        id?: string | null;
+      }[]
+    | null;
   id?: string | null;
   blockName?: string | null;
   blockType: 'logoCloud';
@@ -882,10 +888,7 @@ export interface CaseStudy {
         id?: string | null;
       }[]
     | null;
-  /**
-   * Optional long-form body — case studies are listing-only in v1.
-   */
-  content?: {
+  problem?: {
     root: {
       type: string;
       children: {
@@ -900,6 +903,58 @@ export interface CaseStudy {
     };
     [k: string]: unknown;
   } | null;
+  solution?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  result?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Used techniques, e.g. object detection, counting, classification.
+   */
+  technique?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Shown on the detail page and as FAQPage structured data.
+   */
+  faqs?: (number | Faq)[] | null;
   /**
    * Overrides for search engines and social sharing. Falls back to the document title/excerpt.
    */
@@ -1558,6 +1613,7 @@ export interface StatsBlockSelect<T extends boolean = true> {
  */
 export interface LogoCloudBlockSelect<T extends boolean = true> {
   heading?: T;
+  source?: T;
   logos?:
     | T
     | {
@@ -1931,7 +1987,11 @@ export interface CaseStudiesSelect<T extends boolean = true> {
         label?: T;
         id?: T;
       };
-  content?: T;
+  problem?: T;
+  solution?: T;
+  result?: T;
+  technique?: T;
+  faqs?: T;
   seo?:
     | T
     | {
@@ -2312,6 +2372,21 @@ export interface SiteSetting {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Programmes and associations Robopipe is part of. Shown in the footer, in logo bands set to "Memberships" and in Organization structured data.
+   */
+  memberships?:
+    | {
+        name: string;
+        url: string;
+        logo: number | Media;
+        /**
+         * Light variant for the dark footer. Falls back to logo.
+         */
+        logoOnDark?: (number | null) | Media;
+        id?: string | null;
+      }[]
+    | null;
   defaultSeo?: {
     /**
      * Default meta title, also used as suffix: "Page — Robopipe".
@@ -2463,6 +2538,15 @@ export interface SiteSettingsSelect<T extends boolean = true> {
     | {
         platform?: T;
         url?: T;
+        id?: T;
+      };
+  memberships?:
+    | T
+    | {
+        name?: T;
+        url?: T;
+        logo?: T;
+        logoOnDark?: T;
         id?: T;
       };
   defaultSeo?:

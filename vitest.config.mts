@@ -12,5 +12,8 @@ export default defineConfig({
     // dev Payload pushes the schema on connect. Run files one at a time so those
     // pushes cannot race (parallel workers fail on drops the other already did).
     fileParallelism: false,
+    // Booting Payload (and its dev schema push) in beforeAll can take longer than
+    // the 10 s default on a busy machine.
+    hookTimeout: 60_000,
   },
 })

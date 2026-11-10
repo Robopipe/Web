@@ -6,9 +6,12 @@ import { defineConfig, devices } from '@playwright/test'
  */
 import 'dotenv/config'
 
-/** Port of the dev server under test; set PORT when 3000 is taken. */
-const port = process.env.PORT || '3000'
-const baseURL = `http://localhost:${port}`
+/**
+ * Server under test. E2E_BASE_URL wins (any host and port). Otherwise PORT
+ * picks a local port when 3000 is taken.
+ */
+const baseURL = process.env.E2E_BASE_URL || `http://localhost:${process.env.PORT || '3000'}`
+const port = new URL(baseURL).port || '3000'
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -35,7 +38,12 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'], channel: 'chromium' },
+      use: {
+        ...devices['Desktop Chrome'],
+        channel: 'chromium',
+        // Optional: a Chromium binary other than the one Playwright downloaded.
+        launchOptions: { executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH || undefined },
+      },
     },
   ],
   webServer: {

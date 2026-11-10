@@ -4,6 +4,7 @@ import Link from 'next/link'
 import React from 'react'
 
 import { Icon, iconData, type IconName } from '@/components/icons'
+import { Media } from '@/components/Media'
 import type { Locale } from '@/i18n/routing'
 import type { Footer as FooterType, SiteSetting } from '@/payload-types'
 
@@ -27,11 +28,16 @@ export const Footer: React.FC<Props> = ({ footer, settings }) => {
   const t = useTranslations('footer')
   const columns = footer.columns ?? []
   const legalLinks = footer.legalLinks ?? []
+  const memberships = settings.memberships ?? []
   const year = new Date().getFullYear()
 
   return (
     <footer className="bg-surface-dark text-text-invert-60">
-      <div className="container-site grid gap-10 py-16 md:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
+      {/* One track for the brand column plus one per link column (up to 4). */}
+      <div
+        className="container-site grid gap-10 py-16 md:grid-cols-2 lg:grid-cols-[1.4fr_repeat(var(--footer-columns),minmax(0,1fr))]"
+        style={{ '--footer-columns': Math.max(columns.length, 1) } as React.CSSProperties}
+      >
         <div className="space-y-5">
           <Link href={`/${locale}`} aria-label="Robopipe" className="inline-block">
             <Image
@@ -66,6 +72,29 @@ export const Footer: React.FC<Props> = ({ footer, settings }) => {
                   </a>
                 )
               })}
+            </div>
+          )}
+          {memberships.length > 0 && (
+            <div>
+              <p className="mb-3 text-sm font-semibold text-text-invert">{t('memberOf')}</p>
+              <div className="flex flex-wrap items-center gap-4">
+                {memberships.map((membership, i) => (
+                  <a
+                    key={i}
+                    href={membership.url}
+                    target="_blank"
+                    rel="noopener"
+                    aria-label={membership.name}
+                    className="opacity-80 transition-opacity hover:opacity-100"
+                  >
+                    {/* The logo is a three-line wordmark: at icon height (20px) it is unreadable. */}
+                    <Media
+                      media={membership.logoOnDark || membership.logo}
+                      className="h-10 w-auto"
+                    />
+                  </a>
+                ))}
+              </div>
             </div>
           )}
         </div>

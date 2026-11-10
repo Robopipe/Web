@@ -1,7 +1,10 @@
 import config from '@payload-config'
 import { getPayload } from 'payload'
+import { cache } from 'react'
 
 import type { Locale } from '@/i18n/routing'
+
+import { pathFor } from './paths'
 
 /** Payload caches the instance internally — safe to call per request. */
 export const getPayloadClient = () => getPayload({ config })
@@ -105,7 +108,45 @@ export const getCaseStudies = async (locale: Locale, limit = 50) => {
   })
 }
 
+export const getCaseStudyBySlug = async (slug: string, locale: Locale, draft = false) => {
+  const payload = await getPayloadClient()
+  const result = await payload.find({
+    collection: 'case-studies',
+    where: { slug: { equals: slug } },
+    locale,
+    fallbackLocale: false,
+    draft,
+    limit: 1,
+    depth: 2,
+    overrideAccess: draft,
+  })
+  return result.docs[0] ?? null
+}
 
+/**
+ * The published page with the pricing table and its tiers. The pricing page
+ * content is the one source of prices (Product offers in JSON-LD).
+ */
+export const getPricing = async (locale: Locale) => {
+  const payload = await getPayloadClient()
+  const pages = await payload.find({
+    collection: 'pages',
+    locale,
+    fallbackLocale: false,
+    where: { slug: { exists: true } },
+    limit: 200,
+    depth: 0,
+    select: { slug: true, layout: true },
+    ...PUBLIC_ONLY,
+  })
+  for (const page of pages.docs) {
+    const table = page.layout?.find((block) => block.blockType === 'pricingTable')
+    if (page.slug && table?.blockType === 'pricingTable') {
+      return { path: pathFor('pages', page.slug, locale), tiers: table.tiers ?? [] }
+    }
+  }
+  return null
+}
 
 /** Localized slugs of a document in every locale — for hreflang and the language switcher. */
 export const getLocalizedSlugs = async (
@@ -138,7 +179,8 @@ export const getRedirect = async (fromPath: string) => {
   return result.docs[0] ?? null
 }
 
-export const getGlobals = async (locale: Locale) => {
+/** Cached per request: the layout, metadata and JSON-LD share one read. */
+export const getGlobals = cache(async (locale: Locale) => {
   const payload = await getPayloadClient()
   const [header, footer, settings] = await Promise.all([
     payload.findGlobal({ slug: 'header', locale, depth: 2 }),
@@ -146,4 +188,4 @@ export const getGlobals = async (locale: Locale) => {
     payload.findGlobal({ slug: 'site-settings', locale, depth: 2 }),
   ])
   return { header, footer, settings }
-}
+})

@@ -8,6 +8,7 @@ import { getPayload, type Payload } from 'payload'
 import type { IconName } from '@/components/icons'
 
 import { MEDIA_ALT_CS } from './csCopyFixes'
+import { applySeoGeo } from './seoGeo'
 
 /**
  * Development/staging seed: the full site content from the approved design
@@ -1674,12 +1675,12 @@ Under the GDPR you have the right to access, correct, delete and port your data,
   const homePage = await payload.create({
     collection: 'pages',
     data: {
-      title: 'Robopipe — Vizuální kontrola kvality, kterou svůj produkt naučíte sami',
+      title: 'Robopipe | AI kontrola kvality, která se váš produkt naučí sama',
       slug: 'home',
       layout: homeLayout({
         hero: {
           chip: 'Průmyslové strojové vidění',
-          h1: 'AI kontrola kvality, kterou svůj produkt naučíte sami.',
+          h1: 'AI kontrola kvality, která se váš produkt naučí sama.',
           sub: 'Robopipe přináší AI kontrolu kvality všude, kudy procházejí vaše produkty — do potravinářské výroby, farmaceutického balení, e-commerce fulfilmentu i logistických skladů. Vady zachytíte hned, jak vzniknou. A nepotřebujete k tomu datové vědce.',
           primary: 'Domluvit demo',
           secondary: 'Zobrazit ceník',
@@ -1785,7 +1786,7 @@ Under the GDPR you have the right to access, correct, delete and port your data,
         },
       }),
       seo: {
-        title: 'Robopipe — Vizuální kontrola kvality, kterou svůj produkt naučíte sami',
+        title: 'Robopipe | AI kontrola kvality, která se váš produkt naučí sama',
         description:
           'Robopipe přináší AI vizuální kontrolu kvality do potravinářství, farmacie, retailu i logistiky. Utěsněná kamera IP67, trénink modelů svépomocí, živý přehled na hale. Domluvte si demo.',
       },
@@ -1797,12 +1798,12 @@ Under the GDPR you have the right to access, correct, delete and port your data,
     id: homePage.id,
     locale: 'en',
     data: {
-      title: 'Robopipe — Visual quality control your own team trains',
+      title: 'Robopipe | AI quality control that learns your product on its own',
       slug: 'home',
       layout: homeLayout({
         hero: {
           chip: 'Industrial machine vision',
-          h1: 'AI quality control your own team trains.',
+          h1: 'AI quality control that learns your product on its own.',
           sub: 'Robopipe puts deep-learning inspection wherever your products move — in food plants, pharma packaging, retail fulfilment and logistics hubs. Catch defects in real time. No data scientists required.',
           primary: 'Book a demo',
           secondary: 'See pricing',
@@ -1908,7 +1909,7 @@ Under the GDPR you have the right to access, correct, delete and port your data,
         },
       }),
       seo: {
-        title: 'Robopipe — Visual quality control your own team trains',
+        title: 'Robopipe | AI quality control that learns your product on its own',
         description:
           'Robopipe puts deep-learning visual inspection across food, pharma, retail and logistics operations. Sealed IP67 camera, self-service training, live floor dashboard. Book a demo.',
       },
@@ -2091,7 +2092,7 @@ Under the GDPR you have the right to access, correct, delete and port your data,
         },
       ],
       defaultSeo: {
-        title: 'Robopipe — Vizuální kontrola kvality, kterou svůj produkt naučíte sami',
+        title: 'Robopipe | AI kontrola kvality, která se váš produkt naučí sama',
         description:
           'AI vizuální kontrola kvality pro potravinářství, farmacii, retail a logistiku. Utěsněná kamera IP67, trénink modelů svépomocí, živý přehled na hale.',
         image: media.tabletLine,
@@ -2109,13 +2110,20 @@ Under the GDPR you have the right to access, correct, delete and port your data,
         mapImage: media.contactMap,
       },
       defaultSeo: {
-        title: 'Robopipe — Visual quality control your own team trains',
+        title: 'Robopipe | AI quality control that learns your product on its own',
         description:
           'Deep-learning visual inspection for food, pharma, retail and logistics. Sealed IP67 camera, self-service training, live floor dashboard.',
         image: media.tabletLine,
       },
     },
   })
+
+  // SEO and GEO content (issue #2), the same files the production script reads.
+  // SKIP_SEO_GEO=1 leaves the database as production is before that script runs.
+  if (process.env.SKIP_SEO_GEO !== '1') {
+    const report = await applySeoGeo(payload, { status: 'published' })
+    payload.logger.info(`SEO/GEO content: ${report.created.length} created, ${report.updated.length} updated.`)
+  }
 
   payload.logger.info('Seed complete. Admin login: admin@robopipe.io / admin')
   process.exit(0)

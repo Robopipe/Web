@@ -4,6 +4,7 @@ import { authenticated, publishedOrLoggedIn } from '@/access'
 import { seoField } from '@/fields/seo'
 import { slugField } from '@/fields/slug'
 import { revalidateAfterChange, revalidateAfterDelete } from '@/hooks/revalidate'
+import { generatePreviewPath } from '@/lib/preview'
 
 export const CaseStudies: CollectionConfig = {
   slug: 'case-studies',
@@ -11,6 +12,13 @@ export const CaseStudies: CollectionConfig = {
     useAsTitle: 'title',
     defaultColumns: ['title', 'customer', '_status', 'updatedAt'],
     group: 'Content',
+    livePreview: {
+      url: ({ data, locale }) =>
+        generatePreviewPath({ collection: 'case-studies', slug: data?.slug, locale: locale.code }),
+      openByDefault: true,
+    },
+    preview: (data, { locale }) =>
+      generatePreviewPath({ collection: 'case-studies', slug: data?.slug as string, locale }),
   },
   access: {
     read: publishedOrLoggedIn,
@@ -99,13 +107,22 @@ export const CaseStudies: CollectionConfig = {
         },
       ],
     },
+    // Detail page sections, rendered in this order. Empty sections are skipped.
+    { name: 'problem', type: 'richText', localized: true },
+    { name: 'solution', type: 'richText', localized: true },
+    { name: 'result', type: 'richText', localized: true },
     {
-      name: 'content',
+      name: 'technique',
       type: 'richText',
       localized: true,
-      admin: {
-        description: 'Optional long-form body — case studies are listing-only in v1.',
-      },
+      admin: { description: 'Used techniques, e.g. object detection, counting, classification.' },
+    },
+    {
+      name: 'faqs',
+      type: 'relationship',
+      relationTo: 'faqs',
+      hasMany: true,
+      admin: { description: 'Shown on the detail page and as FAQPage structured data.' },
     },
     seoField,
   ],

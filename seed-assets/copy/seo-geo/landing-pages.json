@@ -1,0 +1,580 @@
+{
+  "pages": [
+    {
+      "key": "camera-quality-inspection",
+      "image": "camera-line.jpeg",
+      "caseStudies": [
+        "crocodille-line-quality",
+        "mg-servis-packaging-checks",
+        "wolfberry-capsule-counting"
+      ],
+      "faqs": [
+        "cqi-sanitation",
+        "cqi-speed",
+        "cqi-reject",
+        "cqi-hardware",
+        "cqi-offline"
+      ],
+      "cs": {
+        "title": "Kamerová kontrola kvality",
+        "slug": "kamerova-kontrola-kvality",
+        "seo": {
+          "title": "Kamerová kontrola kvality na výrobní lince | Robopipe",
+          "description": "Kamerová kontrola kvality každého kusu přímo na lince. Utěsněná kamera IP67, vyhodnocení do 50 ms a živý přehled na hale. Nasazení do jednoho dne."
+        },
+        "hero": {
+          "eyebrow": "Kamerová kontrola kvality",
+          "heading": "Kamerová kontrola kvality každého kusu přímo na lince",
+          "text": "Robopipe namontuje utěsněnou kameru nad váš pás a zkontroluje každý kus, který pod ní projede. Vadný kus zachytíte hned, ne až v reklamaci.",
+          "button": "Domluvit demo"
+        },
+        "steps": {
+          "heading": "Od montáže k první kontrole za jeden den",
+          "text": "Žádní integrátoři, žádné dlouhé projekty.",
+          "items": [
+            [
+              "Namontujeme kameru",
+              "Přijedeme k vám a namontujeme utěsněnou kameru nad linku, i v mokrém, chladném nebo prašném provozu."
+            ],
+            [
+              "Přidáte svůj produkt",
+              "Nasnímáte sadu snímků, označíte je a natrénujete model. Průvodce vás provede od začátku do konce."
+            ],
+            [
+              "Kontrolujete každý kus",
+              "Obsluha vidí výsledek každého kusu na displeji na hale, vedoucí trendy v analytickém portálu."
+            ]
+          ],
+          "stats": [
+            [
+              "< 1 den",
+              "do první kontroly"
+            ],
+            [
+              "IP67",
+              "krytí i pro mokré provozy"
+            ],
+            [
+              "50 ms",
+              "na vyhodnocení kusu"
+            ]
+          ]
+        },
+        "caseStudiesHeading": "Kamerová kontrola v provozu",
+        "faqHeading": "Časté otázky ke kamerové kontrole kvality",
+        "cta": {
+          "heading": "Vyzkoušejte kamerovou kontrolu na vlastních produktech.",
+          "text": "Domluvte si půlhodinové demo a projdeme si, jak by kontrola vypadala na vaší lince.",
+          "button": "Domluvit demo"
+        },
+        "content": "landing-camera-quality-inspection.cs.md"
+      },
+      "en": {
+        "title": "Camera quality inspection",
+        "slug": "camera-quality-inspection",
+        "seo": {
+          "title": "Camera quality inspection on the production line | Robopipe",
+          "description": "Camera quality inspection of every piece, right on the line. Sealed IP67 camera, a verdict within 50 ms and a live floor dashboard. Live within a day."
+        },
+        "hero": {
+          "eyebrow": "Camera quality inspection",
+          "heading": "Camera quality inspection of every piece, right on the line",
+          "text": "Robopipe mounts a sealed camera over your belt and checks every piece that passes under it. You catch a bad piece at once, not in a customer complaint.",
+          "button": "Book a demo"
+        },
+        "steps": {
+          "heading": "From mounting to the first check in one day",
+          "text": "No integrators, no long projects.",
+          "items": [
+            [
+              "We mount the camera",
+              "We come to your site and mount the sealed camera over the line, also in wet, cold or dusty operations."
+            ],
+            [
+              "You add your product",
+              "Capture a set of images, label them and train the model. A wizard guides you from start to finish."
+            ],
+            [
+              "You check every piece",
+              "Operators see the verdict for every piece on the floor display, managers see trends in the analytics portal."
+            ]
+          ],
+          "stats": [
+            [
+              "< 1 day",
+              "to the first check"
+            ],
+            [
+              "IP67",
+              "rated for wet operations"
+            ],
+            [
+              "50 ms",
+              "to judge a piece"
+            ]
+          ]
+        },
+        "caseStudiesHeading": "Camera inspection in production",
+        "faqHeading": "Camera quality inspection FAQ",
+        "cta": {
+          "heading": "Try camera inspection on your own products.",
+          "text": "Book a 30-minute demo and we will walk through what inspection would look like on your line.",
+          "button": "Book a demo"
+        },
+        "content": "landing-camera-quality-inspection.md"
+      }
+    },
+    {
+      "key": "ai-quality-inspection",
+      "image": "inspection-detection.jpg",
+      "caseStudies": [
+        "crocodille-line-quality",
+        "wolfberry-capsule-counting",
+        "ai-product-tagging"
+      ],
+      "faqs": [
+        "aqi-data-scientists",
+        "aqi-samples",
+        "aqi-change",
+        "aqi-vs-rules",
+        "aqi-rollback"
+      ],
+      "cs": {
+        "title": "AI kontrola kvality",
+        "slug": "ai-kontrola-kvality",
+        "seo": {
+          "title": "AI kontrola kvality naučená na vašich výrobcích | Robopipe",
+          "description": "AI kontrola kvality se učí ze snímků vašich výrobků. Nové produkty přidáte sami, bez programování pravidel a bez datových vědců."
+        },
+        "hero": {
+          "eyebrow": "AI kontrola kvality",
+          "heading": "AI kontrola kvality, která se učí na vašich výrobcích",
+          "text": "Místo ručně psaných pravidel se model učí ze snímků vašich výrobků. Nový produkt přidáte do kontroly za pár minut.",
+          "button": "Domluvit demo"
+        },
+        "steps": {
+          "heading": "Od prvních snímků k hotovému modelu",
+          "text": "Strojové učení znát nepotřebujete. Průvodce vás provede každým krokem.",
+          "items": [
+            [
+              "Nasnímejte",
+              "Sadu snímků pořídíte přímo na lince."
+            ],
+            [
+              "Označte",
+              "V aplikaci Studio třídíte náhledy na OK a NOK nebo kreslíte rámečky kolem vad."
+            ],
+            [
+              "Natrénujte",
+              "Model natrénujete na řídicí jednotce nebo ve vlastní infrastruktuře."
+            ],
+            [
+              "Kontrolujte",
+              "Model vyhodnotí každý kus do 50 ms přímo u linky."
+            ]
+          ],
+          "stats": [
+            [
+              "0",
+              "datových vědců potřeba"
+            ],
+            [
+              "50 ms",
+              "na vyhodnocení kusu"
+            ],
+            [
+              "1 klik",
+              "zpět k předchozímu modelu"
+            ]
+          ]
+        },
+        "caseStudiesHeading": "AI kontrola kvality u zákazníků",
+        "faqHeading": "Časté otázky k AI kontrole kvality",
+        "cta": {
+          "heading": "Vyzkoušejte AI kontrolu kvality na vlastních produktech.",
+          "text": "Domluvte si půlhodinové demo a na vlastní oči uvidíte, jak AI najde vady přímo na vašem produktu.",
+          "button": "Domluvit demo"
+        },
+        "content": "landing-ai-quality-inspection.cs.md"
+      },
+      "en": {
+        "title": "AI quality inspection",
+        "slug": "ai-quality-inspection",
+        "seo": {
+          "title": "AI quality inspection trained on your products | Robopipe",
+          "description": "AI quality inspection that learns from images of your products. Add new products yourself, without writing rules and without data scientists."
+        },
+        "hero": {
+          "eyebrow": "AI quality inspection",
+          "heading": "AI quality inspection that learns from your products",
+          "text": "Instead of hand-written rules, the model learns from images of your products. You add a new product to inspection in minutes.",
+          "button": "Book a demo"
+        },
+        "steps": {
+          "heading": "From the first images to a working model",
+          "text": "You do not need to know machine learning. A wizard guides you through every step.",
+          "items": [
+            [
+              "Capture",
+              "Take a set of images right on the line."
+            ],
+            [
+              "Label",
+              "In the Studio app, sort thumbnails into OK and NOK or draw boxes around defects."
+            ],
+            [
+              "Train",
+              "Train the model on the controller or on your own infrastructure."
+            ],
+            [
+              "Inspect",
+              "The model judges every piece within 50 ms, right at the line."
+            ]
+          ],
+          "stats": [
+            [
+              "0",
+              "data scientists needed"
+            ],
+            [
+              "50 ms",
+              "to judge a piece"
+            ],
+            [
+              "1 click",
+              "back to the previous model"
+            ]
+          ]
+        },
+        "caseStudiesHeading": "AI quality inspection at customers",
+        "faqHeading": "AI quality inspection FAQ",
+        "cta": {
+          "heading": "Try AI quality inspection on your own products.",
+          "text": "Book a 30-minute demo and see for yourself how AI finds defects on your product.",
+          "button": "Book a demo"
+        },
+        "content": "landing-ai-quality-inspection.md"
+      }
+    },
+    {
+      "key": "computer-vision",
+      "image": "dataset-sample.png",
+      "caseStudies": [
+        "wolfberry-capsule-counting",
+        "ai-product-tagging",
+        "mg-servis-packaging-checks"
+      ],
+      "faqs": [
+        "cv-vs-machine-vision",
+        "cv-tasks",
+        "cv-gpu",
+        "cv-open-source"
+      ],
+      "cs": {
+        "title": "Počítačové vidění",
+        "slug": "pocitacove-videni",
+        "seo": {
+          "title": "Počítačové vidění v průmyslu: co umí a kde pomáhá | Robopipe",
+          "description": "Počítačové vidění srozumitelně: klasifikace, detekce a počítání z obrazu. Kde se v průmyslu použije a jak ho Robopipe nasadí na vaši linku."
+        },
+        "hero": {
+          "eyebrow": "Počítačové vidění",
+          "heading": "Počítačové vidění: co umí a kde se použije v průmyslu",
+          "text": "Počítačové vidění učí počítač rozumět obrazu. Ve výrobě a ve skladu z něj vznikají kontroly, které běží u každého kusu a každou směnu.",
+          "button": "Domluvit demo"
+        },
+        "steps": {
+          "heading": "Čtyři kroky každého nasazení",
+          "text": "Každé nasazení Robopipe stojí na stejné otevřené pipeline.",
+          "items": [
+            [
+              "Nasnímat",
+              "Kamera snímá podle pulzu enkodéru, světelné závory nebo snímkové frekvence."
+            ],
+            [
+              "Označit",
+              "Snímky označíte v aplikaci Studio, navržené pro obsluhu linky."
+            ],
+            [
+              "Natrénovat",
+              "Trénink běží na řídicí jednotce nebo ve vaší infrastruktuře."
+            ],
+            [
+              "Vyhodnotit",
+              "Model rozhodne o každém kusu a výsledek sepne vaše stroje."
+            ]
+          ]
+        },
+        "caseStudiesHeading": "Počítačové vidění v praxi",
+        "faqHeading": "Časté otázky k počítačovému vidění",
+        "cta": {
+          "heading": "Co kamera uvidí, to se Robopipe naučí.",
+          "text": "Napište nám, co vyrábíte, a ukážeme vám, jak by kontrola vypadala u vás.",
+          "button": "Domluvit demo"
+        },
+        "content": "landing-computer-vision.cs.md"
+      },
+      "en": {
+        "title": "Computer vision",
+        "slug": "computer-vision",
+        "seo": {
+          "title": "Computer vision in industry: what it does | Robopipe",
+          "description": "Computer vision in plain words: classification, detection and counting from images. Where industry uses it and how Robopipe puts it on your line."
+        },
+        "hero": {
+          "eyebrow": "Computer vision",
+          "heading": "Computer vision: what it does and where industry uses it",
+          "text": "Computer vision teaches a computer to understand images. In factories and warehouses it becomes checks that run on every piece, every shift.",
+          "button": "Book a demo"
+        },
+        "steps": {
+          "heading": "Four steps in every deployment",
+          "text": "Every Robopipe deployment runs on the same open pipeline.",
+          "items": [
+            [
+              "Capture",
+              "The camera captures on an encoder pulse, a light barrier or a frame rate."
+            ],
+            [
+              "Label",
+              "You label images in the Studio app, built for line operators."
+            ],
+            [
+              "Train",
+              "Training runs on the controller or on your own infrastructure."
+            ],
+            [
+              "Evaluate",
+              "The model decides on every piece and the verdict drives your machines."
+            ]
+          ]
+        },
+        "caseStudiesHeading": "Computer vision in practice",
+        "faqHeading": "Computer vision FAQ",
+        "cta": {
+          "heading": "If the camera can see it, Robopipe can learn it.",
+          "text": "Tell us what you make and we will show you what inspection would look like for you.",
+          "button": "Book a demo"
+        },
+        "content": "landing-computer-vision.md"
+      }
+    },
+    {
+      "key": "machine-vision",
+      "image": "factory-belt.jpg",
+      "caseStudies": [
+        "mg-servis-packaging-checks",
+        "crocodille-line-quality",
+        "wolfberry-capsule-counting"
+      ],
+      "faqs": [
+        "mv-plc",
+        "mv-erp",
+        "mv-integrator",
+        "mv-vs-classic",
+        "mv-wet"
+      ],
+      "cs": {
+        "title": "Strojové vidění",
+        "slug": "strojove-videni",
+        "seo": {
+          "title": "Strojové vidění na výrobní lince za jeden den | Robopipe",
+          "description": "Strojové vidění s kamerou IP67, řídicí jednotkou AI PLC a napojením přes Modbus a EtherCAT. Srovnání s klasickými systémy a nasazení do jednoho dne."
+        },
+        "hero": {
+          "eyebrow": "Strojové vidění",
+          "heading": "Strojové vidění, které na lince běží do jednoho dne",
+          "text": "Robopipe spojuje kameru, řídicí jednotku a model do jednoho systému. Napojí se na stroje a systémy, které už provozujete.",
+          "button": "Domluvit demo"
+        },
+        "steps": {
+          "heading": "Jak nasazení probíhá",
+          "text": "Všechno máte od prvního dne ve svých rukou.",
+          "items": [
+            [
+              "Nainstalujeme u vás",
+              "Namontujeme utěsněnou kameru nad linku a všechno na místě zprovozníme."
+            ],
+            [
+              "Přidáte svůj produkt",
+              "Nasnímáte sadu snímků, označíte je a natrénujete model."
+            ],
+            [
+              "Spustíte s podporou v zádech",
+              "Obsluha vidí kvalitu na displeji na hale. My jsme vám k ruce se servisem a podporou."
+            ]
+          ],
+          "stats": [
+            [
+              "< 1 den",
+              "do první kontroly"
+            ],
+            [
+              "IP67",
+              "krytí i pro mokré provozy"
+            ],
+            [
+              "24/7",
+              "monitoring"
+            ]
+          ]
+        },
+        "caseStudiesHeading": "Strojové vidění na linkách zákazníků",
+        "faqHeading": "Časté otázky ke strojovému vidění",
+        "cta": {
+          "heading": "Třeba je na řadě právě vaše linka.",
+          "text": "Domluvte si půlhodinové demo a projdeme si, jak by nasazení vypadalo na lince, jako je ta vaše.",
+          "button": "Domluvit demo"
+        },
+        "content": "landing-machine-vision.cs.md"
+      },
+      "en": {
+        "title": "Machine vision",
+        "slug": "machine-vision",
+        "seo": {
+          "title": "Machine vision on your production line in a day | Robopipe",
+          "description": "Machine vision with an IP67 camera, an AI PLC controller and Modbus and EtherCAT integration. How it compares with classic systems. Live within a day."
+        },
+        "hero": {
+          "eyebrow": "Machine vision",
+          "heading": "Machine vision that runs on your line within a day",
+          "text": "Robopipe combines the camera, the controller and the model in one system. It connects to the machines and systems you already run.",
+          "button": "Book a demo"
+        },
+        "steps": {
+          "heading": "How a deployment works",
+          "text": "Everything is in your hands from day one.",
+          "items": [
+            [
+              "We install on site",
+              "We mount the sealed camera over the line and commission everything on site."
+            ],
+            [
+              "You add your product",
+              "Capture a set of images, label them and train the model."
+            ],
+            [
+              "Go live with support",
+              "Operators see quality on the floor display. We stay on hand with service and support."
+            ]
+          ],
+          "stats": [
+            [
+              "< 1 day",
+              "to the first check"
+            ],
+            [
+              "IP67",
+              "rated for wet operations"
+            ],
+            [
+              "24/7",
+              "monitoring"
+            ]
+          ]
+        },
+        "caseStudiesHeading": "Machine vision on customer lines",
+        "faqHeading": "Machine vision FAQ",
+        "cta": {
+          "heading": "Your line could be next.",
+          "text": "Book a 30-minute demo and we will walk through a deployment on a line like yours.",
+          "button": "Book a demo"
+        },
+        "content": "landing-machine-vision.md"
+      }
+    },
+    {
+      "key": "auto-annotation",
+      "image": "annotate-ui.png",
+      "caseStudies": [],
+      "faqs": [
+        "aa-what",
+        "aa-availability",
+        "aa-approve",
+        "aa-descriptions",
+        "aa-batch",
+        "aa-data"
+      ],
+      "cs": {
+        "title": "Automatická anotace",
+        "slug": "automaticka-anotace",
+        "seo": {
+          "title": "Automatická anotace snímků pro trénink modelů | Robopipe",
+          "description": "Robopipe Vision navrhne rámečky podle popisu vašich štítků. Vy je zkontrolujete, opravíte a schválíte. Automatická anotace v aplikaci Robopipe Studio."
+        },
+        "hero": {
+          "eyebrow": "Automatická anotace",
+          "heading": "Automatická anotace: rámečky navrhne AI, vy je zkontrolujete a schválíte",
+          "text": "Robopipe Vision v aplikaci Studio najde na snímku objekty podle popisu vašich štítků a nakreslí kolem nich rámečky. Vy je zkontrolujete a schválíte.",
+          "button": "Domluvit demo"
+        },
+        "steps": {
+          "heading": "Od popisu štítku ke schváleným rámečkům",
+          "text": "Každý návrh kontroluje člověk. Nic se neuloží bez vašeho schválení.",
+          "items": [
+            [
+              "Popište štítky",
+              "Ke každému štítku napíšete, podle čeho ho poznat. Popis umí navrhnout i Robopipe Vision."
+            ],
+            [
+              "Spusťte anotaci",
+              "Jeden snímek z lišty, nebo víc vybraných snímků najednou ze seznamu dat."
+            ],
+            [
+              "Zkontrolujte a schvalte",
+              "Rámečky upravíte nebo smažete a tlačítkem Schválit je uložíte."
+            ]
+          ]
+        },
+        "caseStudiesHeading": "",
+        "faqHeading": "Časté otázky k automatické anotaci",
+        "cta": {
+          "heading": "Chcete vidět automatickou anotaci na svých snímcích?",
+          "text": "Domluvte si půlhodinové demo a ukážeme vám, jak Robopipe Vision označí vaše data.",
+          "button": "Domluvit demo"
+        },
+        "content": "landing-auto-annotation.cs.md"
+      },
+      "en": {
+        "title": "Auto annotation",
+        "slug": "auto-annotation",
+        "seo": {
+          "title": "Auto annotation of images for model training | Robopipe",
+          "description": "Robopipe Vision proposes boxes from your label descriptions. You review, correct and approve them. Auto annotation in the Robopipe Studio app."
+        },
+        "hero": {
+          "eyebrow": "Auto annotation",
+          "heading": "Auto annotation: AI proposes the boxes, you review and approve them",
+          "text": "Robopipe Vision in the Studio app finds objects in an image from your label descriptions and draws boxes around them. You review and approve them.",
+          "button": "Book a demo"
+        },
+        "steps": {
+          "heading": "From a label description to approved boxes",
+          "text": "A person reviews every proposal. Nothing is saved without your approval.",
+          "items": [
+            [
+              "Describe your labels",
+              "Write how to recognise each label. Robopipe Vision can suggest the description too."
+            ],
+            [
+              "Start the run",
+              "One image from the toolbar, or several selected images at once from the data source list."
+            ],
+            [
+              "Review and approve",
+              "Edit or delete boxes, then save them with Approve."
+            ]
+          ]
+        },
+        "caseStudiesHeading": "",
+        "faqHeading": "Auto annotation FAQ",
+        "cta": {
+          "heading": "Want to see auto annotation on your own images?",
+          "text": "Book a 30-minute demo and we will show you how Robopipe Vision labels your data.",
+          "button": "Book a demo"
+        },
+        "content": "landing-auto-annotation.md"
+      }
+    }
+  ]
+}

@@ -429,16 +429,9 @@ export const CS_COPY_FIXES: [string, string][] = [
   // --- Round 2 (2026-07-31 feedback): chained on top of the pairs above.
   // The old strings here are the *new* values of earlier pairs — the DB is
   // already at that state; the seed was edited to the final wording directly.
-  [
-    // "learns your product by itself" was untrue — capture/annotate/train is
-    // done by the customer's team; keep the self-service angle instead.
-    'Robopipe — Vizuální kontrola kvality, která se váš produkt naučí sama',
-    'Robopipe — Vizuální kontrola kvality, kterou svůj produkt naučíte sami',
-  ],
-  [
-    'AI kontrola kvality, která se váš produkt naučí sama.',
-    'AI kontrola kvality, kterou svůj produkt naučíte sami.',
-  ],
+  // The "naučíte sami" claim pair was removed on 2026-11-10: Filip brought back
+  // "AI kontrola kvality, která se váš produkt naučí sama." in production, and a
+  // re-run of these fixes must not undo it.
   ['Pojďme dát kameru na vaši linku.', 'Pojďme dát kameru do vašeho provozu.'],
   [
     // pricing hero: "grows with your operation" sounded like ever-rising cost;
@@ -488,14 +481,8 @@ export const EN_COPY_FIXES: [string, string][] = [
   // 2026-07-31: mirror the Czech rounds 2-4 (see CS_COPY_FIXES above) —
   // truthful self-service claim, "operation" instead of "process", and the
   // pricing hero selling tireless AI labor instead of scaling cost.
-  [
-    'Robopipe — Visual quality control that learns your product',
-    'Robopipe — Visual quality control your own team trains',
-  ],
-  [
-    'AI visual control that learns your product.',
-    'AI quality control your own team trains.',
-  ],
+  // The "your own team trains" claim pair was removed on 2026-11-10, see the
+  // Czech list above.
   [
     "Let's put a camera on your process.",
     "Let's put a camera in your operation.",

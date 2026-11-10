@@ -5,7 +5,7 @@ import Link from 'next/link'
 import React from 'react'
 
 import { locales, type Locale } from '@/i18n/routing'
-import { suppressLocaleSuggestion } from '@/lib/localeSuggestion'
+import { commitLocaleChoice } from '@/lib/localeSuggestion'
 import { useLocaleHref } from '@/lib/useLocaleHref'
 
 export const LanguageSwitcher: React.FC = () => {
@@ -25,7 +25,9 @@ export const LanguageSwitcher: React.FC = () => {
           ) : (
             <Link
               href={hrefFor(target)}
-              onClick={suppressLocaleSuggestion}
+              // An explicit switch is the stored choice for the root `/` and
+              // silences the locale suggestion too.
+              onClick={() => commitLocaleChoice(target)}
               className="px-1 text-text-invert-60 transition-colors hover:text-brand"
             >
               {target.toUpperCase()}

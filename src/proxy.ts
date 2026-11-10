@@ -1,11 +1,17 @@
+import { hasLocale } from 'next-intl'
 import createMiddleware from 'next-intl/middleware'
-import type { NextRequest } from 'next/server'
+import { NextResponse, type NextRequest } from 'next/server'
 
-import { routing } from './i18n/routing'
+import { LOCALE_COOKIE, routing } from './i18n/routing'
+import { localeFromAcceptLanguage } from './lib/acceptLanguage'
 
-// Locale detection order: an explicit path prefix or a stored preference (cookie,
-// set once a visitor uses the footer switcher) always wins. Otherwise the browser's
-// Accept-Language is negotiated against cs/en. `routing.defaultLocale` (Czech) stays
+// Locale detection order: an explicit path prefix always wins. On the root `/`,
+// a stored choice (NEXT_LOCALE, written only when the visitor picks a language
+// in the footer or the locale suggestion) comes next. Otherwise the browser's
+// Accept-Language picks the first served language in order of preference
+// (sk counts as cs). next-intl alone would prefer an exact `en` fallback over
+// `sk-SK`, so the root does this itself. A header with neither gives en.
+// next-intl itself neither reads nor writes the cookie (routing.localeCookie). `routing.defaultLocale` (Czech) stays
 // the site's canonical default for slugs, sitemaps, etc., but when a visitor's
 // browser names neither cs nor en we land them on English rather than Czech.
 const intlMiddleware = createMiddleware({ ...routing, defaultLocale: 'en' })
@@ -16,8 +22,20 @@ const GEO_COOKIE = 'geo-country'
 const GEO_HEADER = 'x-vercel-ip-country'
 const VALID_COUNTRY = /^[A-Z]{2}$/
 
+const rootRedirect = (request: NextRequest): NextResponse | undefined => {
+  if (request.nextUrl.pathname !== '/') return undefined
+  const stored = request.cookies.get(LOCALE_COOKIE)?.value
+  const locale = hasLocale(routing.locales, stored)
+    ? stored
+    : localeFromAcceptLanguage(request.headers.get('accept-language'))
+  if (!locale) return undefined
+  const url = request.nextUrl.clone()
+  url.pathname = `/${locale}`
+  return NextResponse.redirect(url, 307)
+}
+
 export default function proxy(request: NextRequest) {
-  const response = intlMiddleware(request)
+  const response = rootRedirect(request) ?? intlMiddleware(request)
 
   const country = request.headers.get(GEO_HEADER)
   const isNewCountry = country && request.cookies.get(GEO_COOKIE)?.value !== country

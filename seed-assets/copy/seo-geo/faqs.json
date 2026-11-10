@@ -1,0 +1,332 @@
+{
+  "cqi-sanitation": {
+    "cs": {
+      "q": "Vydrží kamera sanitaci a tlakové mytí?",
+      "a": "Ano. Kamera má krytí IP67 a je plně utěsněná. Vydrží páru, tlakové mytí, prach i mráz v chladírně."
+    },
+    "en": {
+      "q": "Does the camera survive sanitation and pressure washing?",
+      "a": "Yes. The camera is IP67 rated and fully sealed. It handles steam, pressure washing, dust and freezer cold."
+    }
+  },
+  "cqi-speed": {
+    "cs": {
+      "q": "Zpomalí kamerová kontrola linku?",
+      "a": "Ne. Kamera se montuje nad stávající pás a každý kus vyhodnotí do 50 milisekund. Linka nepotřebuje žádný mechanický krok navíc."
+    },
+    "en": {
+      "q": "Does camera inspection slow the line down?",
+      "a": "No. The camera mounts over your existing belt and judges every piece within 50 milliseconds. The line needs no extra mechanical step."
+    }
+  },
+  "cqi-reject": {
+    "cs": {
+      "q": "Jak se vadný kus dostane z linky?",
+      "a": "Řídicí jednotka AI PLC sepne váš stávající vyhazovač nebo signální maják. Výsledek umí poslat i přes Modbus nebo EtherCAT do vašeho PLC."
+    },
+    "en": {
+      "q": "How does a bad piece get off the line?",
+      "a": "The AI PLC controller fires your existing reject mechanism or signal beacon. It can also send the verdict to your PLC over Modbus or EtherCAT."
+    }
+  },
+  "cqi-hardware": {
+    "cs": {
+      "q": "Musíme kameru kupovat?",
+      "a": "Ne. Kamera s krytím IP67 i řídicí jednotka AI PLC jsou v placených tarifech zahrnuté formou pronájmu. Hardware zvlášť nekupujete."
+    },
+    "en": {
+      "q": "Do we have to buy the camera?",
+      "a": "No. The IP67 camera and the AI PLC controller come with every paid plan as a rental. You do not buy the hardware separately."
+    }
+  },
+  "cqi-offline": {
+    "cs": {
+      "q": "Funguje kontrola bez internetu?",
+      "a": "Ano. Model vyhodnocuje snímky přímo na řídicí jednotce u linky, takže kontrola funguje i offline."
+    },
+    "en": {
+      "q": "Does inspection work without internet?",
+      "a": "Yes. The model judges images on the controller at the line, so inspection also works offline."
+    }
+  },
+  "aqi-data-scientists": {
+    "cs": {
+      "q": "Potřebujeme k AI kontrole kvality datové vědce?",
+      "a": "Ne. Průvodce vás provede nasnímáním, označením i tréninkem modelu. Strojové učení znát nepotřebujete."
+    },
+    "en": {
+      "q": "Do we need data scientists for AI quality inspection?",
+      "a": "No. A wizard guides you through capturing, labelling and training. You do not need to know machine learning."
+    }
+  },
+  "aqi-samples": {
+    "cs": {
+      "q": "Kolik snímků potřebujeme na začátek?",
+      "a": "Na začátek stačí několik správných kusů. Ukážete je kameře, potvrdíte, jak má vypadat kus v pořádku, a kontrola může začít."
+    },
+    "en": {
+      "q": "How many images do we need to start?",
+      "a": "A few good pieces are enough to start. Show them to the camera, confirm what a good piece looks like and inspection can start."
+    }
+  },
+  "aqi-change": {
+    "cs": {
+      "q": "Co když se změní produkt nebo receptura?",
+      "a": "Přidáte nové snímky a model přetrénujete. Tarif Standard má 5 tréninků modelu měsíčně, tarify Pro a Enterprise neomezeně."
+    },
+    "en": {
+      "q": "What if the product or recipe changes?",
+      "a": "Add new images and retrain the model. The Standard plan includes 5 model trainings a month, Pro and Enterprise are unlimited."
+    }
+  },
+  "aqi-vs-rules": {
+    "cs": {
+      "q": "Jaký je rozdíl mezi AI kontrolou a klasickým strojovým viděním?",
+      "a": "Klasické strojové vidění kontroluje podle nastavených pravidel. AI kontrola se učí z označených snímků, takže zvládne i výrobky, které vypadají pokaždé trochu jinak."
+    },
+    "en": {
+      "q": "How does AI inspection differ from classic machine vision?",
+      "a": "Classic machine vision checks against rules that someone sets. AI inspection learns from labelled images, so it also handles products that look a little different every time."
+    }
+  },
+  "aqi-rollback": {
+    "cs": {
+      "q": "Můžeme se vrátit ke staršímu modelu?",
+      "a": "Ano. Datasety, anotace, konfigurace i váhy modelu jsou verzované. K předchozímu modelu se vrátíte jedním kliknutím."
+    },
+    "en": {
+      "q": "Can we go back to an older model?",
+      "a": "Yes. Datasets, annotations, configurations and model weights are versioned. You roll back to the previous model with one click."
+    }
+  },
+  "cv-vs-machine-vision": {
+    "cs": {
+      "q": "Jaký je rozdíl mezi počítačovým a strojovým viděním?",
+      "a": "Počítačové vidění je obecný obor, který učí počítač rozumět obrazu. Strojové vidění je jeho průmyslové použití: kamera na lince, vyhodnocení v taktu výroby a napojení na stroje."
+    },
+    "en": {
+      "q": "What is the difference between computer vision and machine vision?",
+      "a": "Computer vision is the general field that teaches computers to understand images. Machine vision is its industrial use: a camera on the line, a verdict at line speed and a connection to machines."
+    }
+  },
+  "cv-tasks": {
+    "cs": {
+      "q": "Co počítačové vidění umí ve výrobě?",
+      "a": "Nejčastěji tři úlohy: klasifikaci (OK nebo NOK), detekci objektů (vady, cizí předměty) a počítání kusů. Z nich se skládají konkrétní kontroly."
+    },
+    "en": {
+      "q": "What can computer vision do in manufacturing?",
+      "a": "Mostly three tasks: classification (OK or NOK), object detection (defects, foreign objects) and counting. Specific checks are built from them."
+    }
+  },
+  "cv-gpu": {
+    "cs": {
+      "q": "Potřebujeme vlastní server s GPU?",
+      "a": "Ne. Model běží na řídicí jednotce AI PLC u linky. Trénovat můžete na jednotce nebo ve vlastní infrastruktuře."
+    },
+    "en": {
+      "q": "Do we need our own GPU server?",
+      "a": "No. The model runs on the AI PLC controller at the line. You can train on the controller or on your own infrastructure."
+    }
+  },
+  "cv-open-source": {
+    "cs": {
+      "q": "Je Robopipe open source?",
+      "a": "Ano. Open-source variantu si provozujete na vlastní infrastruktuře, běží i na Raspberry Pi. Podporu poskytuje komunita na GitHubu."
+    },
+    "en": {
+      "q": "Is Robopipe open source?",
+      "a": "Yes. You run the open-source edition on your own infrastructure, and it even runs on a Raspberry Pi. The community provides support on GitHub."
+    }
+  },
+  "mv-plc": {
+    "cs": {
+      "q": "Napojí se Robopipe na naše PLC?",
+      "a": "Ano. Řídicí jednotka AI PLC má analogové i digitální vstupy a výstupy, RS485/RS232, Modbus a EtherCAT po Ethernetu."
+    },
+    "en": {
+      "q": "Does Robopipe connect to our PLC?",
+      "a": "Yes. The AI PLC controller has analogue and digital I/O, RS485/RS232, Modbus and EtherCAT over Ethernet."
+    }
+  },
+  "mv-erp": {
+    "cs": {
+      "q": "Napojíte Robopipe na naše ERP nebo MES?",
+      "a": "Ano, v tarifu Enterprise. Robopipe propojíme s vaším ERP i MES přes Modbus, EtherCAT nebo Ethernet."
+    },
+    "en": {
+      "q": "Can you connect Robopipe to our ERP or MES?",
+      "a": "Yes, on the Enterprise plan. We connect Robopipe to your ERP and MES over Modbus, EtherCAT or Ethernet."
+    }
+  },
+  "mv-integrator": {
+    "cs": {
+      "q": "Potřebujeme k nasazení integrátora?",
+      "a": "Ne. V tarifech Pro a Enterprise kameru namontujeme a zprovozníme sami přímo u vás. Nové produkty pak přidáváte sami v aplikaci Studio."
+    },
+    "en": {
+      "q": "Do we need an integrator?",
+      "a": "No. On the Pro and Enterprise plans we mount and commission the camera on site ourselves. You then add new products yourself in the Studio app."
+    }
+  },
+  "mv-vs-classic": {
+    "cs": {
+      "q": "Čím se Robopipe liší od klasických systémů strojového vidění?",
+      "a": "Klasické systémy kontrolují podle pravidel. Robopipe se učí ze snímků vašich výrobků, takže nový produkt přidáte bez psaní pravidel."
+    },
+    "en": {
+      "q": "How is Robopipe different from classic machine vision systems?",
+      "a": "Classic systems check against rules. Robopipe learns from images of your products, so you add a new product without writing rules."
+    }
+  },
+  "mv-wet": {
+    "cs": {
+      "q": "Funguje to i v mokrém nebo prašném provozu?",
+      "a": "Ano. Kameru namontujeme i v mokrém, chladném nebo prašném provozu. Má krytí IP67 a vydrží tlakové mytí."
+    },
+    "en": {
+      "q": "Does it work in wet or dusty operations?",
+      "a": "Yes. We mount the camera in wet, cold or dusty operations too. It is IP67 rated and handles pressure washing."
+    }
+  },
+  "aa-what": {
+    "cs": {
+      "q": "Co automatická anotace umí?",
+      "a": "Navrhuje rámečky kolem objektů podle popisu vašich štítků (detekce objektů). Segmentace bude brzy k dispozici."
+    },
+    "en": {
+      "q": "What does auto annotation do?",
+      "a": "It proposes boxes around objects from your label descriptions (object detection). Segmentation is coming soon."
+    }
+  },
+  "aa-approve": {
+    "cs": {
+      "q": "Uloží se návrhy samy?",
+      "a": "Ne. Návrhy rámečků vždy kontroluje člověk. Rámečky upravíte nebo smažete a uložíte je až tlačítkem Schválit."
+    },
+    "en": {
+      "q": "Are the proposals saved automatically?",
+      "a": "No. A person always reviews the proposed boxes. You edit or delete boxes and save them only with Approve."
+    }
+  },
+  "aa-descriptions": {
+    "cs": {
+      "q": "Musíme ke každému štítku psát popis?",
+      "a": "Popis potřebuje aspoň jeden štítek. Štítky bez popisu automatická anotace přeskočí. Popis vám může navrhnout i Robopipe Vision z příkladu, který už máte označený."
+    },
+    "en": {
+      "q": "Do we have to describe every label?",
+      "a": "At least one label needs a description. Auto annotation skips labels without one. Robopipe Vision can also suggest a description from an example you have already labelled."
+    }
+  },
+  "aa-batch": {
+    "cs": {
+      "q": "Jde anotovat víc snímků najednou?",
+      "a": "Ano. V seznamu dat vyberete snímky a spustíte automatickou anotaci pro všechny. Snímky se zpracují souběžně a už označené snímky se přeskočí."
+    },
+    "en": {
+      "q": "Can we annotate several images at once?",
+      "a": "Yes. Select images in the data source list and run auto annotation for all of them. They run in parallel, and images that are already annotated are skipped."
+    }
+  },
+  "aa-data": {
+    "cs": {
+      "q": "Jde automatickou anotaci provozovat offline nebo přímo u nás?",
+      "a": "Ano. Pro automatickou anotaci můžete použít offline model. Případně Robopipe nasadí celé řešení přímo u vás (on-premise)."
+    },
+    "en": {
+      "q": "Can we run auto annotation offline or at our own site?",
+      "a": "Yes. You can use an offline model for auto annotation. Alternatively, Robopipe can deploy the whole solution at your site (on-premise)."
+    }
+  },
+  "cs-crocodille-checks": {
+    "cs": {
+      "q": "Kolik kontrol Robopipe dělá na jedné bagetě?",
+      "a": "Na každé bagetě u Crocodille běží 19 různých kontrol, s přesností detekce 95 %."
+    },
+    "en": {
+      "q": "How many checks does Robopipe run on one baguette?",
+      "a": "Every baguette at Crocodille goes through 19 different checks, with 95% detection precision."
+    }
+  },
+  "cs-crocodille-products": {
+    "cs": {
+      "q": "Kdo u Crocodille přidává nové produkty?",
+      "a": "Tým Crocodille sám. Ukázali jsme jim, jak označit první produkt, a každý další už si přidali sami."
+    },
+    "en": {
+      "q": "Who adds new products at Crocodille?",
+      "a": "The Crocodille team itself. We showed them how to label one product, and they added every product since themselves."
+    }
+  },
+  "cs-wolfberry-precision": {
+    "cs": {
+      "q": "Jak přesně Robopipe počítá kapsle?",
+      "a": "Přesnost počítání kapslí u Wolfberry je 99,5 %."
+    },
+    "en": {
+      "q": "How precisely does Robopipe count capsules?",
+      "a": "Capsule counting precision at Wolfberry is 99.5%."
+    }
+  },
+  "cs-wolfberry-records": {
+    "cs": {
+      "q": "Je každé plnění zdokumentované?",
+      "a": "Ano. Každé plnění je doložené snímkem. Zdokumentovaných je 100 % dóz."
+    },
+    "en": {
+      "q": "Is every fill documented?",
+      "a": "Yes. Every fill has an image record. 100% of jars are documented."
+    }
+  },
+  "cs-tagging-time": {
+    "cs": {
+      "q": "Jak dlouho trvá zalistování jedné položky?",
+      "a": "Méně než minutu."
+    },
+    "en": {
+      "q": "How long does listing one item take?",
+      "a": "Less than a minute."
+    }
+  },
+  "cs-tagging-steps": {
+    "cs": {
+      "q": "Co Robopipe při zalistování dělá?",
+      "a": "Pořídí fotku produktu, rozpozná položku, dohledá informace na internetu a vyplní záznam."
+    },
+    "en": {
+      "q": "What does Robopipe do when it lists a product?",
+      "a": "It captures a photo of the product, recognises the item, finds the information online and fills in the listing."
+    }
+  },
+  "cs-mgservis-checks": {
+    "cs": {
+      "q": "Co Robopipe na balení kontroluje?",
+      "a": "Těsnost svaru, správně zabalené fazole ve slanině a cizí předměty v obalu. Celkem 5 různých kontrol na každém balení."
+    },
+    "en": {
+      "q": "What does Robopipe check on the pack?",
+      "a": "Seal tightness, beans properly wrapped in bacon and foreign objects inside the packaging. 5 different checks per pack in total."
+    }
+  },
+  "cs-mgservis-coverage": {
+    "cs": {
+      "q": "Kolik balení Robopipe kontroluje?",
+      "a": "Každé. Kontrola balení je stoprocentní a u pásu k ní není potřeba žádný člověk navíc."
+    },
+    "en": {
+      "q": "How many packs does Robopipe check?",
+      "a": "Every one. Packaging is checked 100%, with no extra person needed on the line."
+    }
+  },
+  "aa-availability": {
+    "cs": {
+      "q": "Ve kterém tarifu je automatická anotace?",
+      "a": "Automatická anotace je v tarifech Pro a Enterprise. Open-source verze ani tarif Standard ji neobsahují."
+    },
+    "en": {
+      "q": "Which plans include auto annotation?",
+      "a": "Auto annotation is part of the Pro and Enterprise plans. The open-source edition and the Standard plan do not include it."
+    }
+  }
+}

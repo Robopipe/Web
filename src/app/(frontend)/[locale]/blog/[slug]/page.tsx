@@ -5,15 +5,24 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import React from 'react'
 
+import { JsonLd } from '@/components/JsonLd'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
 import { Media } from '@/components/Media'
 import { PostCard } from '@/components/PostCard'
 import { RichText } from '@/components/RichText'
 import { buttonClasses, Chip } from '@/components/ui'
 import { locales, type Locale } from '@/i18n/routing'
-import { buildMeta, ogImageUrl } from '@/lib/meta'
-import { SERVER_URL, pathFor } from '@/lib/paths'
-import { getLocalizedSlugs, getPostBySlug, getPosts, getRelatedPosts } from '@/lib/queries'
+import { checkedParams } from '@/lib/checkedParams'
+import { blogPostingLd, breadcrumbLd } from '@/lib/jsonLd'
+import { buildMeta } from '@/lib/meta'
+import { localizedPaths, pathFor } from '@/lib/paths'
+import {
+  getGlobals,
+  getLocalizedSlugs,
+  getPostBySlug,
+  getPosts,
+  getRelatedPosts,
+} from '@/lib/queries'
 
 export const revalidate = 600
 
@@ -33,22 +42,27 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { locale, slug } = await params
+  const { locale, slug } = await checkedParams(params)
   const post = await getPostBySlug(slug, locale)
   if (!post) return {}
-  const slugs = await getLocalizedSlugs('posts', post.id)
+  const [slugs, { settings }] = await Promise.all([
+    getLocalizedSlugs('posts', post.id),
+    getGlobals(locale),
+  ])
   return buildMeta({
     title: post.title,
-    seo: { ...post.seo, image: post.seo?.image ?? post.heroImage },
+    seo: post.seo,
     excerpt: post.excerpt,
-    collection: 'posts',
     locale,
-    slugs,
+    paths: localizedPaths('posts', slugs),
+    type: 'article',
+    image: post.heroImage,
+    fallbackImage: settings.defaultSeo?.image,
   })
 }
 
 export default async function PostPage({ params }: Props) {
-  const { locale, slug } = await params
+  const { locale, slug } = await checkedParams(params)
   setRequestLocale(locale)
 
   const { isEnabled: draft } = await draftMode()
@@ -82,27 +96,21 @@ export default async function PostPage({ params }: Props) {
   const framed = post.heroStyle === 'framed'
   const hasHero = post.heroImage && typeof post.heroImage !== 'number'
 
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'Article',
-    headline: post.title,
-    description: post.excerpt || undefined,
-    datePublished: post.publishedAt || undefined,
-    dateModified: post.updatedAt,
-    image: ogImageUrl(post.heroImage) || undefined,
-    author: authors.map((author) => ({ '@type': 'Person', name: author.name })),
-    publisher: { '@type': 'Organization', name: 'Robopipe' },
-    mainEntityOfPage: `${SERVER_URL}${pathFor('posts', slug, locale)}`,
-  }
+  const path = pathFor('posts', slug, locale)
+  const jsonLd = [
+    blogPostingLd(post, locale, path),
+    breadcrumbLd([
+      { name: t('home'), path: `/${locale}` },
+      { name: tBlog('title'), path: `/${locale}/blog` },
+      { name: post.title, path },
+    ]),
+  ]
 
   return (
     <>
       <article className="pt-16">
         {draft && <LivePreviewListener />}
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-        />
+        <JsonLd data={jsonLd} />
         <div className="container-article">
           <Link
             href={`/${locale}/blog`}

@@ -1,0 +1,74 @@
+{
+  "seo": {
+    "cs": {
+      "description": "Kamerová a AI kontrola kvality pro potravinářství, farmacii, retail i logistiku. Kamera IP67, trénink svépomocí a živý přehled na hale.",
+      "replaceIf": {
+        "description": "Robopipe přináší AI vizuální kontrolu kvality do potravinářství, farmacie, retailu i logistiky. Utěsněná kamera IP67, trénink modelů svépomocí, živý přehled na hale. Domluvte si demo."
+      }
+    },
+    "en": {
+      "description": "Camera and AI quality inspection for food, pharma, retail and logistics. Sealed IP67 camera, self-service training and a live floor dashboard.",
+      "replaceIf": {
+        "description": "Robopipe puts deep-learning visual inspection across food, pharma, retail and logistics operations. Sealed IP67 camera, self-service training, live floor dashboard. Book a demo."
+      }
+    }
+  },
+  "memberships": {
+    "blockName": "seo-geo-memberships",
+    "heading": {
+      "cs": "Jsme součástí",
+      "en": "Part of"
+    },
+    "items": [
+      {
+        "name": "Česká inovační platforma",
+        "url": "https://innovationczechia.cz",
+        "logo": "innovation-czechia.svg",
+        "logoOnDark": "innovation-czechia-on-dark.svg"
+      }
+    ]
+  },
+  "autoAnnotation": {
+    "blockName": "seo-geo-auto-annotation",
+    "image": "annotate-ui.png",
+    "page": "auto-annotation",
+    "cs": {
+      "heading": "Automatická anotace: rámečky navrhne AI, vy je schválíte.",
+      "text": "Robopipe Vision v aplikaci Studio najde na snímku objekty podle popisu vašich štítků. Vy návrhy zkontrolujete, opravíte a schválíte.",
+      "steps": [
+        [
+          "Popište štítky",
+          "Ke každému štítku napíšete, podle čeho ho poznat."
+        ],
+        [
+          "Spusťte anotaci",
+          "Jeden snímek, nebo víc vybraných snímků najednou."
+        ],
+        [
+          "Zkontrolujte a schvalte",
+          "Rámečky upravíte nebo smažete a tlačítkem Schválit je uložíte."
+        ]
+      ],
+      "button": "Jak funguje automatická anotace"
+    },
+    "en": {
+      "heading": "Auto annotation: AI proposes the boxes, you approve them.",
+      "text": "Robopipe Vision in the Studio app finds objects in an image from your label descriptions. You review, correct and approve the proposals.",
+      "steps": [
+        [
+          "Describe your labels",
+          "Write how to recognise each label."
+        ],
+        [
+          "Start the run",
+          "One image, or several selected images at once."
+        ],
+        [
+          "Review and approve",
+          "Edit or delete boxes, then save them with Approve."
+        ]
+      ],
+      "button": "How auto annotation works"
+    }
+  }
+}
