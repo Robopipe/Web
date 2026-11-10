@@ -6,6 +6,13 @@ export const authenticated: Access = ({ req: { user } }) => Boolean(user)
 
 export const admins: Access = ({ req: { user } }) => user?.role === 'admin'
 
+/** Admins reach every user; other logged-in users only their own account. */
+export const adminsOrSelf: Access = ({ req: { user } }) => {
+  if (!user) return false
+  if (user.role === 'admin') return true
+  return { id: { equals: user.id } }
+}
+
 /** Public sees only published docs; logged-in users see drafts too. */
 export const publishedOrLoggedIn: Access = ({ req: { user } }) => {
   if (user) return true
