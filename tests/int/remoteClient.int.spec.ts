@@ -1,7 +1,13 @@
 import type { SanitizedConfig } from 'payload'
 import { describe, expect, it } from 'vitest'
 
-import { createRemoteClient, nullIfNotFound, RemoteError, toQueryString } from '@/seed/remoteClient'
+import {
+  createRemoteClient,
+  nullIfNotFound,
+  RemoteError,
+  RemoteNetworkError,
+  toQueryString,
+} from '@/seed/remoteClient'
 
 /**
  * REST client of `pnpm seed:seo-geo --remote` (issue #6, step 12). Uses a fake
@@ -174,5 +180,62 @@ describe('createRemoteClient', () => {
     expect(() => nullIfNotFound(new RemoteError('GET', '/api/pages/1', 403, 'Forbidden'))).toThrow(
       '403',
     )
+  })
+
+  it('names address, method, path and cause when the server does not answer', async () => {
+    const refused = (async () => {
+      throw Object.assign(new TypeError('fetch failed'), {
+        cause: Object.assign(new Error('connect ECONNREFUSED 127.0.0.1:3341'), {
+          code: 'ECONNREFUSED',
+        }),
+      })
+    }) as unknown as typeof fetch
+    const error = await createRemoteClient({
+      baseUrl: 'http://localhost:3341',
+      email: 'a@b.c',
+      password: 'x',
+      config,
+      readOnly: true,
+      fetchImpl: refused,
+    }).catch((e: unknown) => e)
+    expect(error).toBeInstanceOf(RemoteNetworkError)
+    expect((error as Error).message).toBe(
+      'POST http://localhost:3341/api/users/login failed: ECONNREFUSED (connect ECONNREFUSED 127.0.0.1:3341)',
+    )
+  })
+
+  it('stops a request after the time limit', async () => {
+    const hanging = ((_url: string, init: RequestInit = {}) =>
+      new Promise((_resolve, reject) => {
+        init.signal?.addEventListener('abort', () => reject(init.signal?.reason))
+      })) as unknown as typeof fetch
+    await expect(
+      createRemoteClient({
+        baseUrl: 'http://localhost:3341',
+        email: 'a@b.c',
+        password: 'x',
+        config,
+        readOnly: true,
+        fetchImpl: hanging,
+        timeoutMs: 50,
+      }),
+    ).rejects.toThrow(
+      'POST http://localhost:3341/api/users/login failed: no response in 0.05 s (timeout)',
+    )
+  })
+
+  it('refuses an address without http or https before any request', async () => {
+    const { impl, calls } = fakeFetch(() => [200, {}])
+    await expect(
+      createRemoteClient({
+        baseUrl: 'localhost:3341',
+        email: 'a@b.c',
+        password: 'x',
+        config,
+        readOnly: true,
+        fetchImpl: impl,
+      }),
+    ).rejects.toThrow('--remote must be an http or https URL')
+    expect(calls).toHaveLength(0)
   })
 })

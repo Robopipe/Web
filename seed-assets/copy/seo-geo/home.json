@@ -1,4 +1,12 @@
 {
+  "hero": {
+    "eyebrow": {
+      "cs": {
+        "replaceIf": "Průmyslové strojové vidění",
+        "value": "Průmyslové strojové vidění (machine vision)"
+      }
+    }
+  },
   "seo": {
     "cs": {
       "description": "Kamerová a AI kontrola kvality pro potravinářství, farmacii, retail i logistiku. Kamera IP67, trénink svépomocí a živý přehled na hale.",

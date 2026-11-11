@@ -25,6 +25,35 @@ export class RemoteError extends Error {
   }
 }
 
+/** A REST call that got no HTTP response: address, method, path and the cause. */
+export class RemoteNetworkError extends Error {
+  constructor(
+    readonly method: string,
+    readonly origin: string,
+    readonly path: string,
+    readonly reason: string,
+  ) {
+    super(`${method} ${origin}${path} failed: ${reason}`)
+    this.name = 'RemoteNetworkError'
+  }
+}
+
+/** The cause of a failed fetch: the system error code (ECONNREFUSED, ENOTFOUND) if there is one. */
+const networkReason = (error: unknown, timeoutMs: number): string => {
+  const e = error as {
+    name?: string
+    message?: string
+    cause?: { code?: string; message?: string }
+  }
+  if (e?.name === 'TimeoutError') return `no response in ${timeoutMs / 1000} s (timeout)`
+  const cause = e?.cause
+  if (cause?.code) return cause.message ? `${cause.code} (${cause.message})` : cause.code
+  return cause?.message ?? e?.message ?? String(error)
+}
+
+/** Default time limit of one REST request. */
+export const REQUEST_TIMEOUT_MS = 30_000
+
 /** For reads that may find nothing (no published version yet). Every other error stops the run. */
 export const nullIfNotFound = (error: unknown): null => {
   if ((error as { status?: number } | null)?.status === 404) return null
@@ -65,6 +94,8 @@ type Options = {
   /** Dry run: any request that would write is refused before it is sent. */
   readOnly: boolean
   fetchImpl?: typeof fetch
+  /** Time limit of one request. Default REQUEST_TIMEOUT_MS. */
+  timeoutMs?: number
 }
 
 type Args = {
@@ -79,6 +110,22 @@ type Args = {
   fallbackLocale?: unknown
   data?: Record<string, unknown>
   filePath?: string
+}
+
+/** The --remote address: an absolute http or https URL. */
+export const parseRemoteUrl = (value: string): URL => {
+  let url: URL | undefined
+  try {
+    url = new URL(value)
+  } catch {
+    // Handled below.
+  }
+  if (!url || (url.protocol !== 'http:' && url.protocol !== 'https:')) {
+    throw new Error(
+      `--remote must be an http or https URL, for example https://robopipe.io, not "${value}".`,
+    )
+  }
+  return url
 }
 
 const errorText = async (response: Response): Promise<string> => {
@@ -109,11 +156,27 @@ export const createRemoteClient = async ({
   config,
   readOnly,
   fetchImpl = fetch,
+  timeoutMs = REQUEST_TIMEOUT_MS,
 }: Options): Promise<SeoGeoClient> => {
-  const root = baseUrl.replace(/\/$/, '')
+  const url = parseRemoteUrl(baseUrl)
+  const root = `${url.origin}${url.pathname.replace(/\/$/, '')}`
 
   const send = async (method: string, apiPath: string, init: RequestInit = {}) => {
-    const response = await fetchImpl(`${root}${apiPath}`, { ...init, method })
+    let response: Response
+    try {
+      response = await fetchImpl(`${root}${apiPath}`, {
+        ...init,
+        method,
+        signal: AbortSignal.timeout(timeoutMs),
+      })
+    } catch (error) {
+      throw new RemoteNetworkError(
+        method,
+        url.origin,
+        apiPath.split('?')[0],
+        networkReason(error, timeoutMs),
+      )
+    }
     if (!response.ok) {
       throw new RemoteError(
         method,

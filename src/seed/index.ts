@@ -188,11 +188,17 @@ const seed = async (): Promise<void> => {
     pharmaHmi: await img('pharma-hmi.jpeg', 'Pharma line HMI panel'),
     retailPacking: await img('retail-packing.jpg', 'Retail order packing station'),
     logisticsWarehouse: await img('logistics-warehouse.png', 'Logistics warehouse aisle'),
-    inspectionIdentify: await img('inspection-identify.webp', 'Camera identifying products on the line'),
+    inspectionIdentify: await img(
+      'inspection-identify.webp',
+      'Camera identifying products on the line',
+    ),
     tabletLine: await img('tablet-line.png', 'Floor tablet showing a live quality score'),
     useCaseFood: await img('use-case-food.png', 'Sandwich production line'),
     sandwichLine: await img('sandwich-line-inspection.jpg', 'Sandwich line inspection'),
-    productClassification: await img('product-classification-screen.jpeg', 'Product classification screen'),
+    productClassification: await img(
+      'product-classification-screen.jpeg',
+      'Product classification screen',
+    ),
     retailTagging: await img('retail-tagging.jpeg', 'AI product tagging station'),
     foodBaguette: await img('food-baguette-inspection.png', 'Baguette inspection overlay'),
     contactMap: await img('contact-map.webp', 'Map of the Robopipe HQ in Prague — Karlín'),
@@ -550,12 +556,19 @@ const seed = async (): Promise<void> => {
 
   const postCs: Record<
     string,
-    { title: string; slug: string; excerpt: string; ctaHeadline: string; seo: { title: string; description: string } }
+    {
+      title: string
+      slug: string
+      excerpt: string
+      ctaHeadline: string
+      seo: { title: string; description: string }
+    }
   > = {
     'capture-to-inference': {
       title: 'Od snímku k inferenci: pipeline Robopipe',
       slug: 'od-snimku-k-inferenci',
-      excerpt: 'Technická procházka otevřenou smyčkou nasnímat → označit → natrénovat → vyhodnotit, na které stojí každé nasazení.',
+      excerpt:
+        'Technická procházka otevřenou smyčkou nasnímat → označit → natrénovat → vyhodnotit, na které stojí každé nasazení.',
       ctaHeadline: 'Spusťte pipeline na vlastních produktech.',
       seo: {
         title: 'Pipeline od snímku k inferenci | Robopipe',
@@ -566,7 +579,8 @@ const seed = async (): Promise<void> => {
     'cut-reject-rates': {
       title: 'Snižte zmetkovitost bez zpomalení výroby',
       slug: 'snizte-zmetkovitost',
-      excerpt: 'Jak se kamerová kontrola zaplatí už v prvním měsíci — aniž by k taktu linky přidala jedinou sekundu.',
+      excerpt:
+        'Jak se kamerová kontrola zaplatí už v prvním měsíci — aniž by k taktu linky přidala jedinou sekundu.',
       ctaHeadline: 'Vyzkoušejte to na vlastním produktu.',
       seo: {
         title: 'Jak živá inspekce snižuje zmetkovitost | Robopipe',
@@ -577,7 +591,8 @@ const seed = async (): Promise<void> => {
     'live-quality-score': {
       title: 'Živé skóre kvality pro tým na hale',
       slug: 'zive-skore-kvality',
-      excerpt: 'Proč zpětná vazba v reálném čase vyhrává nad směnovými reporty — a co všechno se změnilo, když obsluha uviděla svou úspěšnost naživo.',
+      excerpt:
+        'Proč zpětná vazba v reálném čase vyhrává nad směnovými reporty — a co všechno se změnilo, když obsluha uviděla svou úspěšnost naživo.',
       ctaHeadline: 'Dejte živé skóre na svou halu.',
       seo: {
         title: 'Živé skóre kvality na výrobní hale | Robopipe',
@@ -588,7 +603,8 @@ const seed = async (): Promise<void> => {
     'automated-product-tagging': {
       title: 'Automatické tagování produktů: svěřte metadata katalogu počítačovému vidění',
       slug: 'automaticke-tagovani-produktu',
-      excerpt: 'Ruční tagování tisíců produktových fotek je pomalé, nejednotné a plné chyb — a kvůli špatným metadatům se produkty ztrácejí ve vyhledávání. AI tagování řeší všechny tři problémy najednou.',
+      excerpt:
+        'Ruční tagování tisíců produktových fotek je pomalé, nejednotné a plné chyb — a kvůli špatným metadatům se produkty ztrácejí ve vyhledávání. AI tagování řeší všechny tři problémy najednou.',
       ctaHeadline: 'Dejte svůj katalog na autopilota.',
       seo: {
         title: 'Automatické tagování produktů počítačovým viděním | Robopipe',
@@ -755,7 +771,11 @@ const seed = async (): Promise<void> => {
       columns: string[]
       groups: { label: string; rows: { label: string; values: string[] }[] }[]
     }
-    benefits: { heading: string; sub: string; items: { icon: IconName; title: string; body: string }[] }
+    benefits: {
+      heading: string
+      sub: string
+      items: { icon: IconName; title: string; body: string }[]
+    }
     faqHeading: string
     cta: { heading: string; sub: string; primary: string; secondary: string }
   }
@@ -843,7 +863,10 @@ const seed = async (): Promise<void> => {
       {
         label: 'Kontrola',
         rows: [
-          { label: 'Kamery a závody', values: ['Neomezeně', 'Neomezeně', 'Neomezeně', 'Neomezeně'] },
+          {
+            label: 'Kamery a závody',
+            values: ['Neomezeně', 'Neomezeně', 'Neomezeně', 'Neomezeně'],
+          },
           {
             label: 'Kontrolované produkty',
             values: ['Neomezeně', 'Neomezeně', 'Neomezeně', 'Neomezeně'],
@@ -865,7 +888,10 @@ const seed = async (): Promise<void> => {
             values: ['Vlastní Raspberry Pi', '✓', '✓', '✓'],
           },
           { label: 'Živý přehled výroby na hale', values: ['', '✓', '✓', '✓'] },
-          { label: 'Tréninky modelu', values: ['Na vlastním HW', '5 měsíčně', 'Neomezeně', 'Neomezeně'] },
+          {
+            label: 'Tréninky modelu',
+            values: ['Na vlastním HW', '5 měsíčně', 'Neomezeně', 'Neomezeně'],
+          },
           { label: 'Instalace a zaškolení u vás', values: ['', '', '✓', '✓'] },
           { label: 'PLC I/O (DI/DO, RS485, EtherCAT, Modbus)', values: ['', '', '✓', '✓'] },
           {
@@ -886,7 +912,10 @@ const seed = async (): Promise<void> => {
       {
         label: 'Inspection',
         rows: [
-          { label: 'Cameras & sites', values: ['Unlimited', 'Unlimited', 'Unlimited', 'Unlimited'] },
+          {
+            label: 'Cameras & sites',
+            values: ['Unlimited', 'Unlimited', 'Unlimited', 'Unlimited'],
+          },
           {
             label: 'Inspected products',
             values: ['Unlimited', 'Unlimited', 'Unlimited', 'Unlimited'],
@@ -1182,7 +1211,13 @@ const seed = async (): Promise<void> => {
       imageSide: 'left' | 'right'
       background: 'white' | 'tinted'
     }[]
-    cta: { heading: string; sub: string; primary: string; secondaryLabel: string; secondaryUrl: string }
+    cta: {
+      heading: string
+      sub: string
+      primary: string
+      secondaryLabel: string
+      secondaryUrl: string
+    }
   }
 
   const industriesLayout = (c: IndustryCopy) =>
@@ -1339,7 +1374,8 @@ const seed = async (): Promise<void> => {
         },
       }),
       seo: {
-        title: 'Obory — strojové vidění pro potravinářství, farmacii, retail a logistiku | Robopipe',
+        title:
+          'Obory — strojové vidění pro potravinářství, farmacii, retail a logistiku | Robopipe',
         description:
           'Jak strojové vidění Robopipe řeší kontrolu kvality v potravinářství, farmacii a zdravotnictví, retailu a e-commerce i logistice — kontrola každého kusu, počítání, tagování produktů a bezpečnost skladu.',
       },
@@ -1463,7 +1499,7 @@ const seed = async (): Promise<void> => {
   })
 
   // --- Privacy policy page ---
-  const privacyCs = `Provozovatelem webu robopipe.io je společnost Robopipe s.r.o., Thámova 13, 186 00 Praha 8 — Karlín („my"). Tyto zásady vysvětlují, jaké osobní údaje zpracováváme a proč.
+  const privacyCs = `Provozovatelem webu robopipe.io je společnost robopipe s.r.o., Thámova 13, 186 00 Praha 8 — Karlín („my"). Tyto zásady vysvětlují, jaké osobní údaje zpracováváme a proč.
 
 ## Jaké údaje zpracováváme
 
@@ -1485,7 +1521,7 @@ Web provozujeme na platformě Vercel a data ukládáme v EU. E-maily odesíláme
 
 Podle GDPR máte právo na přístup ke svým údajům, jejich opravu, výmaz, přenositelnost a právo vznést námitku. Napište nám na jan.jelinek@robopipe.io a ozveme se do jednoho pracovního dne. Stížnost můžete podat u Úřadu pro ochranu osobních údajů (uoou.gov.cz).`
 
-  const privacyEn = `robopipe.io is operated by Robopipe s.r.o., Thámova 13, 186 00 Praha 8 — Karlín, Czech Republic ("we"). This policy explains what personal data we process and why.
+  const privacyEn = `robopipe.io is operated by robopipe s.r.o., Thámova 13, 186 00 Praha 8 — Karlín, Czech Republic ("we"). This policy explains what personal data we process and why.
 
 ## What we process
 
@@ -1529,7 +1565,8 @@ Under the GDPR you have the right to access, correct, delete and port your data,
       ),
       seo: {
         title: 'Ochrana osobních údajů — Robopipe',
-        description: 'Jak Robopipe s.r.o. zpracovává osobní údaje z kontaktního formuláře a newsletteru.',
+        description:
+          'Jak robopipe s.r.o. zpracovává osobní údaje z kontaktního formuláře a newsletteru.',
       },
       _status: 'published',
     },
@@ -1558,7 +1595,8 @@ Under the GDPR you have the right to access, correct, delete and port your data,
       ),
       seo: {
         title: 'Privacy Policy — Robopipe',
-        description: 'How Robopipe s.r.o. processes personal data from the contact form and newsletter.',
+        description:
+          'How robopipe s.r.o. processes personal data from the contact form and newsletter.',
       },
       _status: 'published',
     },
@@ -1569,7 +1607,11 @@ Under the GDPR you have the right to access, correct, delete and port your data,
     hero: { chip: string; h1: string; sub: string; primary: string; secondary: string }
     trust: { label: string; items: string[] }
     logoEyebrow: string
-    features: { heading: string; sub: string; items: { icon: IconName; title: string; body: string }[] }
+    features: {
+      heading: string
+      sub: string
+      items: { icon: IconName; title: string; body: string }[]
+    }
     industriesGrid: {
       heading: string
       sub: string
@@ -2077,7 +2119,7 @@ Under the GDPR you have the right to access, correct, delete and port your data,
       contact: {
         phone: '+420 728 488 116',
         phoneHours: 'Po–Pá, 8:00–17:00',
-        address: 'Robopipe s.r.o.\nThámova 13\n186 00 Praha 8 — Karlín\nCzech Republic',
+        address: 'robopipe s.r.o.\nThámova 13\n186 00 Praha 8 — Karlín\nCzech Republic',
         mapImage: media.contactMap,
         bookingUrl: 'https://calendly.com/jan-jelinek/60min',
         bookingPerson: 'Jan Jelínek',
@@ -2105,7 +2147,7 @@ Under the GDPR you have the right to access, correct, delete and port your data,
       contact: {
         phone: '+420 728 488 116',
         phoneHours: 'Mon–Fri, 8:00–17:00 CET',
-        address: 'Robopipe s.r.o.\nThámova 13\n186 00 Praha 8 — Karlín\nCzech Republic',
+        address: 'robopipe s.r.o.\nThámova 13\n186 00 Praha 8 — Karlín\nCzech Republic',
         mapImage: media.contactMap,
       },
       defaultSeo: {
@@ -2121,7 +2163,9 @@ Under the GDPR you have the right to access, correct, delete and port your data,
   // SKIP_SEO_GEO=1 leaves the database as production is before that script runs.
   if (process.env.SKIP_SEO_GEO !== '1') {
     const report = await applySeoGeo(payload, { status: 'published' })
-    payload.logger.info(`SEO/GEO content: ${report.created.length} created, ${report.updated.length} updated.`)
+    payload.logger.info(
+      `SEO/GEO content: ${report.created.length} created, ${report.updated.length} updated.`,
+    )
   }
 
   payload.logger.info('Seed complete. Admin login: admin@robopipe.io / admin')

@@ -250,7 +250,8 @@
     },
     {
       "key": "label-inspection",
-      "image": "product-classification-screen.jpeg",
+      "image": "camera-front.png",
+      "replaceImage": "product-classification-screen.jpeg",
       "caseStudies": [],
       "faqs": [
         "li-types",

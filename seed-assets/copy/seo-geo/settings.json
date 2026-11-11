@@ -17,5 +17,12 @@
     "replaceIf": {
       "legalName": "Robopipe s.r.o."
     }
+  },
+  "companyName": {
+    "replaceIf": "Robopipe s.r.o.",
+    "value": "robopipe s.r.o.",
+    "pages": [
+      "ochrana-osobnich-udaju"
+    ]
   }
 }

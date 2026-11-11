@@ -19,4 +19,4 @@ Jednateli společnosti jsou podle obchodního rejstříku Filip Molčík a Jan J
 
 ## Otevřený zdrojový kód
 
-Základ platformy je otevřený. Organizace [robopipe na GitHubu](https://github.com/robopipe) popisuje Robopipe jako open source machine vision platform, tedy otevřenou platformu pro strojové vidění (anglicky machine vision). Open-source verzi si můžete provozovat sami na vlastní infrastruktuře.
+Základ platformy je otevřený. Organizace [robopipe na GitHubu](https://github.com/robopipe) popisuje Robopipe jako „open source machine vision platform“, tedy otevřenou platformu pro strojové vidění. Open-source verzi si můžete provozovat sami na vlastní infrastruktuře.

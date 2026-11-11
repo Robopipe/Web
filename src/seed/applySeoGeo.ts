@@ -7,6 +7,7 @@ import { assertLocalDatabase } from '@/lib/dbGuard'
 
 import { createRemoteClient, type SeoGeoClient } from './remoteClient'
 import { applySeoGeo } from './seoGeo'
+import { parseSeoGeoArgs } from './seoGeoArgs'
 
 /**
  * CLI for the SEO and GEO content (issues #2 and #6).
@@ -17,15 +18,11 @@ import { applySeoGeo } from './seoGeo'
  *   pnpm seed:seo-geo --production ...     allow a remote DATABASE_URL
  *   pnpm seed:seo-geo --remote=<URL> ...   through the Payload REST API, no database access.
  *                                          Account from SEED_REMOTE_EMAIL and SEED_REMOTE_PASSWORD.
+ *
+ * Any other argument stops the run with exit code 1 before it logs in or writes.
  */
 const run = async (): Promise<void> => {
-  const args = process.argv.slice(2)
-  const statusArg = args.find((arg) => arg.startsWith('--status='))?.split('=')[1] ?? 'draft'
-  if (statusArg !== 'draft' && statusArg !== 'published') {
-    throw new Error(`--status must be draft or published, not "${statusArg}".`)
-  }
-  const dryRun = args.includes('--dry-run')
-  const remote = args.find((arg) => arg.startsWith('--remote='))?.slice('--remote='.length)
+  const { status: statusArg, dryRun, production, remote } = parseSeoGeoArgs(process.argv.slice(2))
 
   let client: SeoGeoClient
   let log: (line: string) => void
@@ -46,7 +43,7 @@ const run = async (): Promise<void> => {
     log = (line) => console.log(line)
     log(`Remote ${new URL(remote).origin} as ${email}`)
   } else {
-    assertLocalDatabase(process.env.DATABASE_URL, args.includes('--production'))
+    assertLocalDatabase(process.env.DATABASE_URL, production)
     const payload = await getPayload({ config })
     client = payload
     log = (line) => payload.logger.info(line)
