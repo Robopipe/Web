@@ -904,6 +904,10 @@ export interface CaseStudy {
     | {
         value: string;
         label: string;
+        /**
+         * Show this result only on the detail page, not on the listing card.
+         */
+        hideInListing?: boolean | null;
         id?: string | null;
       }[]
     | null;
@@ -2015,6 +2019,7 @@ export interface CaseStudiesSelect<T extends boolean = true> {
     | {
         value?: T;
         label?: T;
+        hideInListing?: T;
         id?: T;
       };
   problem?: T;

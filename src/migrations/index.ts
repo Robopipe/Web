@@ -1,9 +1,10 @@
-import * as migration_20260728_102633_initial from './20260728_102633_initial';
-import * as migration_20260730_112326_ai_blog_generation from './20260730_112326_ai_blog_generation';
-import * as migration_20260827_110245_add_contact_booking from './20260827_110245_add_contact_booking';
-import * as migration_20261110_180954_seo_geo from './20261110_180954_seo_geo';
-import * as migration_20261110_212327_seo_geo_stage2 from './20261110_212327_seo_geo_stage2';
-import * as migration_20261111_111049_feature_grid_link from './20261111_111049_feature_grid_link';
+import * as migration_20260728_102633_initial from './20260728_102633_initial'
+import * as migration_20260730_112326_ai_blog_generation from './20260730_112326_ai_blog_generation'
+import * as migration_20260827_110245_add_contact_booking from './20260827_110245_add_contact_booking'
+import * as migration_20261110_180954_seo_geo from './20261110_180954_seo_geo'
+import * as migration_20261110_212327_seo_geo_stage2 from './20261110_212327_seo_geo_stage2'
+import * as migration_20261111_111049_feature_grid_link from './20261111_111049_feature_grid_link'
+import * as migration_20261111_121632_case_study_metric_listing from './20261111_121632_case_study_metric_listing'
 
 export const migrations = [
   {
@@ -34,6 +35,11 @@ export const migrations = [
   {
     up: migration_20261111_111049_feature_grid_link.up,
     down: migration_20261111_111049_feature_grid_link.down,
-    name: '20261111_111049_feature_grid_link'
+    name: '20261111_111049_feature_grid_link',
   },
-];
+  {
+    up: migration_20261111_121632_case_study_metric_listing.up,
+    down: migration_20261111_121632_case_study_metric_listing.down,
+    name: '20261111_121632_case_study_metric_listing',
+  },
+]

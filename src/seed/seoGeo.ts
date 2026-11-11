@@ -71,6 +71,14 @@ type FaqCopy = Localized<{ q: string; a: string }>
 type CaseStudySections = Record<'problem' | 'solution' | 'result' | 'technique', string>
 type CaseStudyCopy = { faqs: string[] } & Localized<CaseStudySections>
 
+/** Listing changes of the case studies page (docs/specs/9-home-comments, round 3). Keys are English slugs. */
+type CaseStudyListingCopy = {
+  /** Replaces the hero image only while its filename matches `replaceIf`. */
+  heroImages: Record<string, { replaceIf: string; image: string; alt: Localized<string> }>
+  /** Results shown only on the detail page. A row matches by its English value and label. */
+  hideInListing: Record<string, { value: string; label: string }[]>
+}
+
 type HomeCopy = {
   /** Hero eyebrow with the English name of the field. Only replaces the exact old value. */
   hero: { eyebrow: Partial<Localized<ReplaceIf>> }
@@ -308,6 +316,7 @@ export const applySeoGeo = async (
   const { pages: landing, obsolete } = readJson<LandingCopy>('landing-pages.json')
   const faqCopy = readJson<Record<string, FaqCopy>>('faqs.json')
   const caseStudyCopy = readJson<Record<string, CaseStudyCopy>>('case-studies.json')
+  const listingCopy = readJson<CaseStudyListingCopy>('case-study-listing.json')
   const home = readJson<HomeCopy>('home.json')
   const navigation = readJson<NavigationCopy>('navigation.json')
   const settingsCopy = readJson<SettingsCopy>('settings.json')
@@ -433,6 +442,45 @@ export const applySeoGeo = async (
       await saveDraft('case-studies', study.id, locale, data)
     }
     report[changed ? 'updated' : 'skipped'].push(`case study ${enSlug}`)
+
+    // Round 3: the hero image changes only from the known old image.
+    const hero = listingCopy.heroImages[enSlug]
+    if (hero) {
+      const label = `case study ${enSlug} (hero image)`
+      const heroId = idOf(current.heroImage)
+      const currentFile = heroId
+        ? (await payload.findByID({ collection: 'media', id: heroId, depth: 0 })).filename
+        : undefined
+      if (currentFile === hero.image) {
+        report.skipped.push(label)
+      } else if (!currentFile || !new RegExp(hero.replaceIf).test(currentFile)) {
+        report.skipped.push(`${label} changed by hand`)
+      } else {
+        const image = await media(hero.image, hero.alt)
+        await saveDraft('case-studies', study.id, 'cs', { heroImage: image })
+        report.updated.push(label)
+      }
+    }
+
+    // Round 3: results hidden on the listing card. Rows are matched by their
+    // English text, so a result edited by hand stays as it is.
+    const hide = listingCopy.hideInListing[enSlug]
+    if (hide) {
+      const label = `case study ${enSlug} (listing results)`
+      const rows = (await latest('case-studies', study.id, 'en')).metrics ?? []
+      const matches = (row: (typeof rows)[number]) =>
+        hide.some((h) => h.value === row.value && h.label === row.label)
+      const found = rows.filter(matches)
+      if (found.length < hide.length) {
+        report.skipped.push(`${label} changed by hand`)
+      } else if (found.every((row) => row.hideInListing)) {
+        report.skipped.push(label)
+      } else {
+        const metrics = rows.map((row) => (matches(row) ? { ...row, hideInListing: true } : row))
+        await saveDraft('case-studies', study.id, 'en', { metrics })
+        report.updated.push(label)
+      }
+    }
   }
 
   /* --------------------------------- pages --------------------------------- */

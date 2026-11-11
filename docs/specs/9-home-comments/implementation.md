@@ -210,3 +210,62 @@ NEXT_PUBLIC_SERVER_URL=http://localhost:<port> E2E_BASE_URL=http://localhost:<po
 - C1: text odkazu jen v cs se stránkou „Ceník“, po běhu skriptu odkaz vede na `/cs/cenik`, en dostane jen text.
 - C2: prázdný en text odkazu, `/en` odkaz nemá, `/cs` ho má.
 - C3: dlouhé slovo v textu odkazu se na 320 px zalomí v kartě.
+
+## Kolo 3: stránka Případy užití (Filip 11. 11. 13:01)
+
+Stránka `/cs/case-studies` a `/en/case-studies`.
+
+| Bod | Změna | Kde |
+|---|---|---|
+| 7.1 | Nová hlavní fotka hlavního případu (Crocodille): kamera Robopipe nad linkou s plněnými bagetami. Snímek z `IMG_7929.MOV` v čase 1,6 s, výřez 1080×756 (poměr 1,43 jako místo na kartě), bez tváří a bez cizích značek. Alt: „Kamera Robopipe nad linkou s plněnými bagetami“ / „Robopipe camera above a line of filled baguettes“. | `seed-assets/img/crocodille-camera-line.jpg`, `seed-assets/copy/seo-geo/case-study-listing.json` (`heroImages`), `seoGeo.ts` |
+| 7.2, 7.3 | Údaj „95 % přesnost detekce“ zmizí z karty Crocodille a MG Servis v seznamu. Na detailu případu zůstane. | Nové pole `metrics.hideInListing` (kolekce `case-studies`), migrace `20261111_121632_case_study_metric_listing`, `case-study-listing.json` (`hideInListing`), `CaseStudyMetrics.tsx` |
+| 7.4 | Údaje karty v seznamu jsou od šířky `sm` v jednom řádku ve stejně širokých sloupcích. Dlouhý popis se zalomí ve svém sloupci. Pod `sm` se údaje smí zalomit pod sebe. Platí pro všechny karty, detail případu má styl beze změny. | `CaseStudyMetrics.tsx` (prop `listing`), `CaseStudyCard.tsx` |
+| 7.5 | Citát je mezi kartami a sekcí „Řešení podle úlohy“. | `src/app/(frontend)/[locale]/case-studies/page.tsx` |
+| 7.6 | „Třeba je na řadě právě váš provoz.“ / „Your operation could be next.“ | `src/i18n/messages/{cs,en}.json` (`caseStudies.ctaHeading`) |
+| 7.7 | Hodnoty jsou v Payload (fotka, údaje), v i18n (výzva) a v kódu stránky (pořadí, styl). Text údajů v Payload jsem neměnil. Skrytí platí jen pro seznam. | viz výše |
+
+### K3.1 Proč nové pole
+
+Údaje (`metrics`) má seznam i detail společné. Smazání řádku by údaj odstranilo i z detailu, a to 7.7 zakazuje. Proto má každý řádek zaškrtávací pole „Show this result only on the detail page“ (`hideInListing`, výchozí hodnota `false`). Filip ho může měnit v administraci.
+
+Migrace přidá sloupec `hide_in_listing` do `case_studies_metrics` a `_case_studies_v_version_metrics`. Před během skriptu na produkci musí migrace proběhnout.
+
+### K3.2 Skript obsahu
+
+Krok je v cyklu případů užití v `seoGeo.ts`. Řídí ho `case-study-listing.json`.
+
+- Fotka: skript ji změní, jen když má hlavní případ fotku s názvem souboru podle `^tablet-line(-\d+)?\.png$` (lokálně `tablet-line.png`, v produkci `tablet-line-2`). Nové médium nahraje helper `media()`, stejně jako obrázek karty „Kontrola etiket“. Jiná fotka: report `case study crocodille-line-quality (hero image) changed by hand`, beze změny.
+- Údaje: skript najde řádek podle anglické hodnoty a popisu (`95%`, `detection precision`) a nastaví `hideInListing`. Ostatní řádky a české texty zůstanou. Když řádek s tímto textem chybí: report `(listing results) changed by hand`, beze změny.
+- Změny jdou do nové verze konceptu a skript ji v režimu `published` zveřejní (stejně jako ostatní případy užití).
+
+Lokální běh z produkčního stavu: `created (1): media crocodille-camera-line.jpg`, `updated (5)`: fotka, údaje Crocodille, údaje MG Servis a dvě zveřejnění. Druhý běh: `created (0)`, `updated (0)`.
+
+### K3.3 Ověření
+
+Lokální databáze `robopipe_h9` (režim dev push, sloupec jsem přidal SQL z migrace), server `next start` na portu 3820 (ukončen podle PID).
+
+| Kontrola | Výsledek |
+|---|---|
+| `tsc --noEmit` | 0 chyb |
+| `eslint .` | 0 chyb, 2 stávající varování |
+| `next build` | OK. První pokus selhal na limitu spojení Postgres (`max_connections` 40), druhý prošel. |
+| `test:int` | 124/124 (22 souborů) |
+| `test:e2e` | 92 prošlo, 2 selhaly (94). Obě selhání jsou známá i na `master` (K2.4). |
+
+Nové testy:
+
+- `tests/int/caseStudiesListing.int.spec.ts`: z produkčního stavu jeden běh do cíle (fotka, alt cs i en, skrytý jen řádek 95 % v obou jazycích, text zůstane), druhý běh beze změny (počet verzí stejný), ruční fotka zůstane, ručně změněný údaj zůstane a skript ho neskryje.
+- `tests/e2e/caseStudiesListing.e2e.spec.ts` (cs, en): fotka a alt, žádné 95 % na kartách, citát nad „Řešení podle úlohy“, nová výzva, údaje druhé karty v jednom řádku na 1440 px, detail MG Servis 95 % dál ukazuje.
+
+Screenshoty (celá stránka): `screens/round3/case-studies-{cs,en}-{1440,375}.jpg`.
+
+### K3.4 Co má ověřit tester
+
+- `/cs/case-studies` a `/en/case-studies` na 1440 px a 375 px: nová fotka bez tváří a cizích značek, alt podle obsahu.
+- Karta Crocodille ukazuje jen „3 600 kusů / hod / linka“ a „19 různých kontrol na bagetě“. Karta MG Servis jen „5 různých kontrol na balení“.
+- Detail obou případů dál ukazuje „95 % přesnost detekce“.
+- Druhá karta: „< 1 min“ a „1“ vedle sebe na 1440 px, také na 1024 px a 768 px. Na 375 px smí být pod sebou.
+- Citát je nad „Řešení podle úlohy“. Výzva: „Třeba je na řadě právě váš provoz.“ / „Your operation could be next.“
+- Skript z produkčního stavu: jeden běh dá cíl, druhý nic nezapíše. Ručně změněná fotka nebo údaj zůstane a report hlásí `changed by hand`.
+- Administrace: pole „Show this result only on the detail page“ u údaje funguje oběma směry.
+- Migrace `20261111_121632_case_study_metric_listing` proběhne na kopii produkční databáze bez chyby.
