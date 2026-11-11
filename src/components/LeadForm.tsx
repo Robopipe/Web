@@ -2,10 +2,11 @@
 
 import { useLocale, useTranslations } from 'next-intl'
 import { usePathname, useSearchParams } from 'next/navigation'
-import React, { useActionState } from 'react'
+import React, { useActionState, useEffect, useRef } from 'react'
 
 import { submitLead, type LeadFormState } from '@/actions/submitLead'
 import type { Locale } from '@/i18n/routing'
+import { trackEvent } from '@/lib/analytics'
 
 const initialState: LeadFormState = { status: 'idle' }
 
@@ -27,6 +28,8 @@ export const LeadForm: React.FC<Props> = ({ microcopy }) => {
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const [state, formAction, pending] = useActionState(submitLead, initialState)
+  // Each submission returns a new state object. Re-renders and Strict Mode see the same one.
+  const trackedState = useRef<LeadFormState | null>(null)
   // Remount the form after a successful submission to reset it.
   const [formKey, setFormKey] = React.useState(0)
   const [fieldErrors, setFieldErrors] = React.useState<{
@@ -35,6 +38,14 @@ export const LeadForm: React.FC<Props> = ({ microcopy }) => {
     phone?: boolean
     message?: boolean
   }>({})
+
+  // The conversion (issue #21). Google Ads imports this GA4 key event.
+  useEffect(() => {
+    if (state.status !== 'success' || trackedState.current === state) return
+    trackedState.current = state
+    const tier = searchParams.get('tier')
+    trackEvent('generate_lead', { form_location: pathname, ...(tier ? { tier } : {}) })
+  }, [state, pathname, searchParams])
 
   // The form is noValidate — required fields get localized messages instead
   // of the browser's native bubbles.
@@ -80,7 +91,13 @@ export const LeadForm: React.FC<Props> = ({ microcopy }) => {
   }
 
   return (
-    <form key={formKey} action={formAction} onSubmit={handleSubmit} className="space-y-4" noValidate>
+    <form
+      key={formKey}
+      action={formAction}
+      onSubmit={handleSubmit}
+      className="space-y-4"
+      noValidate
+    >
       <input type="hidden" name="locale" value={locale} />
       <input type="hidden" name="sourcePage" value={pathname} />
       {searchParams.get('tier') && (

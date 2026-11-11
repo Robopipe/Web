@@ -54,6 +54,14 @@ E2E_BASE_URL=http://localhost:3310 pnpm test:e2e  # playwright against a running
 
 Integration tests stop when `DATABASE_URL` is not localhost (`vitest.setup.ts`). `E2E_BASE_URL` defaults to `http://localhost:3000`. `PLAYWRIGHT_CHROMIUM_PATH` points Playwright at another Chromium binary if the downloaded one does not start.
 
+## Cookie policy script
+
+`pnpm seed:cookie-policy` puts the cookie paragraph (issue #21) on the published privacy page in an existing database, cs and en. It replaces the old "Analytics" paragraph and the sentence that names Vercel. The texts are in `src/seed/cookiePolicy.ts`, and `pnpm seed` uses the same texts. The script is idempotent and publishes the page. It takes `--dry-run`, `--production` and `--remote=<URL>` like `seed:seo-geo`. It exits with code 2 when it cannot find a paragraph to replace, so you edit that part in the admin.
+
+```sh
+SEED_REMOTE_EMAIL=… SEED_REMOTE_PASSWORD=… pnpm seed:cookie-policy --remote=https://robopipe.io --dry-run
+```
+
 ## SEO and GEO content script
 
 The landing, task and about pages, the case study sections, FAQs, home page blocks, navigation, memberships, solutions, company facts, pricing FAQs, the vision guide changes and the auto annotation blog draft live as files in `seed-assets/copy/seo-geo/`. `pnpm seed` applies them to a fresh local database. `pnpm seed:seo-geo` applies them to an existing one:
@@ -126,6 +134,6 @@ The app ships as a Docker image (`Dockerfile`, Next.js `standalone` output) depl
 
 - **Build memory** — `pnpm build` raises the Node heap to 8 GB; the Coolify server needs that much free RAM during builds (or lower `--max-old-space-size` in `package.json`).
 - **Single instance** — the lead/newsletter rate limits are in-memory and ISR caches on the container filesystem; run one replica.
-- **Analytics** — `<Analytics />` / `<SpeedInsights />` in the frontend layout are Vercel-only and collect nothing on Coolify; replace them (e.g. self-hosted Plausible/Umami) or remove them.
+- **Analytics** — Google Analytics 4 and the Google Ads tag with a cookie banner (consent mode v2). The IDs are in the admin, *Site Settings → Measurement*, not in env vars. Empty fields = no Google tag, no banner. Fill them only after the privacy page describes the cookies (`pnpm seed:cookie-policy`, see below).
 - **Geo** — the locale-suggestion feature reads Vercel's `x-vercel-ip-country` header in `src/proxy.ts`, so it stays dormant on Coolify unless that header is provided (e.g. mapped from Cloudflare's `cf-ipcountry`).
 - **Seeding prod** (one-time): run `pnpm seed` locally with the production `DATABASE_URL` (expose the Postgres resource publicly for the duration) and the GCS variables exported, then redeploy so prerendered pages pick up the content.

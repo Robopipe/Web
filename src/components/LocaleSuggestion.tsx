@@ -4,9 +4,14 @@ import { useLocale } from 'next-intl'
 import Link from 'next/link'
 import React, { useEffect, useState } from 'react'
 
+import { useConsent } from '@/components/consent/ConsentProvider'
 import type { Locale } from '@/i18n/routing'
 import { trackEvent } from '@/lib/analytics'
-import { commitLocaleChoice, isLocaleSuggestionSuppressed, suggestedLocale } from '@/lib/localeSuggestion'
+import {
+  commitLocaleChoice,
+  isLocaleSuggestionSuppressed,
+  suggestedLocale,
+} from '@/lib/localeSuggestion'
 import { useLocaleHref } from '@/lib/useLocaleHref'
 
 // Only two locales exist, so whichever isn't suggested is always the current one —
@@ -28,30 +33,32 @@ export const LocaleSuggestion: React.FC = () => {
   const locale = useLocale() as Locale
   const hrefFor = useLocaleHref()
   const [suggestion, setSuggestion] = useState<Locale | null>(null)
+  // Two floating boxes would overlap. The suggestion waits until the cookie banner is gone.
+  const bannerOpen = useConsent()?.bannerOpen ?? false
 
   useEffect(() => {
-    if (isLocaleSuggestionSuppressed()) return
+    if (bannerOpen || isLocaleSuggestionSuppressed()) return
     const suggested = suggestedLocale()
     if (!suggested || suggested === locale) return
     // Reacting to cookies (an external system) on mount — the sanctioned use of an effect.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setSuggestion(suggested)
-    trackEvent('Locale Suggest: Shown', { suggested })
-  }, [locale])
+    trackEvent('locale_suggest_shown', { suggested })
+  }, [locale, bannerOpen])
 
-  if (!suggestion) return null
+  if (!suggestion || bannerOpen) return null
 
   const copy = COPY[suggestion]
 
   const decline = () => {
     commitLocaleChoice(locale)
-    trackEvent('Locale Suggest: Declined', { suggested: suggestion })
+    trackEvent('locale_suggest_declined', { suggested: suggestion })
     setSuggestion(null)
   }
 
   const accept = () => {
     commitLocaleChoice(suggestion)
-    trackEvent('Locale Suggest: Accepted', { suggested: suggestion })
+    trackEvent('locale_suggest_accepted', { suggested: suggestion })
   }
 
   return (

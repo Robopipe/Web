@@ -1,17 +1,9 @@
 import { LOCALE_COOKIE, type Locale } from '@/i18n/routing'
+import { readCookie, writeCookie } from '@/lib/clientCookies'
 
 const GEO_COOKIE = 'geo-country'
 const SUPPRESS_COOKIE = 'locale-suggest'
 const ONE_YEAR_SECONDS = 60 * 60 * 24 * 365
-
-function readCookie(name: string): string | undefined {
-  const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`))
-  return match ? decodeURIComponent(match[1]) : undefined
-}
-
-function writeCookie(name: string, value: string, maxAgeSeconds: number): void {
-  document.cookie = `${name}=${encodeURIComponent(value)}; path=/; max-age=${maxAgeSeconds}; samesite=lax`
-}
 
 /** CZ/SK visitors get the Czech suggestion; every other country gets English. */
 export function suggestedLocale(): Locale | undefined {
@@ -29,4 +21,3 @@ export function commitLocaleChoice(locale: Locale): void {
   writeCookie(LOCALE_COOKIE, locale, ONE_YEAR_SECONDS)
   writeCookie(SUPPRESS_COOKIE, '1', ONE_YEAR_SECONDS)
 }
-

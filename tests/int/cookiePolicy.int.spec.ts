@@ -1,0 +1,101 @@
+import { describe, expect, it } from 'vitest'
+
+import type { ContentBlock } from '@/payload-types'
+import {
+  COOKIE_POLICY,
+  HOSTING_SENTENCE,
+  applyCookiePolicyToContent,
+  parseCookiePolicyArgs,
+} from '@/seed/cookiePolicy'
+import { mdToLexical } from '@/seed/lexical'
+
+type RichText = ContentBlock['content']
+type Node = { text?: string; children?: Node[] }
+
+const OLD_CS = `## Jaké údaje zpracováváme
+
+**Newsletter.** Pokud se přihlásíte k odběru, uchováváme vaši e-mailovou adresu.
+
+**Analytika.** Používáme analytiku bez cookies, která ukládá pouze agregované statistiky návštěvnosti.
+
+## Kdo údaje zpracovává
+
+Web provozujeme na platformě Vercel a data ukládáme v EU. E-maily odesíláme přes službu Resend.`
+
+const OLD_EN = `**Analytics.** We use cookieless analytics.
+
+The site runs on Vercel; data is stored in the EU. Emails are delivered via Resend.`
+
+const text = (node: Node): string => node.text ?? (node.children ?? []).map(text).join('')
+const paragraphs = (content: RichText) => (content.root.children as Node[]).map(text)
+const cookieNodes = (locale: 'cs' | 'en') =>
+  mdToLexical(COOKIE_POLICY[locale]).root.children as RichText['root']['children']
+
+describe('applyCookiePolicyToContent', () => {
+  it('replaces the analytics paragraph and the Vercel sentence (cs)', () => {
+    const before = mdToLexical(OLD_CS) as RichText
+    const { content, changes, missing } = applyCookiePolicyToContent(
+      before,
+      'cs',
+      cookieNodes('cs'),
+    )
+
+    const after = paragraphs(content)
+    expect(missing).toEqual([])
+    expect(changes).toHaveLength(2)
+    expect(after.some((p) => p.startsWith('Analytika.'))).toBe(false)
+    expect(after.filter((p) => p.includes('Vercel'))).toEqual([])
+    // The cookie text sits where the old paragraph was: after the newsletter, before the heading.
+    const start = after.findIndex((p) => p.startsWith('Cookies a měření.'))
+    expect(after[start - 1]).toMatch(/^Newsletter\./)
+    expect(after[start + 6]).toBe('Kdo údaje zpracovává')
+    expect(after).toContain(`${HOSTING_SENTENCE.cs} E-maily odesíláme přes službu Resend.`)
+    expect(after.join('\n')).toContain('_ga a _ga_* až na 2 roky')
+  })
+
+  it('swaps the sentence, not the rest of the paragraph (en)', () => {
+    const before = mdToLexical(OLD_EN) as RichText
+    const { content, missing } = applyCookiePolicyToContent(before, 'en', cookieNodes('en'))
+    expect(missing).toEqual([])
+    expect(paragraphs(content)).toContain(`${HOSTING_SENTENCE.en} Emails are delivered via Resend.`)
+  })
+
+  it('changes nothing on a second run', () => {
+    const once = applyCookiePolicyToContent(
+      mdToLexical(OLD_CS) as RichText,
+      'cs',
+      cookieNodes('cs'),
+    )
+    const twice = applyCookiePolicyToContent(once.content, 'cs', cookieNodes('cs'))
+    expect(twice.changes).toEqual([])
+    expect(twice.missing).toEqual([])
+    expect(twice.content).toEqual(once.content)
+  })
+
+  it('reports what it cannot find and changes nothing else', () => {
+    const before = mdToLexical('Some other text.') as RichText
+    const { content, changes, missing } = applyCookiePolicyToContent(
+      before,
+      'en',
+      cookieNodes('en'),
+    )
+    expect(changes).toEqual([])
+    expect(missing).toHaveLength(2)
+    expect(content).toEqual(before)
+  })
+})
+
+describe('parseCookiePolicyArgs', () => {
+  it('reads the known flags', () => {
+    expect(parseCookiePolicyArgs([])).toEqual({ dryRun: false, production: false })
+    expect(
+      parseCookiePolicyArgs(['--dry-run', '--production', '--remote=https://robopipe.io/admin']),
+    ).toEqual({ dryRun: true, production: true, remote: 'https://robopipe.io' })
+  })
+
+  it('rejects unknown arguments and a bad URL', () => {
+    expect(() => parseCookiePolicyArgs(['--status=published'])).toThrow(/Unknown argument/)
+    expect(() => parseCookiePolicyArgs(['--remote'])).toThrow(/Unknown argument/)
+    expect(() => parseCookiePolicyArgs(['--remote=ftp://x'])).toThrow(/http or https/)
+  })
+})

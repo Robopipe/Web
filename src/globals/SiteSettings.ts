@@ -162,6 +162,30 @@ export const SiteSettings: GlobalConfig = {
       ],
     },
     {
+      name: 'measurement',
+      type: 'group',
+      admin: {
+        description:
+          'Google measurement. Empty = no Google tag and no cookie banner. Publish the cookie paragraph on the privacy page before you fill these.',
+      },
+      fields: [
+        {
+          name: 'googleAnalyticsId',
+          type: 'text',
+          validate: (value: string | null | undefined) =>
+            !value || /^G-[A-Z0-9]{4,16}$/.test(value) || 'Format: G-XXXXXXXXXX',
+          admin: { description: 'GA4 measurement ID, e.g. G-ABC123XYZ9.' },
+        },
+        {
+          name: 'googleAdsId',
+          type: 'text',
+          validate: (value: string | null | undefined) =>
+            !value || /^AW-\d{6,14}$/.test(value) || 'Format: AW-123456789',
+          admin: { description: 'Google Ads tag ID, e.g. AW-123456789. Used for remarketing.' },
+        },
+      ],
+    },
+    {
       name: 'defaultSeo',
       type: 'group',
       fields: [
