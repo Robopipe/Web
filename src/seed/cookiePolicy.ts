@@ -17,6 +17,15 @@ export const YOUTUBE_PARAGRAPH: Record<Locale, string> = {
   en: 'YouTube plays the videos on this site. The player loads only after you click a video and may then store data in your browser.',
 }
 
+/**
+ * Offline conversions for Google Ads (issue #26, architecture chapter 15). It goes right after
+ * the marketing paragraph. No asterisks: see `mdToLexical`.
+ */
+export const AD_CONVERSION_PARAGRAPH: Record<Locale, string> = {
+  cs: 'Když přijdete z naší reklamy Google Ads a dáte souhlas s marketingem, uložíme značku kliknutí do cookie rp_click na 90 dní. Když potom odešlete poptávku z firemní e-mailové adresy, předáme Googlu otisk e-mailu (SHA-256) a značku kliknutí, pokud ji máme. Google z nich zjistí, která reklama poptávku přinesla. Čitelný e-mail Googlu nepředáváme. Bez souhlasu nepředáme nic.',
+  en: 'When you come from our Google Ads ad and consent to marketing, we store the click ID in the cookie rp_click for 90 days. When you then send an inquiry from a company email address, we give Google a hash of the email (SHA-256) and the click ID, if we have it. Google uses them to find out which ad brought the inquiry. We never give Google the readable email. Without consent, we give nothing.',
+}
+
 /** Replaces the old "Analytics" paragraph, which said the site sets no cookies. */
 export const COOKIE_POLICY: Record<Locale, string> = {
   cs: `**Cookies a měření.** Web používá cookies jen s vaším souhlasem. Nezbytná cookie rp_consent uloží vaši volbu na 6 měsíců.
@@ -24,6 +33,8 @@ export const COOKIE_POLICY: Record<Locale, string> = {
 S vaším souhlasem s analytikou používáme Google Analytics. Měříme, které stránky lidé čtou a odkud přišli. Google ukládá cookies _ga a _ga_* až na 2 roky.
 
 S vaším souhlasem s marketingem používáme značku Google Ads. Měříme výsledky reklam a ukazujeme naše reklamy na jiných webech. Google ukládá cookies _gcl_* až na 90 dní. Po kliknutí na reklamu ukládá také cookies s předponou _gac_.
+
+${AD_CONVERSION_PARAGRAPH.cs}
 
 Bez souhlasu Google neukládá žádné cookies. Dostává jen anonymní signály bez identifikátorů. Z nich odhaduje počet návštěv.
 
@@ -37,6 +48,8 @@ Volbu kdykoli změníte odkazem „Nastavení cookies“ v patičce webu.`,
 With your consent to analytics, we use Google Analytics. We measure which pages people read and where they came from. Google stores the cookies _ga and _ga_* for up to 2 years.
 
 With your consent to marketing, we use the Google Ads tag. We measure ad results and show our ads on other sites. Google stores the cookies _gcl_* for up to 90 days. After a click on an ad, it also stores cookies with the prefix _gac_.
+
+${AD_CONVERSION_PARAGRAPH.en}
 
 Without consent, Google stores no cookies. It gets only anonymous signals without identifiers. It uses them to estimate visits.
 
@@ -58,6 +71,11 @@ const OLD_LABEL: Record<Locale, string> = { cs: 'Analytika.', en: 'Analytics.' }
 const NEW_LABEL: Record<Locale, string> = {
   cs: 'Cookies a měření.',
   en: 'Cookies and measurement.',
+}
+/** First words of the marketing paragraph. The ad conversion paragraph goes after it. */
+const MARKETING_LABEL: Record<Locale, string> = {
+  cs: 'S vaším souhlasem s marketingem',
+  en: 'With your consent to marketing',
 }
 /** First words of the last cookie paragraph. The YouTube paragraph goes before it. */
 const SETTINGS_LABEL: Record<Locale, string> = {
@@ -107,6 +125,23 @@ export const applyCookiePolicyToContent = (
     else {
       children.splice(index, 0, youtube)
       changes.push(`YouTube paragraph before "${SETTINGS_LABEL[locale]}"`)
+    }
+  }
+
+  // A page from #21 or #22 gets the ad conversion paragraph (issue #26) after the marketing one.
+  // A page that got the full cookie text above already has it.
+  if (
+    children.some((node) => plainText(node).startsWith(NEW_LABEL[locale])) &&
+    !children.some((node) => plainText(node) === AD_CONVERSION_PARAGRAPH[locale])
+  ) {
+    const adConversion = cookieNodes.find(
+      (node) => plainText(node) === AD_CONVERSION_PARAGRAPH[locale],
+    )
+    const index = children.findIndex((node) => plainText(node).startsWith(MARKETING_LABEL[locale]))
+    if (!adConversion || index === -1) missing.push(`paragraph "${MARKETING_LABEL[locale]}"`)
+    else {
+      children.splice(index + 1, 0, adConversion)
+      changes.push(`ad conversion paragraph after "${MARKETING_LABEL[locale]}"`)
     }
   }
 
