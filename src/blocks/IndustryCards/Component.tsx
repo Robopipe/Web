@@ -16,6 +16,9 @@ type Card = {
   linkLabel?: string | null
 }
 
+/** An SVG card image is a line illustration: no frame, the whole drawing, centred text. */
+const isIllustration = (card: Card): boolean => card.image?.mimeType === 'image/svg+xml'
+
 /** `source: 'solutions'` shows site-settings.solutions, the same pages as the footer column. */
 const cardsFor = async (block: IndustryCardsBlock, locale: Locale): Promise<Card[]> => {
   if (block.source === 'solutions') {
@@ -53,9 +56,37 @@ export const IndustryCardsComponent: React.FC<IndustryCardsBlock> = async (block
       )}
       {/* Six solution pages fill two rows of three. Otherwise four per row, as before. */}
       <div
-        className={`grid gap-5 sm:grid-cols-2 ${cards.length % 3 === 0 && cards.length % 4 !== 0 ? 'lg:grid-cols-3' : 'lg:grid-cols-4'}`}
+        className={`grid sm:grid-cols-2 ${cards.length % 3 === 0 && cards.length % 4 !== 0 ? 'lg:grid-cols-3' : 'lg:grid-cols-4'} ${cards.every(isIllustration) ? 'mx-auto max-w-80 gap-x-7 gap-y-14 sm:max-w-none' : 'gap-5'}`}
       >
         {cards.map((card, i) => {
+          if (isIllustration(card)) {
+            const illustration = (
+              <>
+                <div className="relative aspect-280/184 w-full">
+                  <Media media={card.image} fill sizes="320px" className="object-contain" />
+                </div>
+                <h3 className="mt-5 text-lg leading-6 font-bold tracking-normal">{card.title}</h3>
+                {card.text && (
+                  <p className="mt-2 max-w-65 text-[13px] leading-relaxed text-text-60">
+                    {card.text}
+                  </p>
+                )}
+                {card.href && card.linkLabel && (
+                  <span className="mt-3 text-sm font-medium text-brand-fg">{card.linkLabel} →</span>
+                )}
+              </>
+            )
+            const illustrationClasses = 'flex flex-col items-center text-center'
+            return card.href ? (
+              <Link key={i} href={card.href} className={illustrationClasses}>
+                {illustration}
+              </Link>
+            ) : (
+              <div key={i} className={illustrationClasses}>
+                {illustration}
+              </div>
+            )
+          }
           const body = (
             <>
               {card.image && (
