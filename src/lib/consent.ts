@@ -60,10 +60,14 @@ export const toConsentMode = (choice: ConsentChoice | null): ConsentModeState =>
   }
 }
 
-/** Cookies that Google tags set for each category: `_ga`, `_ga_*`, `_gid`, `_gat*` and `_gcl_*`. */
+/**
+ * Cookies that Google tags set for each category: `_ga`, `_ga_*`, `_gid` and `_gat*` for
+ * analytics, `_gcl_*` and `_gac_*` for marketing. GA4 linked with Google Ads stores the ad
+ * click in `_gac_*`, and `ad_storage` controls it.
+ */
 export const GOOGLE_COOKIES: Record<ConsentCategory, RegExp> = {
   analytics: /^(_ga|_ga_.+|_gid|_gat.*)$/,
-  marketing: /^_gcl_.+$/,
+  marketing: /^(_gcl_.+|_gac_.+)$/,
 }
 
 /**

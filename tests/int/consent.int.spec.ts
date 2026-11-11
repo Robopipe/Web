@@ -93,7 +93,7 @@ describe('Google cookie helpers', () => {
       expect(GOOGLE_COOKIES.analytics.test(name)).toBe(true)
       expect(GOOGLE_COOKIES.marketing.test(name)).toBe(false)
     }
-    for (const name of ['_gcl_au', '_gcl_aw']) {
+    for (const name of ['_gcl_au', '_gcl_aw', '_gac_gb_123', '_gac_UA-1']) {
       expect(GOOGLE_COOKIES.marketing.test(name)).toBe(true)
       expect(GOOGLE_COOKIES.analytics.test(name)).toBe(false)
     }
