@@ -11,6 +11,7 @@ import { COOKIE_POLICY, HOSTING_SENTENCE } from './cookiePolicy'
 import { MEDIA_ALT_CS } from './csCopyFixes'
 import { mdToLexical } from './lexical'
 import { applySeoGeo } from './seoGeo'
+import { applyServiceVideo } from './serviceVideo'
 
 /**
  * Development/staging seed: the full site content from the approved design
@@ -2098,6 +2099,15 @@ Under the GDPR you have the right to access, correct, delete and port your data,
     const report = await applySeoGeo(payload, { status: 'published' })
     payload.logger.info(
       `SEO/GEO content: ${report.created.length} created, ${report.updated.length} updated.`,
+    )
+  }
+
+  // Explainer video on the service pages (issue #22). The pages come from the SEO/GEO content.
+  if (process.env.SKIP_SEO_GEO !== '1') {
+    const report = await applyServiceVideo(payload)
+    payload.logger.info(
+      `Service video: ${report.created.length} created, ${report.updated.length} updated, ` +
+        `${report.skipped.length} skipped.`,
     )
   }
 
