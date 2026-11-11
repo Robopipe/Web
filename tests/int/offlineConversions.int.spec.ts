@@ -28,6 +28,7 @@ import {
   isTestLead,
   normalizeEmail,
 } from '@/lib/leadEmail'
+import { createLeadWithAttribution } from '@/lib/leadStore'
 import config from '@/payload.config'
 import type { Lead, User } from '@/payload-types'
 
@@ -483,5 +484,93 @@ describe('tester findings (test-report.md B1 to B3)', () => {
       const parsed = parseClickId(serializeClickId(click({ at })), NOW)
       if (parsed) expect(parsed.at).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?Z$/)
     }
+  })
+})
+
+/** Round 2 fixes, docs/specs/26-offline-conversions/implementation.md chapter "Kolo 2". */
+describe('round 2 (B1, B2, B5)', () => {
+  it('B5: common public mail services from the tester report and their national variants', () => {
+    const tester = ['t-online.de', 'hotmail.de', 'hotmail.co.uk', 'yahoo.co.uk', 'o2active.cz']
+    const more = ['atlas.sk', 'post.sk', 'mail.ru', 'yandex.ru', 'zoho.com', 'tutanota.com']
+    const variants = ['outlook.de', 'live.cz', 'gmx.at', 'web.de', 'proton.me', 'tuta.com']
+    for (const domain of [...tester, ...more, ...variants]) {
+      expect(FREE_EMAIL_DOMAINS.has(domain), domain).toBe(true)
+      expect(isBusinessEmail(`Novak@${domain.toUpperCase()}`), domain).toBe(false)
+    }
+    // A company domain that only contains a public domain name stays a company email.
+    expect(isBusinessEmail('novak@gmail.com.firma.cz')).toBe(true)
+    expect(isBusinessEmail('novak@mail.ru-firma.cz')).toBe(true)
+  })
+
+  it('B1: only the base64url alphabet is a click ID', () => {
+    expect(clickIdFromSearch('?gclid=Cj0KCQiA-abc_DEF123', NOW)?.id).toBe('Cj0KCQiA-abc_DEF123')
+    for (const bad of ['%00abc', 'a%01b', 'a%7Fb', '%3D1', 'a.b', 'a%27b', 'a%C3%A1b']) {
+      expect(clickIdFromSearch(`?gclid=${bad}`, NOW), bad).toBeNull()
+    }
+  })
+
+  it('B2: the formula guard prefixes only cells that start a formula', () => {
+    const row = toExportRow(
+      {
+        id: 7,
+        email: 'novak@firma.cz',
+        createdAt: NOW.toISOString(),
+        attribution: { consentMarketing: true, gclid: 'Cj0KCQiA-abc_DEF123' },
+      },
+      'Firemni poptavka (import)',
+    )
+    expect(toCsv([row]).split('\n')[1]).toBe(
+      `lead-7,Firemni poptavka (import),2026-11-12T09:14:03Z,Cj0KCQiA-abc_DEF123,,,${NOVAK_HASH},Granted`,
+    )
+    const formula = toCsv([{ ...row, GBRAID: '-1+1', WBRAID: '=1,2' }]).split('\n')[1]
+    expect(formula).toContain(`,'-1+1,"'=1,2",`)
+  })
+})
+
+describe('createLeadWithAttribution (criterion 11, B1)', () => {
+  const MARK = `int26-store-${Date.now()}`
+  let payload: Payload
+  const created: number[] = []
+  const data = { name: 'Jan Novák', email: `novak.${MARK}@firma.cz`, message: MARK, locale: 'cs' as const }
+
+  beforeAll(async () => {
+    payload = await getPayload({ config: await config })
+  })
+
+  afterAll(async () => {
+    if (!payload || created.length === 0) return
+    await payload.delete({
+      collection: 'leads',
+      where: { id: { in: created } },
+      overrideAccess: true,
+      context: { skipRevalidate: true },
+    })
+  })
+
+  it('stores the lead with the attribution when the database accepts it', async () => {
+    const lead = await createLeadWithAttribution(payload, data, {
+      consentAnalytics: true,
+      consentMarketing: true,
+      gclid: `${MARK}-gclid`,
+    })
+    created.push(lead.id)
+    expect(lead.attribution?.gclid).toBe(`${MARK}-gclid`)
+    expect(lead.attribution?.consentMarketing).toBe(true)
+  })
+
+  it('stores the lead without the attribution when the database rejects the attribution', async () => {
+    // A value that passes no parser but that Postgres rejects: the last guard must still hold.
+    const lead = await createLeadWithAttribution(payload, data, {
+      consentAnalytics: true,
+      consentMarketing: true,
+      gclid: 'a\u0000b',
+      clickedAt: 'Wed Nov 11 2026 23:41:27 GMT+0100 (Central European Standard Time)',
+    })
+    created.push(lead.id)
+    const stored = await payload.findByID({ collection: 'leads', id: lead.id, overrideAccess: true })
+    expect(stored.message).toBe(MARK)
+    expect(stored.attribution?.gclid ?? null).toBeNull()
+    expect(stored.attribution?.consentMarketing ?? false).toBe(false)
+    expect(isGoogleAdsLead(stored)).toBe(false)
   })
 })

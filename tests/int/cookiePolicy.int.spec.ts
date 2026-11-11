@@ -130,6 +130,31 @@ describe('applyCookiePolicyToContent', () => {
     }
   })
 
+  it('replaces an older ad conversion paragraph in place, without a second copy (cs, en)', () => {
+    const older: Record<'cs' | 'en', string> = {
+      cs: 'Když přijdete z naší reklamy Google Ads a dáte souhlas s marketingem, uložíme značku kliknutí.',
+      en: 'When you come from our Google Ads ad and consent to marketing, we store the click ID.',
+    }
+    for (const locale of ['cs', 'en'] as const) {
+      const text = COOKIE_POLICY[locale].replace(AD_CONVERSION_PARAGRAPH[locale], older[locale])
+      const before = mdToLexical(`${text}\n\n${HOSTING_SENTENCE[locale]} Resend.`) as RichText
+      const { content, changes, missing } = applyCookiePolicyToContent(
+        before,
+        locale,
+        cookieNodes(locale),
+      )
+      expect(missing).toEqual([])
+      expect(changes).toEqual(['ad conversion paragraph replaced with the current text'])
+      const after = paragraphs(content)
+      expect(after).toHaveLength(paragraphs(before).length)
+      expect(after).not.toContain(older[locale])
+      expect(after.indexOf(AD_CONVERSION_PARAGRAPH[locale])).toBe(
+        paragraphs(before).indexOf(older[locale]),
+      )
+      expect(applyCookiePolicyToContent(content, locale, cookieNodes(locale)).changes).toEqual([])
+    }
+  })
+
   it('keeps the ad conversion text free of asterisks, and new databases get it (cs, en)', () => {
     for (const locale of ['cs', 'en'] as const) {
       expect(AD_CONVERSION_PARAGRAPH[locale]).not.toContain('*')
