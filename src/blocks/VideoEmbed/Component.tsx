@@ -15,8 +15,9 @@ export const VideoEmbedComponent = async ({ video }: VideoEmbedBlock) => {
   if (!id) return null
   const locale = (await getLocale()) as Locale
 
+  // No bottom padding: the next section (the FAQ) brings its own top padding.
   return (
-    <section className="container-site py-12 lg:py-16">
+    <section className="container-site pt-12 lg:pt-16">
       <div className="mx-auto max-w-3xl">
         <h2 className="mb-4 text-center">{video.title}</h2>
         <p className="mx-auto mb-8 max-w-2xl text-center text-text-60">{video.description}</p>
