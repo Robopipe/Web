@@ -20,6 +20,7 @@ import { Posts } from './collections/Posts'
 import { Redirects } from './collections/Redirects'
 import { Testimonials } from './collections/Testimonials'
 import { Users } from './collections/Users'
+import { Videos } from './collections/Videos'
 import { Footer } from './globals/Footer'
 import { Header } from './globals/Header'
 import { BlogAI } from './globals/BlogAI'
@@ -65,6 +66,7 @@ export default buildConfig({
     Leads,
     NewsletterSubscribers,
     Media,
+    Videos,
     Redirects,
     Users,
   ],

@@ -18,6 +18,7 @@ import { ProcessSteps } from './ProcessSteps/config'
 import { SplitSection } from './SplitSection/config'
 import { Stats } from './Stats/config'
 import { TestimonialBar } from './TestimonialBar/config'
+import { VideoEmbed } from './VideoEmbed/config'
 
 /** All blocks available in the page builder, in admin display order. */
 export const pageBlocks: Block[] = [
@@ -25,6 +26,7 @@ export const pageBlocks: Block[] = [
   FeatureGrid,
   Content,
   MediaBlock,
+  VideoEmbed,
   Stats,
   LogoCloud,
   TestimonialBar,
