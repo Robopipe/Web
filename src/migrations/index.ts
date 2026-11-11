@@ -7,6 +7,7 @@ import * as migration_20261111_111049_feature_grid_link from './20261111_111049_
 import * as migration_20261111_121632_case_study_metric_listing from './20261111_121632_case_study_metric_listing'
 import * as migration_20261111_135405_case_study_metric_drop_listing from './20261111_135405_case_study_metric_drop_listing'
 import * as migration_20261111_151806_hero_video_localized from './20261111_151806_hero_video_localized'
+import * as migration_20261111_164405_industry_card_image_localized from './20261111_164405_industry_card_image_localized'
 
 export const migrations = [
   {
@@ -53,5 +54,10 @@ export const migrations = [
     up: migration_20261111_151806_hero_video_localized.up,
     down: migration_20261111_151806_hero_video_localized.down,
     name: '20261111_151806_hero_video_localized',
+  },
+  {
+    up: migration_20261111_164405_industry_card_image_localized.up,
+    down: migration_20261111_164405_industry_card_image_localized.down,
+    name: '20261111_164405_industry_card_image_localized',
   },
 ]
