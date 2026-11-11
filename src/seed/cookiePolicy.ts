@@ -11,6 +11,12 @@ import { parseRemoteUrl, type SeoGeoClient } from './remoteClient'
  * into a new database. `pnpm seed:cookie-policy` changes an existing one.
  */
 
+/** The YouTube player on the service pages (issue #22). No asterisks: see `mdToLexical`. */
+export const YOUTUBE_PARAGRAPH: Record<Locale, string> = {
+  cs: 'Videa na webu přehrává YouTube. Přehrávač se načte až po kliknutí na video a potom může ukládat data do vašeho prohlížeče.',
+  en: 'YouTube plays the videos on this site. The player loads only after you click a video and may then store data in your browser.',
+}
+
 /** Replaces the old "Analytics" paragraph, which said the site sets no cookies. */
 export const COOKIE_POLICY: Record<Locale, string> = {
   cs: `**Cookies a měření.** Web používá cookies jen s vaším souhlasem. Nezbytná cookie rp_consent uloží vaši volbu na 6 měsíců.
@@ -23,6 +29,8 @@ Bez souhlasu Google neukládá žádné cookies. Dostává jen anonymní signál
 
 Data zpracovává Google Ireland Limited. Může je předat do USA podle rámce EU-US Data Privacy Framework.
 
+${YOUTUBE_PARAGRAPH.cs}
+
 Volbu kdykoli změníte odkazem „Nastavení cookies“ v patičce webu.`,
   en: `**Cookies and measurement.** This site uses cookies only with your consent. The necessary cookie rp_consent stores your choice for 6 months.
 
@@ -33,6 +41,8 @@ With your consent to marketing, we use the Google Ads tag. We measure ad results
 Without consent, Google stores no cookies. It gets only anonymous signals without identifiers. It uses them to estimate visits.
 
 Google Ireland Limited processes the data. It may transfer data to the USA under the EU-US Data Privacy Framework.
+
+${YOUTUBE_PARAGRAPH.en}
 
 You can change your choice at any time with the “Cookie settings” link in the footer.`,
 }
@@ -48,6 +58,11 @@ const OLD_LABEL: Record<Locale, string> = { cs: 'Analytika.', en: 'Analytics.' }
 const NEW_LABEL: Record<Locale, string> = {
   cs: 'Cookies a měření.',
   en: 'Cookies and measurement.',
+}
+/** First words of the last cookie paragraph. The YouTube paragraph goes before it. */
+const SETTINGS_LABEL: Record<Locale, string> = {
+  cs: 'Volbu kdykoli změníte',
+  en: 'You can change your choice',
 }
 
 /** The whole sentence up to its full stop: en has "Vercel; data is stored in the EU." */
@@ -83,6 +98,15 @@ export const applyCookiePolicyToContent = (
     else {
       children.splice(index, 1, ...cookieNodes)
       changes.push(`paragraph "${OLD_LABEL[locale]}" → "${NEW_LABEL[locale]}"`)
+    }
+  } else if (!children.some((node) => plainText(node) === YOUTUBE_PARAGRAPH[locale])) {
+    // A page that already has the cookie paragraphs from #21 gets only the YouTube one.
+    const youtube = cookieNodes.find((node) => plainText(node) === YOUTUBE_PARAGRAPH[locale])
+    const index = children.findIndex((node) => plainText(node).startsWith(SETTINGS_LABEL[locale]))
+    if (!youtube || index === -1) missing.push(`paragraph "${SETTINGS_LABEL[locale]}"`)
+    else {
+      children.splice(index, 0, youtube)
+      changes.push(`YouTube paragraph before "${SETTINGS_LABEL[locale]}"`)
     }
   }
 

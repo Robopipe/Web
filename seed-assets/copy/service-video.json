@@ -1,0 +1,30 @@
+{
+  "url": "https://www.youtube.com/watch?v=8PjTE75sGm4",
+  "language": "cs",
+  "uploadDate": "2026-11-11",
+  "duration": 50,
+  "thumbnail": {
+    "file": "service-video-thumbnail.jpg",
+    "alt": {
+      "cs": "Kamerová kontrola kvality s AI: model označí bagety jako kompletní, jedné chybí vejce",
+      "en": "AI camera quality inspection: the model marks the baguettes as complete, one has no egg"
+    }
+  },
+  "cs": {
+    "title": "Kamerová kontrola kvality na výrobní lince s AI",
+    "description": "Kamera nad linkou vyfotí každý kus. Model pozná, jestli je kus v pořádku. Obsluha hned vidí, který kus vyřadit, a každý výsledek jde do statistik.",
+    "playLabel": "Přehrát video: Kamerová kontrola kvality na výrobní lince s AI (50 s)"
+  },
+  "en": {
+    "title": "AI camera quality inspection on the production line",
+    "description": "A camera above the line takes a picture of each item. The model decides if the item is OK. The operator sees at once which item to remove, and every result goes into the statistics.",
+    "playLabel": "Play video: AI camera quality inspection on the production line (50 s, English captions)"
+  },
+  "pages": [
+    "kamerova-kontrola-kvality",
+    "detekce-vad-na-vyrobni-lince",
+    "pocitani-kusu-kamerou",
+    "kontrola-etiket",
+    "kontrola-kompletnosti-baleni"
+  ]
+}

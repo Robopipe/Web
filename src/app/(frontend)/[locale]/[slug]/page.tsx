@@ -9,7 +9,13 @@ import { JsonLd } from '@/components/JsonLd'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
 import { locales, type Locale } from '@/i18n/routing'
 import { checkedParams } from '@/lib/checkedParams'
-import { breadcrumbLd, faqPageLd, faqsFromLayout } from '@/lib/jsonLd'
+import {
+  breadcrumbLd,
+  faqPageLd,
+  faqsFromLayout,
+  videoObjectLd,
+  videosFromLayout,
+} from '@/lib/jsonLd'
 import { buildMeta } from '@/lib/meta'
 import { localizedPaths, pathFor } from '@/lib/paths'
 import { getGlobals, getLocalizedSlugs, getPageBySlug, getPayloadClient } from '@/lib/queries'
@@ -86,6 +92,7 @@ export default async function CMSPage({ params }: Props) {
             { name: page.title, path: pathFor('pages', slug, locale) },
           ]),
           faqPageLd(faqsFromLayout(page.layout)),
+          ...videosFromLayout(page.layout).map(videoObjectLd),
         ]}
       />
       <RenderBlocks blocks={page.layout} />

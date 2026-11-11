@@ -78,6 +78,7 @@ export interface Config {
     leads: Lead;
     'newsletter-subscribers': NewsletterSubscriber;
     media: Media;
+    videos: Video;
     redirects: Redirect;
     users: User;
     'payload-kv': PayloadKv;
@@ -99,6 +100,7 @@ export interface Config {
     leads: LeadsSelect<false> | LeadsSelect<true>;
     'newsletter-subscribers': NewsletterSubscribersSelect<false> | NewsletterSubscribersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    videos: VideosSelect<false> | VideosSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
@@ -169,6 +171,7 @@ export interface Page {
     | FeatureGridBlock
     | ContentBlock
     | MediaBlockType
+    | VideoEmbedBlock
     | StatsBlock
     | LogoCloudBlock
     | TestimonialBarBlock
@@ -503,6 +506,57 @@ export interface MediaBlockType {
   id?: string | null;
   blockName?: string | null;
   blockType: 'mediaBlock';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "VideoEmbedBlock".
+ */
+export interface VideoEmbedBlock {
+  video: number | Video;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'videoEmbed';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "videos".
+ */
+export interface Video {
+  id: number;
+  /**
+   * Heading above the player. Also the video name in structured data.
+   */
+  title: string;
+  /**
+   * One or two sentences under the heading and in structured data.
+   */
+  description: string;
+  /**
+   * YouTube address, for example https://www.youtube.com/watch?v=…
+   */
+  url: string;
+  /**
+   * Preview image (16:9) shown before the click. Served from this site, not from YouTube.
+   */
+  thumbnail: number | Media;
+  /**
+   * Accessible name of the play button, for example "Play video: … (50 s)".
+   */
+  playLabel: string;
+  /**
+   * Spoken language. Pages in another language start the video with captions.
+   */
+  language: 'cs' | 'en';
+  /**
+   * Date of publication on YouTube.
+   */
+  uploadDate: string;
+  /**
+   * Length in seconds.
+   */
+  duration: number;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1441,6 +1495,10 @@ export interface PayloadLockedDocument {
         value: number | Media;
       } | null)
     | ({
+        relationTo: 'videos';
+        value: number | Video;
+      } | null)
+    | ({
         relationTo: 'redirects';
         value: number | Redirect;
       } | null)
@@ -1504,6 +1562,7 @@ export interface PagesSelect<T extends boolean = true> {
         featureGrid?: T | FeatureGridBlockSelect<T>;
         content?: T | ContentBlockSelect<T>;
         mediaBlock?: T | MediaBlockTypeSelect<T>;
+        videoEmbed?: T | VideoEmbedBlockSelect<T>;
         stats?: T | StatsBlockSelect<T>;
         logoCloud?: T | LogoCloudBlockSelect<T>;
         testimonialBar?: T | TestimonialBarBlockSelect<T>;
@@ -1618,6 +1677,15 @@ export interface ContentBlockSelect<T extends boolean = true> {
 export interface MediaBlockTypeSelect<T extends boolean = true> {
   media?: T;
   caption?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "VideoEmbedBlock_select".
+ */
+export interface VideoEmbedBlockSelect<T extends boolean = true> {
+  video?: T;
   id?: T;
   blockName?: T;
 }
@@ -2151,6 +2219,22 @@ export interface MediaSelect<T extends boolean = true> {
               filename?: T;
             };
       };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "videos_select".
+ */
+export interface VideosSelect<T extends boolean = true> {
+  title?: T;
+  description?: T;
+  url?: T;
+  thumbnail?: T;
+  playLabel?: T;
+  language?: T;
+  uploadDate?: T;
+  duration?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

@@ -15,6 +15,7 @@
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start",
     "seed": "cross-env NODE_OPTIONS=--no-deprecation tsx src/seed/index.ts",
     "seed:seo-geo": "cross-env NODE_OPTIONS=--no-deprecation tsx src/seed/applySeoGeo.ts",
+    "seed:service-video": "cross-env NODE_OPTIONS=--no-deprecation tsx src/seed/applyServiceVideo.ts",
     "seed:cookie-policy": "cross-env NODE_OPTIONS=--no-deprecation tsx src/seed/applyCookiePolicy.ts",
     "test": "pnpm run test:int && pnpm run test:e2e",
     "test:e2e": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" playwright test --config=playwright.config.ts",
