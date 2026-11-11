@@ -49,6 +49,19 @@ Věta o hostingu je **čekající na potvrzení majitele**:
 7. **Přihlášení v e2e testech.** Kapitola 13.2 uvádí `tests/helpers/login.ts` (přihlášení přes formulář). Test
    se přihlásí přes REST (`/api/users/login`) stejně jako `seo-stage2.e2e.spec.ts`. Uživatel je ze
    `tests/helpers/seedUser.ts`.
+8. **Místo pod lištou (kolo 2, B1).** Kapitola 10 chce lištu `fixed` bez dalšího zásahu do stránky. Lišta teď
+   nastaví `body` spodní odsazení a `html` `scroll-padding-bottom` na svou výšku (`ResizeObserver`). Konec stránky
+   a přepínač jazyka v patičce jdou posunout nad lištu. Po zavření lišty se odsazení vrátí.
+9. **Tlačítka na telefonu (kolo 2, B1).** Kapitola 10 chce pod `sm` tlačítka pod sebou přes celou šířku. Teď jsou
+   ve dvou sloupcích: „Přijmout vše“ | „Odmítnout“, pod nimi „Nastavení“ | odkaz na ochranu údajů. Přijmout
+   a Odmítnout mají dál stejnou třídu, šířku i výšku (kritérium 2). Od `sm` výše se vzhled nemění.
+10. **Fokus po volbě (kolo 2, B4).** Kapitola 10 říká, že lišta nebere fokus. To platí dál pro otevření. Po zavření
+   lišty ale `ConsentProvider` přesune fokus na `<main>` (`tabIndex={-1}`), když fokus spadl na `body`.
+11. **Synchronizace záložek (kolo 2, B5).** Architektura synchronizaci neřeší. `ConsentProvider` po uložení pošle
+   prázdnou zprávu do `BroadcastChannel('rp_consent')`. Ostatní záložky znovu přečtou cookie a použijí volbu.
+   Cookie zůstává jediné úložiště volby (R2).
+12. **`_gac_*` (kolo 2, B3).** Kapitola 6.4 maže pro marketing jen `_gcl_*`. `GOOGLE_COOKIES.marketing` teď maže
+   také `_gac_*`.
 
 ## Migrace
 
@@ -113,7 +126,8 @@ Rozdíl je nejvýš 1 bod (kritérium 14 dovoluje 3).
 
 ### Screenshoty
 
-`screens/banner-{cs,en}-{1440,390}.png` a `screens/settings-{cs,en}-{1440,390}.png`.
+`screens/banner-{cs,en}-{1440,390}.png` a `screens/settings-{cs,en}-{1440,390}.png` (obnovené v kole 2).
+`screens/fix-footer-{1440,390,320}.png`: konec stránky `/cs` s otevřenou lištou po opravě B1.
 
 ## Známá omezení
 
@@ -141,3 +155,46 @@ Rozdíl je nejvýš 1 bod (kritérium 14 dovoluje 3).
 8. V GA4 označte `generate_lead` jako klíčovou událost (Arthur).
 9. V Google Ads importujte `generate_lead` z GA4 jako primární konverzi „Lead“ (Arthur).
 10. Volitelně importujte `contact_click` jako sekundární konverzi (otázka 16.2).
+
+## Kolo 2
+
+Tester vrátil větev s verdiktem „nelze sloučit“ (`test-report.md`, oddíl „Nalezené chyby“). Opravy:
+
+| Chyba | Oprava | Commit |
+| --- | --- | --- |
+| B1 lišta zakrývá konec stránky | Místo pod lištou (odchylka 8). Nižší lišta na telefonu (odchylka 9). | `f0a3e18` |
+| B2 poškozená `rp_consent` shodí stránku | `readCookie` vrátí `undefined`, když `decodeURIComponent` selže. Platí pro všechny volající (`ConsentProvider`, `localeSuggestion`). | `84199b9` |
+| B3 odvolání nesmaže `_gac_*` | `_gac_*` patří do kategorie marketing (odchylka 12). | `ce82f67` |
+| B4 fokus po volbě | Fokus jde na `<main>` (odchylka 10). | `8d46dc5` |
+| B5 záložky drží starou volbu | `BroadcastChannel` (odchylka 11). | `e378961` |
+
+Výška lišty s otevřenou stránkou `/cs`, změřená v Chrome:
+
+| Okno | Před | Po |
+| --- | --- | --- |
+| 1440 × 900 | 140 px | 140 px (16 %) |
+| 390 × 844 | 36 % | 224 px (27 %) |
+| 320 × 568 | 50 % | 224 px (39 %) |
+
+Nové testy: `consent.e2e.spec.ts` má test fokusu po volbě v liště a po uložení v dialogu z lišty (B4), test dvou
+záložek (B5) a test patičky na 390 a 320 px (B1). Test „13: at 390 px“ teď chce výšku nejvýš 30 % okna
+a Přijmout a Odmítnout vedle sebe se stejnou velikostí. `consent.int.spec.ts` kontroluje `_gac_*` a poškozenou
+hodnotu cookie. Testy testera (`consentTesterFindings.*`) jsou beze změny.
+
+Výsledky (11. 11. 2026, server `next start` na portu 3921, databáze `robopipe_21`):
+
+| Kontrola | Výsledek |
+| --- | --- |
+| `tsc --noEmit` | prošlo |
+| `pnpm lint` | 0 chyb, 2 stará varování |
+| `pnpm test:int` | 27 souborů, 162 testů, vše prošlo |
+| `pnpm build` | prošlo |
+| `test:e2e` (celá sada, oba projekty) | 118 prošlo, 0 selhalo. Známé chyby (blog s dlouhým titulkem, článek jen v produkci) se v tomto běhu neprojevily. |
+
+Běh e2e měl vyplněná testovací ID. Před i po běhu měla `site_settings` hodnoty `G-TEST000000` a `AW-000000000`.
+HTML `/cs` před během obsahovalo obě ID. Tvrzení z kola 1 (111 prošlo) tester zpochybnil, protože běh mohl mít
+prázdná ID. Tento běh to vylučuje.
+
+Otevřená otázka pro Filipa: text o cookies (`src/seed/cookiePolicy.ts`, kapitola 15 architektury) jmenuje jen
+`_gcl_*`. Pokud má text jmenovat i `_gac_*`, je nutné ho upravit. Text jsem bez souhlasu neměnil.
+
