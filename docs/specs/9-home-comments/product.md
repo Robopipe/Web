@@ -43,10 +43,47 @@ Karta „Kontrola etiket“ má ukazovat skutečný záběr z provozu, ne ilustr
 5.1 Změny platí pro `/cs` i `/en`. Ostatní stránky se nemění (kromě patičky, která je společná).
 5.2 Nic se nedostane do produkce bez Filipova pokynu. To platí i pro obsah v Payload (produkční databáze).
 
+## Kolo 2 (Filip 11. 11. 2026, 12:51)
+
+Filip: sekce „AI kontrola kvality, kterou zvládne váš vlastní tým“, „Postaveno pro váš obor“ a „Kontrola kvality
+ve výrobě podle úlohy“ jsou si podobné (mřížky karet) a jdou hned za sebou. Nepůsobí to hezky. Chce je rozložit
+po stránce.
+
+### Akceptační kritéria kola 2
+
+6.1 Pořadí úvodní stránky (cs i en): úvod s videem, loga zákazníků, „AI kontrola kvality, kterou zvládne váš
+    vlastní tým“, „AI kontrola v provozu za jediný den“ (tmavá sekce s čísly), „Postaveno pro váš obor“,
+    příběh zákazníka, „Kontrola kvality ve výrobě podle úlohy“, „Jsme součástí“, Z blogu a časté otázky, výzva k akci.
+6.2 Žádné dvě mřížky karet nejdou hned za sebou.
+6.3 Střídání pozadí sekcí zůstane čisté: žádné dvě sousední sekce nemají rušivý přechod (dvojitý okraj, dvojitá
+    mezera, stejné tmavé pozadí hned za sebou). Platí na 375 px i 1440 px.
+6.4 Skript obsahu nastaví pořadí idempotentně. Pořadí, které Filip ručně změnil v administraci, skript nepřepíše
+    (stejný princip jako u pruhu „Jsme součástí“).
+6.5 Texty a obsah sekcí se nemění. Ostatní kritéria kola 1 platí dál (pruh „Jsme součástí“ je za sekcí úloh
+    a před blogem).
+6.6 Chyby C1, C2 a C3 z `test-report.md` jsou opravené a mají testy.
+
+## Kolo 3 (Filip 11. 11. 2026, 13:01)
+
+Filip poslal 6 komentářů ke stránce `/cs/case-studies`. Platí i pro `/en/case-studies`.
+
+### Akceptační kritéria kola 3
+
+7.1 Hlavní fotka hlavního případu (Crocodille) je skutečný záběr z videa z provozu, ne obrázek vygenerovaný AI.
+    Na fotce nejsou tváře lidí ani cizí značky. Alt text popisuje fotku v cs i en.
+7.2 Karta hlavního případu v seznamu neukazuje údaj „95 % přesnost detekce“.
+7.3 Třetí karta v seznamu neukazuje údaj „95 % přesnost detekce“. Údaj „5 různých kontrol na balení“ zůstane.
+7.4 Údaje na kartě v seznamu jsou na 1440 px vedle sebe v jednom řádku (druhá karta: „< 1 min“ a „1 ušetřený
+    celý úvazek“). Na 375 px se smí zalomit pod sebe. Nic nepřeteče z karty.
+7.5 Citát (Vedoucí kvality, Crocodille) je nad sekcí „Řešení podle úlohy“.
+7.6 Nadpis výzvy je „Třeba je na řadě právě váš provoz.“, anglicky „Your operation could be next.“
+7.7 Detail případu se nemění: údaj „95 %“ tam zůstane. Skript obsahu běží idempotentně a nepřepíše fotku
+    ani údaje, které někdo změnil ručně v administraci. Kritéria kol 1 a 2 platí dál.
+
 ## Mimo rozsah
 
 - Nové video na úvodní stránku (samostatný úkol).
-- Jiné úpravy textů a pořadí sekcí.
+- Jiné úpravy textů a pořadí sekcí (kromě kol 2 a 3).
 
 ## Vstupy
 

@@ -1,0 +1,16 @@
+{
+  "heroImages": {
+    "crocodille-line-quality": {
+      "replaceIf": "^tablet-line(-\\d+)?\\.png$",
+      "image": "crocodille-camera-line.jpg",
+      "alt": {
+        "cs": "Kamera Robopipe nad linkou s plněnými bagetami",
+        "en": "Robopipe camera above a line of filled baguettes"
+      }
+    }
+  },
+  "hideInListing": {
+    "crocodille-line-quality": [{ "value": "95%", "label": "detection precision" }],
+    "mg-servis-packaging-checks": [{ "value": "95%", "label": "detection precision" }]
+  }
+}

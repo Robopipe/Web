@@ -91,7 +91,7 @@ export const FeatureGridComponent: React.FC<FeatureGridBlock> = ({
                           {feature.text ? ' ' : null}
                           <CMSLink
                             link={feature.link}
-                            className={`underline underline-offset-2 ${
+                            className={`underline underline-offset-2 wrap-anywhere ${
                               dark
                                 ? 'text-brand hover:text-text-invert'
                                 : 'text-brand-fg hover:text-brand-fg-hover'

@@ -45,7 +45,7 @@ export default async function CaseStudiesPage({ params }: Props) {
   const featured = caseStudies.docs.find((cs) => cs.featured) ?? caseStudies.docs[0]
   const rest = caseStudies.docs.filter((cs) => cs !== featured)
 
-  // The pull quote between the grid and the CTA — first testimonial doc.
+  // The pull quote between the grid and the solutions by task: first testimonial doc.
   const payload = await getPayloadClient()
   const testimonials = await payload.find({
     collection: 'testimonials',
@@ -86,8 +86,6 @@ export default async function CaseStudiesPage({ params }: Props) {
         </div>
       </div>
 
-      <IndustryCardsComponent blockType="industryCards" source="solutions" heading={t('byTask')} />
-
       {quote && (
         <section className="container-site pb-16">
           <figure className="mx-auto flex max-w-3xl flex-col items-center gap-6 text-center">
@@ -100,6 +98,8 @@ export default async function CaseStudiesPage({ params }: Props) {
           </figure>
         </section>
       )}
+
+      <IndustryCardsComponent blockType="industryCards" source="solutions" heading={t('byTask')} />
 
       <section className="bg-surface-dark">
         <div className="container-site flex flex-col items-center gap-6 py-16 text-center lg:py-18">

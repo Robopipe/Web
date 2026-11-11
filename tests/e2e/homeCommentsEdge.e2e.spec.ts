@@ -55,3 +55,23 @@ for (const locale of ['cs', 'en'] as const) {
     expect(overflow).toBe(0)
   })
 }
+
+test('wraps a long unbroken word in the card link inside its card at 320 px (C3)', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 320, height: 800 })
+  await page.goto('/cs')
+  const link = page.locator('main p > a').filter({ hasText: 'automatická anotace' })
+  // The test does not change data: it puts the long word into the rendered link.
+  const { right, cardRight, overflow } = await link.evaluate((a) => {
+    a.textContent = 'A'.repeat(100)
+    const card = a.closest('p')!.parentElement!
+    return {
+      right: a.getBoundingClientRect().right,
+      cardRight: card.getBoundingClientRect().right,
+      overflow: document.documentElement.scrollWidth - window.innerWidth,
+    }
+  })
+  expect(right).toBeLessThanOrEqual(cardRight + 1)
+  expect(overflow).toBe(0)
+})

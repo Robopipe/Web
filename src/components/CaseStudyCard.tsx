@@ -38,6 +38,7 @@ export const CaseStudyCard: React.FC<{ caseStudy: CaseStudy; featured?: boolean 
     <CaseStudyMetrics
       metrics={caseStudy.metrics}
       size={featured ? 'large' : 'default'}
+      listing
       className={featured ? 'mt-2' : 'mt-auto'}
     />
   )
