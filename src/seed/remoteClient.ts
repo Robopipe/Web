@@ -88,8 +88,9 @@ const MIME: Record<string, string> = {
 
 type Options = {
   baseUrl: string
-  email: string
-  password: string
+  /** Account to log in with. Without email and password the client is anonymous and must be readOnly. */
+  email?: string
+  password?: string
   config: SanitizedConfig
   /** Dry run: any request that would write is refused before it is sent. */
   readOnly: boolean
@@ -148,6 +149,7 @@ const errorText = async (response: Response): Promise<string> => {
 /**
  * Payload REST client with the Local API methods the content script calls.
  * Logs in with the given account. The password is only sent to /api/users/login.
+ * Without an account the client reads anonymously (what a visitor sees) and refuses every write.
  */
 export const createRemoteClient = async ({
   baseUrl,
@@ -159,6 +161,13 @@ export const createRemoteClient = async ({
   timeoutMs = REQUEST_TIMEOUT_MS,
 }: Options): Promise<SeoGeoClient> => {
   const url = parseRemoteUrl(baseUrl)
+  const anonymous = !email && !password
+  if (!anonymous && (!email || !password)) {
+    throw new Error('The REST client needs both email and password, or neither for anonymous reads.')
+  }
+  if (anonymous && !readOnly) {
+    throw new Error('An anonymous REST client is read-only: pass readOnly: true or an account.')
+  }
   const root = `${url.origin}${url.pathname.replace(/\/$/, '')}`
 
   const send = async (method: string, apiPath: string, init: RequestInit = {}) => {
@@ -188,13 +197,16 @@ export const createRemoteClient = async ({
     return response.json() as Promise<Record<string, unknown>>
   }
 
-  const login = await send('POST', '/api/users/login', {
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password }),
-  })
-  const token = login.token as string | undefined
-  if (!token) throw new RemoteError('POST', '/api/users/login', 200, 'no token in the response')
-  const auth = { Authorization: `JWT ${token}` }
+  let auth: Record<string, string> = {}
+  if (!anonymous) {
+    const login = await send('POST', '/api/users/login', {
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    })
+    const token = login.token as string | undefined
+    if (!token) throw new RemoteError('POST', '/api/users/login', 200, 'no token in the response')
+    auth = { Authorization: `JWT ${token}` }
+  }
 
   const request = (method: string, apiPath: string, body?: Record<string, unknown> | FormData) => {
     if (readOnly && method !== 'GET') {

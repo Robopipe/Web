@@ -224,6 +224,44 @@ describe('createRemoteClient', () => {
     )
   })
 
+  it('reads anonymously without an account and sends no login', async () => {
+    const { impl, calls } = fakeFetch(() => [200, { docs: [{ id: 1 }] }])
+    const client = await createRemoteClient({
+      baseUrl: 'https://robopipe.io',
+      config,
+      readOnly: true,
+      fetchImpl: impl,
+    })
+    expect(await client.find({ collection: 'pages', locale: 'cs', depth: 0 })).toEqual({
+      docs: [{ id: 1 }],
+    })
+    expect(calls.map((c) => `${c.method} ${c.url}`)).toEqual([
+      'GET https://robopipe.io/api/pages?locale=cs&depth=0',
+    ])
+    expect(calls[0].headers.Authorization).toBeUndefined()
+    await expect(client.update({ collection: 'pages', id: 1, data: {} })).rejects.toThrow(
+      'Dry run is read-only: PATCH /api/pages/1 was not sent.',
+    )
+    expect(calls).toHaveLength(1)
+  })
+
+  it('refuses an anonymous client that could write, and a half account', async () => {
+    const { impl, calls } = fakeFetch(() => [200, {}])
+    await expect(
+      createRemoteClient({ baseUrl: 'http://h', config, readOnly: false, fetchImpl: impl }),
+    ).rejects.toThrow('An anonymous REST client is read-only')
+    await expect(
+      createRemoteClient({
+        baseUrl: 'http://h',
+        email: 'e',
+        config,
+        readOnly: true,
+        fetchImpl: impl,
+      }),
+    ).rejects.toThrow('both email and password')
+    expect(calls).toHaveLength(0)
+  })
+
   it('refuses an address without http or https before any request', async () => {
     const { impl, calls } = fakeFetch(() => [200, {}])
     await expect(
