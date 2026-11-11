@@ -200,7 +200,7 @@ NEXT_PUBLIC_SERVER_URL=http://localhost:<port> E2E_BASE_URL=http://localhost:<po
 
 1. Když v produkci někdo změnil pořadí jiných bloků, skript pořadí nezmění. Report to řekne (`order changed by hand`). Pořadí pak nastaví Filip v administraci.
 2. Druhý blok stejného typu (například další `featureGrid`) dělá stav neznámým. Skript pak pořadí nemění.
-3. Odkaz s textem jen v en se na `/cs` ukáže. Opačný případ (C2) řeší jen jazyky mimo výchozí `cs`.
+3. Kontrola C2 běží jen pro jazyky mimo výchozí `cs`. Čeština záložní jazyk nemá, takže prázdný český text odkaz skryje i bez ní.
 
 ### K2.7 Co má ověřit tester
 
