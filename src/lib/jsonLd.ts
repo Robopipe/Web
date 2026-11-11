@@ -31,6 +31,54 @@ const compact = <T extends Record<string, unknown>>(obj: T): T =>
 const isPopulated = <T>(value: T | number | null | undefined): value is T =>
   !!value && typeof value !== 'number'
 
+/**
+ * Company facts with a public source; issue #19. Change them here when they change.
+ * - foundingDate: ARES, datum vzniku of robopipe s.r.o. (IČO 24111791).
+ * - numberOfEmployees, parent: the /o-nas page ("spin-off of KOALA42",
+ *   "The team has 5 people today").
+ * - LinkedIn: the company page of Robopipe.
+ */
+const COMPANY_FACTS = {
+  foundingDate: '2025-12-31',
+  numberOfEmployees: 5,
+  parent: { name: 'KOALA42', sameAs: 'https://www.linkedin.com/company/koala42' },
+  linkedIn: 'https://www.linkedin.com/company/robopipe-io',
+}
+
+const COUNTRY_CODES: [RegExp, string][] = [
+  [/^(czech republic|czechia|česká republika|česko)$/i, 'CZ'],
+]
+const POSTCODE_LINE = /^(\d{3}\s?\d{2})\s+(.+)$/
+
+/**
+ * Site-settings address text (lines or comma-separated parts) as a schema.org
+ * PostalAddress. The line with the postcode gives postalCode and locality, the
+ * line before it the street. A known country name becomes its ISO code. Text
+ * without a postcode stays in streetAddress as it is.
+ */
+export const postalAddressLd = (
+  text: string | null | undefined,
+  legalName?: string | null,
+): JsonLdObject | undefined => {
+  const parts = (text ?? '')
+    .split(/\n|,/)
+    .map((part) => part.trim())
+    .filter((part) => part && part !== legalName)
+  if (!parts.length) return undefined
+  const postIndex = parts.findIndex((part) => POSTCODE_LINE.test(part))
+  if (postIndex < 1) return { '@type': 'PostalAddress', streetAddress: parts.join(', ') }
+  const [, postalCode, addressLocality] = parts[postIndex].match(POSTCODE_LINE) ?? []
+  const country = parts.slice(postIndex + 1).join(', ')
+  const countryCode = COUNTRY_CODES.find(([pattern]) => pattern.test(country))?.[1]
+  return compact({
+    '@type': 'PostalAddress',
+    streetAddress: parts.slice(0, postIndex).join(', '),
+    postalCode,
+    addressLocality,
+    addressCountry: countryCode ?? (country || undefined),
+  })
+}
+
 export const organizationLd = (settings: SiteSetting): JsonLdObject => {
   const memberships = (settings.memberships ?? []).map((m) =>
     compact({
@@ -55,12 +103,11 @@ export const organizationLd = (settings: SiteSetting): JsonLdObject => {
     logo: absoluteUrl('/logo.svg'),
     email: settings.contactEmail,
     telephone: settings.contact?.phone,
-    address: settings.contact?.address
-      ?.split('\n')
-      .map((line) => line.trim())
-      .filter(Boolean)
-      .join(', '),
-    sameAs: (settings.socials ?? []).map((s) => s.url),
+    address: postalAddressLd(settings.contact?.address, company?.legalName),
+    foundingDate: COMPANY_FACTS.foundingDate,
+    numberOfEmployees: { '@type': 'QuantitativeValue', value: COMPANY_FACTS.numberOfEmployees },
+    parentOrganization: { '@type': 'Organization', ...COMPANY_FACTS.parent },
+    sameAs: [...new Set([...(settings.socials ?? []).map((s) => s.url), COMPANY_FACTS.linkedIn])],
     memberOf: memberships,
   })
 }
