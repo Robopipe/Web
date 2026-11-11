@@ -45,6 +45,12 @@ export default defineConfig({
         launchOptions: { executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH || undefined },
       },
     },
+    {
+      // iOS Safari engine, for checks that differ on iPhone (hero video autoplay).
+      name: 'webkit-iphone',
+      testMatch: /heroVideo\.e2e\.spec\.ts/,
+      use: { ...devices['iPhone 14'] },
+    },
   ],
   webServer: {
     command: `pnpm dev --port ${port}`,

@@ -1,9 +1,38 @@
+import { getImageProps } from 'next/image'
 import React from 'react'
 
 import { CMSLink } from '@/components/CMSLink'
-import { Media } from '@/components/Media'
+import { Media, relativize } from '@/components/Media'
 import { buttonClasses, Chip } from '@/components/ui'
-import type { HeroBlock } from '@/payload-types'
+import type { HeroBlock, Media as MediaType } from '@/payload-types'
+
+import { HeroVideo } from './HeroVideo'
+
+/** Rendered width of the hero media: full container when centred, one column when split. */
+const SIZES = {
+  centered: '(min-width: 1152px) 1088px, 100vw',
+  split: '(min-width: 1152px) 520px, (min-width: 1024px) 50vw, 100vw',
+}
+
+/**
+ * Optimised poster URL from the block's image, if set. A video has no frame of
+ * its own in the media library, so the image is the only poster source.
+ */
+const posterUrl = (image: HeroBlock['image']): string | undefined => {
+  const media = image && typeof image !== 'number' ? (image as MediaType) : null
+  const sized = media?.sizes?.hero
+  const url = sized?.url ?? media?.url
+  const width = sized?.width ?? media?.width
+  const height = sized?.height ?? media?.height
+  if (!url || !width || !height) return undefined
+  // 540 CSS px at 2x gives the 1080 px variant: sharp on phones, light enough for desktop.
+  return getImageProps({
+    src: relativize(url),
+    alt: '',
+    width: 540,
+    height: Math.round((540 * height) / width),
+  }).props.src
+}
 
 const linkStyles = [
   buttonClasses({ variant: 'filled', size: 'lg' }),
@@ -36,9 +65,7 @@ export const HeroComponent: React.FC<HeroBlock> = ({
         <div className={centered ? 'flex max-w-3xl flex-col items-center gap-6' : 'space-y-6'}>
           {eyebrow && <Chip>{eyebrow}</Chip>}
           <h1>{heading}</h1>
-          {text && (
-            <p className="max-w-2xl text-lg leading-8 text-text-60 lg:text-xl">{text}</p>
-          )}
+          {text && <p className="max-w-2xl text-lg leading-8 text-text-60 lg:text-xl">{text}</p>}
           {!!links?.length && (
             <div className={`flex flex-wrap gap-3 ${centered ? 'justify-center' : ''}`}>
               {links.map((row, i) => (
@@ -51,12 +78,9 @@ export const HeroComponent: React.FC<HeroBlock> = ({
         {(videoDoc?.url || (image && typeof image !== 'number')) && (
           <div className={centered ? 'mt-4 w-full' : ''}>
             {videoDoc?.url ? (
-              <video
-                autoPlay
-                muted
-                loop
-                playsInline
+              <HeroVideo
                 src={videoDoc.url}
+                poster={posterUrl(image)}
                 className="h-[280px] w-full rounded-xl bg-brand-tint object-cover sm:h-[360px] lg:h-[420px]"
               />
             ) : (
@@ -65,6 +89,7 @@ export const HeroComponent: React.FC<HeroBlock> = ({
                 size="hero"
                 className="h-[280px] w-full rounded-xl object-cover sm:h-[360px] lg:h-[420px]"
                 priority
+                sizes={centered ? SIZES.centered : SIZES.split}
               />
             )}
           </div>
