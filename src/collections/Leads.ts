@@ -1,12 +1,22 @@
 import type { CollectionConfig } from 'payload'
 
 import { authenticated, nobody } from '@/access'
+import { isGoogleAdsLead, type LeadForAds } from '@/lib/googleAds'
+import { isBusinessEmail, isTestLead } from '@/lib/leadEmail'
 
 export const Leads: CollectionConfig = {
   slug: 'leads',
   admin: {
     useAsTitle: 'email',
-    defaultColumns: ['name', 'email', 'company', 'status', 'createdAt'],
+    defaultColumns: [
+      'name',
+      'email',
+      'company',
+      'businessEmail',
+      'googleAdsExport',
+      'status',
+      'createdAt',
+    ],
     group: 'Sales',
     description: 'Inquiries submitted through the contact form.',
   },
@@ -67,6 +77,74 @@ export const Leads: CollectionConfig = {
       name: 'sourcePage',
       type: 'text',
       admin: { description: 'Path of the page the form was submitted from.' },
+    },
+    {
+      name: 'attribution',
+      type: 'group',
+      admin: {
+        position: 'sidebar',
+        description:
+          'Ad click and cookie consent at the time of submission. Set by the form, read-only.',
+      },
+      // Local API with overrideAccess (the form action) still writes.
+      access: { create: () => false, update: () => false },
+      fields: [
+        {
+          name: 'consentAnalytics',
+          type: 'checkbox',
+          defaultValue: false,
+          admin: { readOnly: true },
+        },
+        {
+          name: 'consentMarketing',
+          type: 'checkbox',
+          defaultValue: false,
+          admin: { readOnly: true },
+        },
+        { name: 'gclid', type: 'text', admin: { readOnly: true } },
+        { name: 'gbraid', type: 'text', admin: { readOnly: true } },
+        { name: 'wbraid', type: 'text', admin: { readOnly: true } },
+        {
+          name: 'clickedAt',
+          type: 'date',
+          admin: { readOnly: true, date: { pickerAppearance: 'dayAndTime' } },
+        },
+      ],
+    },
+    {
+      name: 'businessEmail',
+      type: 'checkbox',
+      virtual: true,
+      admin: {
+        readOnly: true,
+        position: 'sidebar',
+        description: 'Email domain is not a public mail service.',
+      },
+      hooks: { afterRead: [({ data }) => isBusinessEmail(data?.email ?? '')] },
+    },
+    {
+      name: 'testLead',
+      type: 'checkbox',
+      virtual: true,
+      admin: {
+        readOnly: true,
+        position: 'sidebar',
+        description: 'koala42.com, robopipe.io or a name that starts with TEST.',
+      },
+      hooks: {
+        afterRead: [({ data }) => isTestLead({ email: data?.email ?? '', name: data?.name ?? '' })],
+      },
+    },
+    {
+      name: 'googleAdsExport',
+      type: 'checkbox',
+      virtual: true,
+      admin: {
+        readOnly: true,
+        position: 'sidebar',
+        description: 'Goes to Google Ads as a company lead (last 90 days only).',
+      },
+      hooks: { afterRead: [({ data }) => (data ? isGoogleAdsLead(data as LeadForAds) : false)] },
     },
     {
       name: 'status',

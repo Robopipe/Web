@@ -183,6 +183,16 @@ export const SiteSettings: GlobalConfig = {
             !value || /^AW-\d{6,14}$/.test(value) || 'Format: AW-123456789',
           admin: { description: 'Google Ads tag ID, e.g. AW-123456789. Used for remarketing.' },
         },
+        {
+          name: 'leadConversionName',
+          type: 'text',
+          required: true,
+          defaultValue: 'Firemni poptavka (import)',
+          admin: {
+            description:
+              'Exact name of the Google Ads conversion action for company leads. Goes to the "Conversion Name" column of /api/google-ads/company-leads.csv.',
+          },
+        },
       ],
     },
     {
