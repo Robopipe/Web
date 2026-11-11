@@ -426,3 +426,94 @@ test('11: a click ID with a NUL byte in the landing URL does not stop the form',
   await submitForm(page, email)
   expect(await findLead(email)).toBeDefined()
 })
+
+// Tester round 2 (test-report.md, chapter "Kolo 2"): other bad click IDs than the NUL byte.
+// The form must work, the ID must not reach the cookie, and consent still counts (scenario 4).
+const ROUND2_BAD_IDS: Record<string, string> = {
+  'control character': 'a%01b',
+  'non-ASCII': 'Cj0K%C3%A1b',
+  'fullwidth equals': '%EF%BC%9D1%2B1',
+  'zero width space': 'Cj0K%E2%80%8BX',
+  'length 513': 'A'.repeat(513),
+  empty: '',
+}
+
+for (const [label, value] of Object.entries(ROUND2_BAD_IDS)) {
+  test(`11 (round 2): a click ID with ${label} does not stop the form and is not stored`, async ({
+    page,
+    context,
+  }) => {
+    await page.goto(`${LOCALES.cs.home}?gclid=${value}`)
+    await banner(page).getByRole('button', { name: LOCALES.cs.accept }).click()
+    expect(await clickCookie(context)).toBeUndefined()
+    const email = `e2e-r2-${Date.now()}@firma-e2e.cz`
+    await page.goto(LOCALES.cs.contact)
+    await submitForm(page, email)
+    const stored = await findLead(email)
+    expect(stored?.attribution).toMatchObject({ consentMarketing: true })
+    expect(stored?.attribution?.gclid ?? null).toBeNull()
+    expect(stored?.googleAdsExport).toBe(true)
+  })
+}
+
+test('11 (round 2): a bad click ID in a later link keeps the earlier good one', async ({
+  page,
+  context,
+}) => {
+  const good = `E2E_r2_good_${Date.now()}`
+  await page.goto(`${LOCALES.cs.home}?gclid=${good}`)
+  await banner(page).getByRole('button', { name: LOCALES.cs.accept }).click()
+  await page.goto(`${LOCALES.cs.home}?gclid=%00bad`)
+  expect(decodeURIComponent((await clickCookie(context))?.value ?? '')).toContain(good)
+  const email = `e2e-r2-keep-${Date.now()}@firma-e2e.cz`
+  await page.goto(LOCALES.cs.contact)
+  await submitForm(page, email)
+  expect((await findLead(email))?.attribution?.gclid).toBe(good)
+})
+
+test('11 (round 2, B3): a landing time in Date.toString format keeps the lead and the click', async ({
+  page,
+  context,
+}) => {
+  const host = new URL(baseURL).hostname
+  const now = new Date()
+  const consent = { v: 1, analytics: true, marketing: true, at: now.toISOString() }
+  const gclid = `E2E_r2_at_${Date.now()}`
+  const click = { v: 1, type: 'gclid', id: gclid, at: new Date(now.getTime() - 60_000).toString() }
+  await context.addCookies([
+    {
+      name: 'rp_consent',
+      value: encodeURIComponent(JSON.stringify(consent)),
+      domain: host,
+      path: '/',
+    },
+    { name: 'rp_click', value: encodeURIComponent(JSON.stringify(click)), domain: host, path: '/' },
+  ])
+  const email = `e2e-r2-at-${Date.now()}@firma-e2e.cz`
+  await page.goto(LOCALES.cs.contact)
+  await submitForm(page, email)
+  const stored = await findLead(email)
+  expect(stored?.attribution).toMatchObject({ consentMarketing: true, gclid })
+})
+
+test('11 (round 2): a double click on submit stores one lead and sends the hash once', async ({
+  page,
+}) => {
+  await page.goto(`${LOCALES.cs.home}?gclid=E2E_r2_double_${Date.now()}`)
+  await banner(page).getByRole('button', { name: LOCALES.cs.accept }).click()
+  const email = `e2e-r2-double-${Date.now()}@firma-e2e.cz`
+  leadEmails.push(email)
+  await page.goto(LOCALES.cs.contact)
+  await page.locator('#lead-name').fill('E2E Offline Conversions')
+  await page.locator('#lead-email').fill(email)
+  await page.locator('#lead-phone').fill('+420 777 000 026')
+  await page.locator('#lead-message').fill('Test of offline conversions (issue #26).')
+  await page.locator('form button[type="submit"]').dblclick()
+  await expect(page.getByRole('status')).toBeVisible()
+  const response = await session.get(
+    `/api/leads?depth=0&where[email][equals]=${encodeURIComponent(email)}`,
+    { headers: authHeaders() },
+  )
+  expect(((await response.json()) as { totalDocs: number }).totalDocs).toBe(1)
+  expect(await userDataEntries(page)).toHaveLength(1)
+})

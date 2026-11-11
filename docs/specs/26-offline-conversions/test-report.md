@@ -156,3 +156,84 @@ Firemní jsou například `t-online.de`, `hotmail.de`, `hotmail.co.uk`, `yahoo.c
 4. Přístup z 27 rozsahů IP Data Manageru na produkci (žádný firewall není, podle architektury).
 5. Text v Ochraně osobních údajů na produkci po `seed:cookie-policy`.
 6. Kroky v Google Ads z `implementation.md` (popisky tlačítek, N4).
+
+## Kolo 2
+
+Testovaná hlava `7fd19df` (opravy `55f9df1`, `20fee1e`, `8a23090`, `02fc211`). Test proběhl 12. 11. 2026 na místní instanci (`next start`, port 3926, databáze `robopipe_26`). Všechna data jsou vymyšlená. Produkce, Google Ads a `master` zůstaly beze změny.
+
+### Verdikt kola 2
+
+**LZE SLOUČIT.**
+
+Chyby B1 až B5 jsou opravené. Žádný obchvat oprav tester nenašel. Kritérium 11 prošlo celé. Nová chyba C1 je drobná a sloučení neblokuje. Znění odstavce B4 musí dál schválit Filip. Text musí být na produkci dřív, než Arthur nastaví plán v Google Ads.
+
+### Automatické kontroly kola 2 (spustil tester)
+
+| Kontrola | Výsledek |
+|---|---|
+| `tsc --noEmit` | 0 chyb |
+| `lint` | 0 chyb, 2 starší varování (beze změny) |
+| `test:int` | 30 souborů, 270 testů, vše prošlo (256 vývojáře + 14 nových testera) |
+| `build` | prošel, route `ƒ /api/google-ads/company-leads.csv` |
+| `test:e2e` | 159 prošlo, 2 selhala. Obě jsou známá stará selhání (`blogFeaturedCard … long unbroken title`, `seo-stage2 … answers 200`). Jiné selhání není. |
+| Nové testy testera | `tests/int/offlineConversionsRound2.int.spec.ts` (14 testů). V `tests/e2e/offlineConversions.e2e.spec.ts` 9 nových testů „11 (round 2)“. Všechny prošly. |
+
+Prostředí: `pnpm` na stroji testera chybí, skripty běžely přes `npm run`. Playwright 1.58.2 neměl svůj Chromium 1208. Tester ho stáhl a rozbalil do místní cache.
+
+### Stav chyb z kola 1
+
+| Chyba | Stav | Důkaz |
+|---|---|---|
+| B1 | opraveno | Postup z kola 1 (`/cs?gclid=%00…`, přijmout, odeslat): poptávka uložena, `rp_click` nevznikne. Obchvaty: kontrolní znak `%01`, `DEL`, `ESC`, znaky mimo ASCII, plnošířkové `＝`, mezera nulové šířky, znak `U+202E`, `+` (mezera), apostrof, délka 513, prázdná hodnota. V adrese ani v ručně vyrobené cookie `rp_click` žádná hodnota neprojde. Délka 512 projde. Poptávka se vždy uloží, souhlas zůstane, `googleAdsExport` je `true` (scénář 4). Špatná značka v pozdějším odkazu nepřepíše dřívější dobrou značku. |
+| B2 | opraveno | Místní export: žádná buňka nezačíná `=`, `+`, `-`, `@`, tabulátorem ani `\r`, žádná buňka nemá apostrof. Skutečné značky (`Cj0KCQiA-abc_DEF123_BwE`, `0AAAAAo-abc_DEF`, `ClkKCQiA_x-1`) jdou do exportu beze změny. Název konverze se znakem vzorce na začátku dostane apostrof i v uvozovkách. Dvě volání exportu mají stejný SHA-1. |
+| B3 | opraveno | `at` ve tvaru `Date.toString()`, `toUTCString()`, jen datum, s mezerou místo `T`, s posunem `+14:00` a „12 Nov 2026“: poptávka uložena se značkou a s časem ISO. E2e: cookie s `Date.toString()` přes prohlížeč, poptávka uložena se značkou. |
+| B4 | opraveno, čeká na schválení textu | Text cs i en pokrývá scénář 4 („To platí i tehdy…“) a uložení značky a volby cookies k poptávce. Tester vrátil do `robopipe_26` text z kola 1 (hlavní tabulka i verze). `seed:cookie-policy`: první spuštění 2 změny „replaced with the current text“, druhé spuštění 0 změn. Na stránce cs i en je odstavec 1×, hned za odstavcem o marketingu. |
+| B5 | opraveno | Všech 11 domén z kola 1 je veřejných. Zbývající mezery jsou v poznámkách níže. |
+
+### Nové chyby
+
+#### C1 Záložní uložení zapíše osobní údaje poptávky do logu (drobná)
+
+Postup zopakování: zavolejte `createLeadWithAttribution` s atribucí, kterou Postgres odmítne (test „a lead saved without attribution…“ v `offlineConversionsRound2.int.spec.ts`). Varování `Lead with attribution failed, saving without it` obsahuje chybu Drizzle. Chyba má řádek `params:` se jménem, e-mailem, telefonem a zprávou.
+
+Dopad: poptávka se uloží, ale její osobní údaje jsou i v logu serveru. Dnes tuto cestu nikdo nespustí, protože `VALID_ID` a `parseClickId` špatné hodnoty zastaví dřív. Stejný zápis do logu má starší vnější `catch` v `submitLead`, ten ale platí jen pro ztracenou poptávku.
+
+Návrh: do varování dávat jen `err.cause?.code` nebo název chyby, ne celý objekt chyby. Sloučení neblokuje.
+
+### Odchylky 1 až 4 z kola 2
+
+1. Délka 1 až 512: ověřeno. 512 projde, 513 ne, v adrese i v cookie.
+2. `-` v ochraně `toCsv`: žádná skutečná značka v testech nezačíná `-`. Riziko je malé, souhlas.
+3. Záložní uložení bez celé skupiny `attribution`: poptávka má `consentMarketing: false`, nemá otisk, `googleAdsExport` je `false` a v exportu chybí. Uloží se právě 1 řádek. Chyba mimo atribuci (bajt NUL ve zprávě) vyhodí chybu jednou a nezanechá v databázi žádný řádek ani kopii.
+4. Věta „To platí i tehdy…“ odpovídá kapitole 2 architektury. Architektura kapitola 15 má dál text z kola 1. Platí text v `src/seed/cookiePolicy.ts`.
+
+### Kritérium 11 znovu celé
+
+| Útok | Výsledek |
+|---|---|
+| Neplatné značky v adrese (13 druhů výše) | poptávka uložena, prošlo |
+| Poškozená cookie `rp_click` a `rp_consent` | poptávka uložena (e2e) |
+| Poškozené `at` v cookie (6 formátů) | poptávka uložena se značkou |
+| `gtag`, který vyhodí chybu | formulář funguje (e2e) |
+| Dvojklik na tlačítko odeslat | 1 poptávka, `user_data` 1× (nový e2e test) |
+| Databáze odmítne atribuci | poptávka uložena bez atribuce, bez otisku |
+
+### Kritéria, kde se kód v kole 2 změnil (namátkou)
+
+| # | Výsledek |
+|---|---|
+| 3 | prošlo. O otisku rozhoduje uložená poptávka. Při záložním uložení otisk nevznikne. |
+| 4 | prošlo. Seznam je dál jen v `src/lib/leadEmail.ts`. |
+| 5, 8 | prošlo. `200`, `text/csv; charset=utf-8`, `no-store`, stejné tělo při dvou voláních. Bez přihlášení `401`. |
+| 6 | prošlo. Poptávka po záložním uložení v exportu není. |
+| 12 | prošlo, text čeká na schválení Filipa. |
+
+### Poznámky bez chyby
+
+- `?gclid=<neplatná>&gbraid=<platná>` neuloží nic, protože kód vezme první nalezený parametr. Google oba parametry najednou neposílá.
+- Seed nahradí každý odstavec, který začíná „Když přijdete z naší reklamy Google Ads“. Pokud někdo odstavec upraví v administraci, další spuštění seedu úpravu přepíše.
+- Jako firemní stále projdou například `upcmail.cz`, `cbox.cz`, `raz-dva.cz`, `klikni.cz`, `in.cz`, `email.com`, `aon.at`, `a1.net`, `orange.fr`, `libero.it`, `free.fr`, `qq.com`. Zadání bere seznam jen jako příklad. Rozhodne Filip nebo architekt.
+
+### Co místně nešlo ověřit
+
+Body 1 až 6 z kapitoly „Co místně nešlo ověřit“ platí dál.
