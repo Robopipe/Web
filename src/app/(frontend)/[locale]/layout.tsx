@@ -5,6 +5,7 @@ import { Barlow, Inter, Space_Grotesk, Space_Mono } from 'next/font/google'
 import { notFound } from 'next/navigation'
 import React from 'react'
 
+import { ConsentProvider } from '@/components/consent/ConsentProvider'
 import { Footer } from '@/components/Footer'
 import { Header } from '@/components/Header'
 import { JsonLd } from '@/components/JsonLd'
@@ -68,6 +69,7 @@ export default async function LocaleLayout({ children, params }: Props) {
     getSolutionPages(locale as Locale),
     getLocaleSwitchPaths(locale as Locale),
   ])
+  const { googleAnalyticsId, googleAdsId } = settings.measurement ?? {}
 
   return (
     <html
@@ -77,12 +79,14 @@ export default async function LocaleLayout({ children, params }: Props) {
       <body className="flex min-h-screen flex-col">
         <JsonLd data={[organizationLd(settings), websiteLd(settings, locale as Locale)]} />
         <NextIntlClientProvider>
-          <LocaleSwitchProvider paths={switchPaths}>
-            <Header header={header} />
-            <main className="flex-1">{children}</main>
-            <Footer footer={footer} settings={settings} solutions={solutions} />
-            <LocaleSuggestion />
-          </LocaleSwitchProvider>
+          <ConsentProvider analyticsId={googleAnalyticsId} adsId={googleAdsId}>
+            <LocaleSwitchProvider paths={switchPaths}>
+              <Header header={header} />
+              <main className="flex-1">{children}</main>
+              <Footer footer={footer} settings={settings} solutions={solutions} />
+              <LocaleSuggestion />
+            </LocaleSwitchProvider>
+          </ConsentProvider>
         </NextIntlClientProvider>
       </body>
     </html>

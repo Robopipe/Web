@@ -10,6 +10,7 @@ import type { SolutionPage } from '@/lib/queries'
 import type { Footer as FooterType, SiteSetting } from '@/payload-types'
 
 import { CMSLink } from './CMSLink'
+import { CookieSettingsButton } from './consent/CookieSettingsButton'
 import { LanguageSwitcher } from './LanguageSwitcher'
 
 const SOCIAL_ICONS: Record<string, IconName> = {
@@ -158,6 +159,7 @@ export const Footer: React.FC<Props> = ({ footer, settings, solutions }) => {
                 ))}
               </div>
             )}
+            <CookieSettingsButton />
             <LanguageSwitcher />
           </div>
         </div>

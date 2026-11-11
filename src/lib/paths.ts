@@ -40,6 +40,15 @@ export const localizedPaths = (
       .map(([loc, slug]) => [loc, pathFor(collection, slug as string, loc)]),
   )
 
+/** Slugs of the privacy policy page, which the cookie banner links to. */
+export const PRIVACY_SLUGS: Record<Locale, string> = {
+  cs: 'ochrana-osobnich-udaju',
+  en: 'privacy-policy',
+}
+
+export const privacyPath = (locale: Locale): string =>
+  pathFor('pages', PRIVACY_SLUGS[locale], locale)
+
 /** Path per locale of a section index such as `/blog` (same segment in every locale). */
 export const sectionPaths = (section: '/blog' | '/case-studies'): Record<Locale, string> =>
   Object.fromEntries(locales.map((loc) => [loc, `/${loc}${section}`])) as Record<Locale, string>

@@ -96,7 +96,8 @@
   "footer": {
     "rights": "Všechna práva vyhrazena.",
     "memberOf": "Jsme součástí",
-    "solutions": "Řešení"
+    "solutions": "Řešení",
+    "cookieSettings": "Nastavení cookies"
   },
   "notFound": {
     "title": "Stránka nenalezena",
@@ -107,5 +108,22 @@
     "previous": "Předchozí",
     "next": "Další",
     "page": "Stránka {page} z {total}"
+  },
+  "consent": {
+    "bannerTitle": "Cookies a měření",
+    "bannerText": "Pomocí cookies měříme návštěvnost a účinnost reklam. Vyberte, co povolíte. Volbu změníte v patičce webu.",
+    "acceptAll": "Přijmout vše",
+    "rejectAll": "Odmítnout",
+    "settings": "Nastavení",
+    "privacyLink": "Ochrana osobních údajů",
+    "dialogTitle": "Nastavení cookies",
+    "necessaryTitle": "Nezbytné",
+    "necessaryText": "Uloží vaši volbu. Jsou vždy zapnuté.",
+    "analyticsTitle": "Analytika",
+    "analyticsText": "Google Analytics měří, které stránky lidé čtou.",
+    "marketingTitle": "Marketing",
+    "marketingText": "Google Ads měří výsledky reklam a ukazuje vám naše reklamy na jiných webech.",
+    "save": "Uložit volbu",
+    "close": "Zavřít"
   }
 }

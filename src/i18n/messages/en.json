@@ -96,7 +96,8 @@
   "footer": {
     "rights": "All rights reserved.",
     "memberOf": "Part of",
-    "solutions": "Solutions"
+    "solutions": "Solutions",
+    "cookieSettings": "Cookie settings"
   },
   "notFound": {
     "title": "Page not found",
@@ -107,5 +108,22 @@
     "previous": "Previous",
     "next": "Next",
     "page": "Page {page} of {total}"
+  },
+  "consent": {
+    "bannerTitle": "Cookies and measurement",
+    "bannerText": "We use cookies to measure traffic and ad results. Choose what you allow. You can change it in the footer.",
+    "acceptAll": "Accept all",
+    "rejectAll": "Reject",
+    "settings": "Settings",
+    "privacyLink": "Privacy policy",
+    "dialogTitle": "Cookie settings",
+    "necessaryTitle": "Necessary",
+    "necessaryText": "Store your choice. Always on.",
+    "analyticsTitle": "Analytics",
+    "analyticsText": "Google Analytics measures which pages people read.",
+    "marketingTitle": "Marketing",
+    "marketingText": "Google Ads measures ad results and shows you our ads on other sites.",
+    "save": "Save choice",
+    "close": "Close"
   }
 }
