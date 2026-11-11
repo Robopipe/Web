@@ -101,7 +101,49 @@ V zsh dej každý přepínač jako samostatné slovo. Proměnná `$st="--dry-run
 1. **LinkedIn.** `site-settings.socials` v produkci odkazuje na `linkedin.com/company/koala42`. `Organization.sameAs` tak tvrdí, že jde o stejnou firmu. Filip u otázky 3 nenamítal. Data proto zůstávají beze změny.
 2. **Odstraněné stránky v databázi.** Když skript etapy 1 v produkci poběží dřív, tři stránky zůstanou publikované. Skript vypíše `obsolete`. Přesměrování podle 9.8 přidá Arthur po souhlasu Filipa.
 3. **Úprava textů existující stránky.** Skript u existující stránky jen doplní chybějící bloky. Nový hero text stránky řešení a nové odkazy v jejím textu se při pořadí 11.3 neprojeví (11.3 to předpokládá).
-4. **Seed adresy.** Lokální seed má jinou adresu (Thámova 13) než produkce (Sokolovská 81/55). Skript adresu nemění.
+4. **Seed adresy.** Lokální seed má jinou adresu (Thámova 13) než produkce (Sokolovská 81/55). Skript v adrese mění jen název firmy na „robopipe s.r.o.“ (kapitola 8, T7).
 5. **Známá chyba L1 z issue #3.** Test `Blog featured card › keeps the photo inside the card on mobile with a long unbroken title` selhává záměrně, i na `master`.
 6. **Lokální články.** Průvodce a článek o trendech nejsou v lokálním seedu. Pro ověření jsem je naimportoval z produkčního API (jen čtení). Bez importu e2e test interních odkazů selže na odkazech na tyto články.
 7. **Výkon na mobilu** je v Lighthouse 65 až 70. Kritérium se ho netýká.
+
+## 8. Opravy po testu (11. 11. 2026)
+
+Vstup: `test-report.md`, kapitola 7.
+
+| Chyba | Oprava | Ověření |
+| --- | --- | --- |
+| T1 | Nový modul `src/seed/seoGeoArgs.ts`. Skript zná jen `--status=draft\|published`, `--dry-run`, `--production` a `--remote=<URL>`. Jiný argument, chybný tvar (`--status published`), neznámá hodnota, opakovaný přepínač a adresa bez `http(s)` ukončí běh kódem 1 se zprávou a nápovědou. Kontrola proběhne před připojením k databázi a před přihlášením. | `seoGeoArgs.int.spec.ts` (10 testů). Skutečný běh: `--status=published --dryrun`, `--status published` a `--dry_run` skončí kódem 1, databáze se nezmění. |
+| T2 | Existující stránka bez titulku nebo slugu v jednom jazyce dostane tento jazyk celý znovu (titulek, slug, `seo`, bloky). Publikace přeskočí stránku úlohy, které jazyk chybí (`draft (missing locale en): …`). Článek o automatické anotaci má stejnou opravu. | Test `repairs a page left without English …`. Skutečný běh přes REST a proxy, která zahodí `PATCH /api/pages/<id>?locale=en`: 1. běh kód 1, stránka jen `cs` a koncept. 2. běh `updated (2): page kontrola-etiket (missing locale en), page kontrola-etiket published`. 3. běh `created (0)`, `updated (0)`. `/en/label-inspection` vrací 200, sitemap stránku obsahuje. |
+| T3 | `remoteClient.ts`: chyba bez odpovědi HTTP je `RemoteNetworkError` s metodou, adresou, cestou a příčinou (kód systému, například `ECONNREFUSED`). Každý požadavek má časový limit 30 s (`timeoutMs`). Adresu bez `http(s)` klient odmítne před prvním požadavkem. | 3 nové testy v `remoteClient.int.spec.ts`. Skutečný běh: `POST http://localhost:3399/api/users/login failed: ECONNREFUSED`, výpadek proxy: `PATCH http://localhost:3341/api/pages/54 failed: UND_ERR_SOCKET (other side closed)`. |
+| T4 | Skript si pamatuje data nových konceptů i v dry run. Krok publikace proto v dry run uvede nové stránky, změněné dokumenty a ceník. `site-settings solutions` počítá i plánované stránky. Odkaz „O nás“ v patičce počítá s plánovanou publikací. | Test `plans in a dry run the same changes and publications as the real run`: plán se rovná skutečnému běhu (řádky seřazené, FAQ se čtou souběžně). Dry run proti produkci níže. |
+| T5 | Test použije existující stránku `strojove-videni`, jinak ji vytvoří a potom smaže. | Test prošel s existující stránkou i bez ní. |
+| T6 | Hero stránky „Kontrola etiket“ má `camera-front.png` (fotka kamery bez čísel). Nové pole `replaceImage` vymění starý obrázek i na existující stránce. | `/cs/kontrola-etiket` a `/en/label-inspection` vykreslí `camera-front`. |
+| T7 | Lokální seed a `contact.json` píšou „robopipe s.r.o.“. Skript etapy 2 v publikačním režimu nahradí „Robopipe s.r.o.“ v `site-settings.contact.address` a v textu, titulku a `seo` stránky `ochrana-osobnich-udaju` (`settings.json`, `companyName`). | Test `writes the company name in lower case …`. Kontakt a `llms.txt` lokálně jen „robopipe s.r.o.“. |
+| T9 | Nadtitulek úvodu „Průmyslové strojové vidění“ se změní na „Průmyslové strojové vidění (machine vision)“, jen při přesné staré hodnotě (`home.json`, `hero.eyebrow`). Hero nadpis, `title` a `seo.title` úvodu skript nemění. Stránka „O nás“ uvádí „machine vision“ jen jednou v jedné větě. | Test T4 ověří nadtitulek i zachovaný ruční nadpis. |
+
+Výchozí prompt v `BlogAI.ts` stále uvádí „Robopipe s.r.o.“. Je to výchozí hodnota sloupce v databázi. Změna by potřebovala migraci, proto zůstala mimo tuto opravu. Text se na webu nezobrazí.
+
+### T8 jako nové issue
+
+Přepínač jazyka v HTML ze serveru vede na 404 (`/cs/kontrola-etiket` → `/en/kontrola-etiket`, v produkci `/cs/cenik` → `/en/cenik`). Po hydrataci je odkaz správný. Chyba existuje už v produkci a etapa 2 ji nezpůsobila. Návrh pro nové issue: server musí vykreslit odkaz na slug druhého jazyka, stejně jako značky `hreflang`.
+
+### Výsledky ověření
+
+| Kontrola | Výsledek |
+| --- | --- |
+| Integrační testy | 109/109 (19 souborů). Nové: 10 (argumenty), 3 (klient REST), 3 (etapa 2). |
+| E2e | 67 prošlo, 1 selhal (známá chyba L1). Chromium 1248 přes `PLAYWRIGHT_CHROMIUM_PATH`. |
+| Lint | 0 chyb, 2 stávající varování. |
+| `tsc --noEmit` | 0 chyb. |
+| `pnpm build` | OK. |
+
+Poznámka k testům: Vitest v prostředí jsdom neumí nahrát nové médium (`ValidationError: file`). Nové médium `camera-front.png` proto musí nahrát `pnpm seed:seo-geo` před `pnpm test:int`.
+
+### Dry run proti produkci (11. 11. 2026)
+
+`pnpm seed:seo-geo --remote=https://robopipe.io --status=published --dry-run`, účet `arthur@robopipe.io`, kód 0.
+
+- `created (52)`: 7 stránek, 36 FAQ, 8 médií (`camera-front.png` místo snímku klasifikace), koncept článku o automatické anotaci.
+- `updated (29)`: 4 studie, úvod, FAQ ceníku (+3), průvodce, jméno firmy na stránce ochrany osobních údajů. Publikace: 4 studie, 7 stránek, úvod, ceník, průvodce, ochrana osobních údajů (15). Globály: navigace, patička, členství, `solutions`, `company`, `contact address`.
+- `skipped (0)`.
+
