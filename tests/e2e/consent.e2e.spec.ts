@@ -350,6 +350,35 @@ test('13: the banner is first in the Tab order and Escape closes the dialog', as
   await expect(settings).toBeFocused()
 })
 
+test('13: after a choice with the keyboard, focus goes to the content, not to the page top', async ({
+  page,
+}) => {
+  await page.goto(HOME.cs)
+  await expect(banner(page)).toBeVisible()
+  await page.keyboard.press('Tab')
+  await expect(banner(page).getByRole('button', { name: 'Přijmout vše' })).toBeFocused()
+  await page.keyboard.press('Enter')
+  await expect(banner(page)).toBeHidden()
+  await expect(page.locator('main')).toBeFocused()
+  // The next Tab goes into the content. Before the fix it went to the logo in the header.
+  await page.keyboard.press('Tab')
+  expect(await page.evaluate(() => document.activeElement?.closest('header') === null)).toBe(true)
+})
+
+test('13: a choice saved in the settings dialog from the banner also moves focus to the content', async ({
+  page,
+}) => {
+  await page.goto(HOME.cs)
+  await banner(page).getByRole('button', { name: 'Nastavení' }).focus()
+  await page.keyboard.press('Enter')
+  const dialog = page.getByRole('dialog', { name: 'Nastavení cookies' })
+  await dialog.getByRole('button', { name: 'Uložit volbu' }).focus()
+  await page.keyboard.press('Enter')
+  await expect(dialog).toBeHidden()
+  await expect(banner(page)).toBeHidden()
+  await expect(page.locator('main')).toBeFocused()
+})
+
 test.describe('phone', () => {
   test.use({ viewport: { width: 390, height: 844 } })
 

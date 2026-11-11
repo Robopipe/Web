@@ -82,7 +82,10 @@ export default async function LocaleLayout({ children, params }: Props) {
           <ConsentProvider analyticsId={googleAnalyticsId} adsId={googleAdsId}>
             <LocaleSwitchProvider paths={switchPaths}>
               <Header header={header} />
-              <main className="flex-1">{children}</main>
+              {/* tabIndex: the consent banner moves focus here when it closes. */}
+              <main tabIndex={-1} className="flex-1 outline-none">
+                {children}
+              </main>
               <Footer footer={footer} settings={settings} solutions={solutions} />
               <LocaleSuggestion />
             </LocaleSwitchProvider>

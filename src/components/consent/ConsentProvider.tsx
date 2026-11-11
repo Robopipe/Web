@@ -1,7 +1,15 @@
 'use client'
 
 import { useLocale } from 'next-intl'
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 
 import type { Locale } from '@/i18n/routing'
 import { clearGoogleCookies, initGoogleTag, trackEvent, updateGoogleConsent } from '@/lib/analytics'
@@ -69,14 +77,21 @@ export const ConsentProvider: React.FC<Props> = ({ analyticsId, adsId, children 
     return () => document.removeEventListener('click', trackContactClick, { capture: true })
   }, [enabled])
 
-  const save = useCallback((analytics: boolean, marketing: boolean) => {
-    const next = createConsent(analytics, marketing)
-    writeCookie(CONSENT_COOKIE, serializeConsent(next), CONSENT_MAX_AGE_SECONDS)
+  const apply = useCallback((next: ConsentChoice) => {
     updateGoogleConsent(next)
     for (const category of deniedCategories(next)) clearGoogleCookies(category)
     setChoice(next)
-    setSettingsOpen(false)
   }, [])
+
+  const save = useCallback(
+    (analytics: boolean, marketing: boolean) => {
+      const next = createConsent(analytics, marketing)
+      writeCookie(CONSENT_COOKIE, serializeConsent(next), CONSENT_MAX_AGE_SECONDS)
+      apply(next)
+      setSettingsOpen(false)
+    },
+    [apply],
+  )
 
   const acceptAll = useCallback(() => save(true, true), [save])
   const rejectAll = useCallback(() => save(false, false), [save])
@@ -84,6 +99,22 @@ export const ConsentProvider: React.FC<Props> = ({ analyticsId, adsId, children 
   const closeSettings = useCallback(() => setSettingsOpen(false), [])
 
   const showBanner = mounted && choice === null
+
+  // When the banner closes, the focused button (or the settings dialog opened from it)
+  // leaves the page and focus falls to <body>. The next Tab would start at the top of the
+  // page again, so focus goes to the content instead.
+  const bannerWasShown = useRef(false)
+  useEffect(() => {
+    if (showBanner) {
+      bannerWasShown.current = true
+      return
+    }
+    if (!bannerWasShown.current) return
+    bannerWasShown.current = false
+    if (document.activeElement === null || document.activeElement === document.body) {
+      document.querySelector('main')?.focus({ preventScroll: true })
+    }
+  }, [showBanner])
   // Before the first effect the choice is unknown. Other boxes wait as if the banner were open.
   const bannerOpen = !mounted || choice === null
   const value = useMemo(() => ({ bannerOpen, openSettings }), [bannerOpen, openSettings])
