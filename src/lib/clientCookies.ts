@@ -3,9 +3,19 @@
  * so call them only in the browser (effects and event handlers).
  */
 
+/**
+ * `undefined` when the cookie is missing or its value is not valid percent encoding.
+ * Another app on the domain or a manual edit can write such a value, and a throw here
+ * would break every page that reads the cookie in an effect.
+ */
 export function readCookie(name: string): string | undefined {
   const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`))
-  return match ? decodeURIComponent(match[1]) : undefined
+  if (!match) return undefined
+  try {
+    return decodeURIComponent(match[1])
+  } catch {
+    return undefined
+  }
 }
 
 export function writeCookie(name: string, value: string, maxAgeSeconds: number): void {

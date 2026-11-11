@@ -210,4 +210,9 @@ describe('client cookies', () => {
     expect(readCookie('rp_consent')).toBe('{"v":1}')
     expect(readCookie('missing')).toBeUndefined()
   })
+
+  it('treats a value with broken percent encoding as missing', () => {
+    document.cookie = 'rp_consent=%E0%A4%A; path=/'
+    expect(readCookie('rp_consent')).toBeUndefined()
+  })
 })
