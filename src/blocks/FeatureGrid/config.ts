@@ -1,6 +1,7 @@
 import type { Block } from 'payload'
 
 import { iconOptions } from '@/components/icons'
+import { linkField } from '@/fields/link'
 
 export const FeatureGrid: Block = {
   slug: 'featureGrid',
@@ -72,6 +73,7 @@ export const FeatureGrid: Block = {
           type: 'textarea',
           localized: true,
         },
+        linkField({ required: false }),
       ],
     },
   ],

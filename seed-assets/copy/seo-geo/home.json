@@ -36,49 +36,16 @@
       }
     ]
   },
-  "autoAnnotation": {
-    "blockName": "seo-geo-auto-annotation",
-    "image": "annotate-ui.png",
-    "page": "auto-annotation",
-    "cs": {
-      "heading": "Automatická anotace: rámečky navrhne AI, vy je schválíte.",
-      "text": "Robopipe Vision v aplikaci Studio najde na snímku objekty podle popisu vašich štítků. Vy návrhy zkontrolujete, opravíte a schválíte.",
-      "steps": [
-        [
-          "Popište štítky",
-          "Ke každému štítku napíšete, podle čeho ho poznat."
-        ],
-        [
-          "Spusťte anotaci",
-          "Jeden snímek, nebo víc vybraných snímků najednou."
-        ],
-        [
-          "Zkontrolujte a schvalte",
-          "Rámečky upravíte nebo smažete a tlačítkem Schválit je uložíte."
-        ]
-      ],
-      "button": "Jak funguje automatická anotace"
-    },
-    "en": {
-      "heading": "Auto annotation: AI proposes the boxes, you approve them.",
-      "text": "Robopipe Vision in the Studio app finds objects in an image from your label descriptions. You review, correct and approve the proposals.",
-      "steps": [
-        [
-          "Describe your labels",
-          "Write how to recognise each label."
-        ],
-        [
-          "Start the run",
-          "One image, or several selected images at once."
-        ],
-        [
-          "Review and approve",
-          "Edit or delete boxes, then save them with Approve."
-        ]
-      ],
-      "button": "How auto annotation works"
+  "removeBlocks": ["seo-geo-auto-annotation"],
+  "featureLinks": [
+    {
+      "block": "home_2",
+      "feature": "home_2_features_0",
+      "page": "auto-annotation",
+      "cs": "Snímky vám pomůže označit automatická anotace.",
+      "en": "Auto annotation helps you label the images."
     }
-  },
+  ],
   "solutions": {
     "blockName": "seo-geo-solutions",
     "cs": {

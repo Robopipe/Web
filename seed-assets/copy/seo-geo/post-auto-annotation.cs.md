@@ -3,6 +3,7 @@ title: Automatická anotace dat: jak Robopipe Vision označí snímky za vás
 slug: automaticka-anotace-dat
 excerpt: Označování snímků je nejpracnější část přípravy modelu. Robopipe Studio teď umí navrhnout rámečky samo. Člověk je zkontroluje, upraví a schválí.
 seoTitle: Automatická anotace dat pro trénink modelů | Robopipe
+heroImage: annotate-ui.png
 seoDescription: Jak funguje automatická anotace v Robopipe Studiu: popis štítků, návrh rámečků od Robopipe Vision, kontrola a schválení člověkem.
 ---
 Každý model pro kontrolu kvality začíná u označených snímků. U detekce to znamená nakreslit rámeček kolem každé vady, každé suroviny nebo každé kapsle. Na desítkách snímků je to otrava. Na stovkách je to týden práce.

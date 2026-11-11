@@ -54,6 +54,8 @@ type LandingPage = {
   image?: string
   /** Hero image of an earlier seed. An existing page with it gets `image` instead. */
   replaceImage?: string
+  /** seo.image: the card on the home page and the share preview. Set only while empty. */
+  cardImage?: string
   caseStudies: string[]
   faqs: string[]
 } & Localized<LandingLocale>
@@ -78,16 +80,19 @@ type HomeCopy = {
     description?: string
     replaceIf: { title?: string; description?: string }
   }>
+  /**
+   * logoCloud block with source "memberships", after the first testimonialBar block.
+   * The stage 1 position (right after the customer logos) moves there, any other stays.
+   */
   memberships: {
     blockName: string
     heading: Localized<string>
     items: { name: string; url: string; logo: string; logoOnDark: string }[]
   }
-  autoAnnotation: {
-    blockName: string
-    image: string
-    page: string
-  } & Localized<{ heading: string; text: string; steps: Pair[]; button: string }>
+  /** Names of blocks the script removes from the home page, e.g. the stage 2 auto annotation section. */
+  removeBlocks: string[]
+  /** Link at the end of a featureGrid card text. Set only in a locale where its label is empty. */
+  featureLinks: ({ block: string; feature: string; page: string } & Localized<string>)[]
   /** industryCards block with source "solutions", after the first industryCards block. */
   solutions: { blockName: string } & Localized<{ heading: string; text: string }>
 }
@@ -130,6 +135,7 @@ type PostCopy = {
   excerpt: string
   seoTitle: string
   seoDescription: string
+  heroImage?: string
   body: string
 }
 
@@ -516,11 +522,19 @@ export const applySeoGeo = async (
     return out
   }
 
-  const pageData = (page: LandingPage, locale: Locale) => ({
+  const pageData = (page: LandingPage, locale: Locale, image?: number) => ({
     title: page[locale].title,
     slug: page[locale].slug,
-    seo: { title: page[locale].seo.title, description: page[locale].seo.description },
+    seo: {
+      title: page[locale].seo.title,
+      description: page[locale].seo.description,
+      ...(image ? { image } : {}),
+    },
   })
+  const cardImage = (page: LandingPage) =>
+    page.cardImage
+      ? media(page.cardImage, { cs: page.cs.title, en: page.en.title })
+      : Promise.resolve(undefined)
 
   const pageIds = new Map<string, number>()
   // New pages of a dry run. They have no id, see `managed`.
@@ -540,9 +554,10 @@ export const applySeoGeo = async (
       const missing = targets.cs.filter((block) => !current.some((b) => b.id === block.id))
       // A run that stopped between the two requests of a new page left a locale
       // without title, slug and blocks. Write that locale again in full.
-      const incomplete = missingLocales(
-        (await latest('pages', existing.id, 'all')) as unknown as Record<string, unknown>,
-      )
+      const all = await latest('pages', existing.id, 'all')
+      const incomplete = missingLocales(all as unknown as Record<string, unknown>)
+      // seo.image is not localized. A value set by Filip stays.
+      const cardFix = !!page.cardImage && idOf(all.seo?.image) === undefined
       const heroId = `seo-geo-page-${page.key}-hero`
       const heroImage = (blocks: Block[] | null | undefined) =>
         idOf(
@@ -559,7 +574,7 @@ export const applySeoGeo = async (
           ).docs[0]?.id
         : undefined
       const heroFix = oldImage !== undefined && heroImage(current) === oldImage
-      if (!missing.length && !incomplete.length && !heroFix) {
+      if (!missing.length && !incomplete.length && !heroFix && !cardFix) {
         report.skipped.push(`page ${page.cs.slug}`)
         continue
       }
@@ -568,25 +583,29 @@ export const applySeoGeo = async (
           ...(missing.length ? [`blocks ${missing.map((b) => b.id).join(', ')}`] : []),
           ...(incomplete.length ? [`missing locale ${incomplete.join(', ')}`] : []),
           ...(heroFix ? ['hero image'] : []),
+          ...(cardFix ? ['card image'] : []),
         ].join('; ')})`,
       )
       for (const locale of LOCALES) {
         const repair = incomplete.includes(locale)
-        if (!repair && !missing.length && !heroFix) continue
+        // One locale is enough for the card image: the field is not localized.
+        const card = cardFix && locale === 'cs'
+        if (!repair && !missing.length && !heroFix && !card) continue
         const replaced = new Set((repair ? targets[locale] : missing).map((block) => block.id))
         // Re-read in this locale so existing blocks keep their values in it. Payload
         // copies the Czech values of a new block to English, so new blocks are replaced.
-        const localeLayout = ((await latest('pages', existing.id, locale)).layout ?? []).filter(
-          (block) => !replaced.has(block.id),
-        )
+        const localeDoc = await latest('pages', existing.id, locale)
+        const localeLayout = (localeDoc.layout ?? []).filter((block) => !replaced.has(block.id))
         const layout = withMissingBlocks(localeLayout, targets[locale]).map((block) =>
           heroFix && block.id === heroId
             ? { ...block, image: heroImage(targets[locale]) ?? null }
             : block,
         )
+        const seo = repair ? pageData(page, locale).seo : localeDoc.seo
         await saveDraft('pages', existing.id, locale, {
           ...(repair ? pageData(page, locale) : {}),
           layout,
+          ...(card ? { seo: { ...seo, image: await cardImage(page) } } : {}),
         })
       }
       continue
@@ -594,6 +613,7 @@ export const applySeoGeo = async (
     report.created.push(`page ${page.cs.slug}`)
     // Built before the write check, so a dry run also lists the FAQs and media.
     const layouts = { cs: await landingLayout(page, 'cs'), en: await landingLayout(page, 'en') }
+    const image = await cardImage(page)
     if (!write) {
       plannedPages.add(page.key)
       managed.push({
@@ -601,7 +621,7 @@ export const applySeoGeo = async (
         label: `page ${page.cs.slug}`,
         allLocales: true,
         planned: {
-          cs: { ...pageData(page, 'cs'), layout: layouts.cs },
+          cs: { ...pageData(page, 'cs', image), layout: layouts.cs },
           en: { ...pageData(page, 'en'), layout: layouts.en },
         },
       })
@@ -611,7 +631,7 @@ export const applySeoGeo = async (
       collection: 'pages',
       locale: 'cs',
       draft: true,
-      data: { ...pageData(page, 'cs'), layout: layouts.cs, _status: 'draft' },
+      data: { ...pageData(page, 'cs', image), layout: layouts.cs, _status: 'draft' },
     })
     await saveDraft('pages', doc.id, 'en', { ...pageData(page, 'en'), layout: layouts.en })
     pageIds.set(page.key, doc.id)
@@ -634,14 +654,27 @@ export const applySeoGeo = async (
   if (!homePage) {
     report.skipped.push('home page (not found)')
   } else {
-    const blocks = (homePage.layout ?? []).map((block) => ({ ...block }))
+    // Removed first, so the positions below do not count them.
+    const removed = (homePage.layout ?? []).filter((block) =>
+      home.removeBlocks.includes(block.blockName ?? ''),
+    )
+    const blocks = (homePage.layout ?? [])
+      .filter((block) => !removed.includes(block))
+      .map((block) => ({ ...block }))
     const has = (name: string) => blocks.some((block) => block.blockName === name)
     const addedBlocks: { id: string; locale: Record<Locale, Record<string, unknown>> }[] = []
+    const afterTestimonial = () => {
+      const at = blocks.findIndex((block) => block.blockType === 'testimonialBar')
+      return at === -1 ? blocks.length : at + 1
+    }
+    for (const block of removed) report.updated.push(`home page (removed block ${block.blockName})`)
 
-    if (!has(home.memberships.blockName)) {
+    const membershipsAt = blocks.findIndex(
+      (block) => block.blockName === home.memberships.blockName,
+    )
+    if (membershipsAt === -1) {
       const id = home.memberships.blockName
-      const at = blocks.findIndex((block) => block.blockType === 'logoCloud')
-      blocks.splice(at === -1 ? 1 : at + 1, 0, {
+      blocks.splice(afterTestimonial(), 0, {
         id,
         blockType: 'logoCloud',
         blockName: id,
@@ -656,36 +689,23 @@ export const applySeoGeo = async (
         },
       })
     }
-
-    if (!has(home.autoAnnotation.blockName)) {
-      const id = home.autoAnnotation.blockName
-      const aa = home.autoAnnotation
-      const target = pageIds.get(aa.page)
-      const stepsFor = (locale: Locale) =>
-        aa[locale].steps.map(([title, text], i) => ({ id: `home-${id}-step-${i}`, title, text }))
-      const ctaFor = (locale: Locale) => ({
-        link: target
-          ? { label: aa[locale].button, type: 'internal' as const, page: target }
-          : { label: aa[locale].button, type: 'external' as const, url: `/${locale}` },
-      })
-      const at = blocks.findIndex((block) => block.blockType === 'testimonialBar')
-      blocks.splice(at === -1 ? blocks.length : at, 0, {
-        id,
-        blockType: 'processSteps',
-        blockName: id,
-        heading: aa.cs.heading,
-        text: aa.cs.text,
-        image: await media(aa.image, { cs: aa.cs.heading, en: aa.en.heading }),
-        steps: stepsFor('cs'),
-        cta: ctaFor('cs'),
-      })
-      const localized = (locale: Locale) => ({
-        heading: aa[locale].heading,
-        text: aa[locale].text,
-        steps: stepsFor(locale),
-        cta: ctaFor(locale),
-      })
-      addedBlocks.push({ id, locale: { cs: localized('cs'), en: localized('en') } })
+    // Stage 1 put the memberships right after the customer logos. Only that position
+    // moves: a block somewhere else was moved by hand and stays.
+    const customerLogosAt = blocks.findIndex(
+      (block) => block.blockType === 'logoCloud' && block.source !== 'memberships',
+    )
+    const hasTestimonial = blocks.some((block) => block.blockType === 'testimonialBar')
+    const moveMemberships =
+      membershipsAt !== -1 &&
+      customerLogosAt !== -1 &&
+      membershipsAt === customerLogosAt + 1 &&
+      hasTestimonial
+    if (moveMemberships) {
+      const [block] = blocks.splice(membershipsAt, 1)
+      blocks.splice(afterTestimonial(), 0, block)
+      report.updated.push('home page (memberships moved after testimonialBar)')
+    } else if (membershipsAt !== -1) {
+      report.skipped.push('home page (memberships position)')
     }
 
     if (!has(home.solutions.blockName)) {
@@ -725,6 +745,29 @@ export const applySeoGeo = async (
       return out
     }
 
+    // Card links: the block and the card by id, the target page by its landing key.
+    const cardOf = (layout: Block[] | null | undefined, link: HomeCopy['featureLinks'][number]) => {
+      const block = layout?.find((b) => b.id === link.block)
+      return block?.blockType === 'featureGrid'
+        ? block.features.find((feature) => feature.id === link.feature)
+        : undefined
+    }
+    const featureLinks = home.featureLinks.filter((link) => {
+      const label = `home feature link ${link.feature}`
+      if (!cardOf(blocks, link)) {
+        report.skipped.push(`${label} (not found)`)
+        return false
+      }
+      // A dry run plans a new target page without an id, like the stage 2 cta.
+      if (!pageIds.has(link.page) && !plannedPages.has(link.page)) {
+        report.skipped.push(`${label} (page ${link.page} not found)`)
+        return false
+      }
+      return true
+    })
+    const linked = new Set<string>()
+    const orderChanged = removed.length > 0 || moveMemberships
+
     // The hero heading, title and seo.title stay as they are: Filip may have edited them.
     const heroId = blocks.find((block) => block.blockType === 'hero')?.id
     let eyebrowChanged = false
@@ -736,15 +779,45 @@ export const applySeoGeo = async (
       const hero = localeDoc.layout?.find((b) => b.id === heroId) as
         { eyebrow?: string | null } | undefined
       const fixEyebrow = !!eyebrow && hero?.eyebrow === eyebrow.replaceIf
-      if (!addedBlocks.length && !Object.keys(seo).length && !fixEyebrow) continue
+      // A label in this locale, also one Filip wrote, stays.
+      const links = featureLinks.filter((link) => !cardOf(localeDoc.layout, link)?.link?.label)
+      if (
+        !addedBlocks.length &&
+        !Object.keys(seo).length &&
+        !fixEyebrow &&
+        !orderChanged &&
+        !links.length
+      ) {
+        continue
+      }
       eyebrowChanged ||= fixEyebrow
+      for (const link of links) linked.add(link.feature)
+      const withLinks = (block: Block): Block =>
+        block.blockType === 'featureGrid'
+          ? {
+              ...block,
+              features: block.features.map((feature) => {
+                const link = links.find((l) => l.block === block.id && l.feature === feature.id)
+                return link
+                  ? {
+                      ...feature,
+                      link: {
+                        label: link[locale],
+                        type: 'internal' as const,
+                        page: pageIds.get(link.page) ?? null,
+                      },
+                    }
+                  : feature
+              }),
+            }
+          : block
       const layout = blocks.map((block) => {
         const added = addedBlocks.find((b) => b.id === block.id)
         if (added) return { ...block, ...added.locale[locale] }
         const localeBlock = localeDoc.layout?.find((b) => b.id === block.id) ?? block
         return fixEyebrow && block.id === heroId
           ? { ...localeBlock, eyebrow: eyebrow.value }
-          : localeBlock
+          : withLinks(localeBlock)
       })
       await saveDraft('pages', homePage.id, locale, {
         layout,
@@ -753,9 +826,15 @@ export const applySeoGeo = async (
     }
     const changed =
       addedBlocks.length > 0 ||
+      orderChanged ||
+      linked.size > 0 ||
       eyebrowChanged ||
       LOCALES.some((l) => Object.keys(seoFor(l)).length > 0)
     report[changed ? 'updated' : 'skipped'].push('home page')
+    for (const link of featureLinks) {
+      if (linked.has(link.feature)) report.updated.push(`home page (feature link ${link.feature})`)
+      else report.skipped.push(`home feature link ${link.feature} (set)`)
+    }
   }
 
   /* ---------------------------- blog post draft ---------------------------- */
@@ -798,10 +877,9 @@ export const applySeoGeo = async (
   } else {
     report.created.push(`post ${post.cs.slug} (draft)`)
     if (write) {
-      const heroImage = await media(home.autoAnnotation.image, {
-        cs: post.cs.title,
-        en: post.en.title,
-      })
+      const heroImage = post.cs.heroImage
+        ? await media(post.cs.heroImage, { cs: post.cs.title, en: post.en.title })
+        : undefined
       const doc = await payload.create({
         collection: 'posts',
         locale: 'cs',

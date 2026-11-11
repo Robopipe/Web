@@ -82,7 +82,7 @@ export const Footer: React.FC<Props> = ({ footer, settings, solutions }) => {
             </div>
           )}
           {memberships.length > 0 && (
-            <div>
+            <div className="pt-8">
               <p className="mb-3 text-sm font-semibold text-text-invert">{t('memberOf')}</p>
               <div className="flex flex-wrap items-center gap-4">
                 {memberships.map((membership, i) => (
