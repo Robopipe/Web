@@ -7,7 +7,9 @@ import { getPayload, type Payload } from 'payload'
 
 import type { IconName } from '@/components/icons'
 
+import { COOKIE_POLICY, HOSTING_SENTENCE } from './cookiePolicy'
 import { MEDIA_ALT_CS } from './csCopyFixes'
+import { mdToLexical } from './lexical'
 import { applySeoGeo } from './seoGeo'
 
 /**
@@ -21,71 +23,6 @@ import { applySeoGeo } from './seoGeo'
 
 const ASSETS = path.resolve(process.cwd(), 'seed-assets')
 const COPY = path.join(ASSETS, 'copy')
-
-/* ----------------------------- lexical helpers ----------------------------- */
-
-const BOLD = 1
-const ITALIC = 2
-
-type LexicalText = { type: 'text'; text: string; version: 1; format?: number }
-
-/** Parse **bold** and *italic* spans into lexical text nodes. */
-const parseInline = (text: string): LexicalText[] => {
-  const nodes: LexicalText[] = []
-  for (const part of text.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g)) {
-    if (!part) continue
-    if (part.startsWith('**') && part.endsWith('**')) {
-      nodes.push({ type: 'text', text: part.slice(2, -2), version: 1, format: BOLD })
-    } else if (part.startsWith('*') && part.endsWith('*')) {
-      nodes.push({ type: 'text', text: part.slice(1, -1), version: 1, format: ITALIC })
-    } else {
-      nodes.push({ type: 'text', text: part, version: 1 })
-    }
-  }
-  return nodes
-}
-
-/**
- * Constrained markdown → lexical: paragraphs, ## headings, and
- * `> [!callout]` blockquotes (rendered as lime callout boxes on the site).
- */
-const mdToLexical = (md: string) => {
-  const children = md
-    .trim()
-    .split(/\n\s*\n/)
-    .map((block) => {
-      const trimmed = block.trim()
-      if (trimmed.startsWith('## ')) {
-        return {
-          type: 'heading',
-          tag: 'h2',
-          children: parseInline(trimmed.slice(3)),
-          version: 1,
-        }
-      }
-      if (trimmed.startsWith('>')) {
-        const text = trimmed
-          .split('\n')
-          .map((line) => line.replace(/^>\s?/, ''))
-          .filter((line) => line.trim() !== '[!callout]')
-          .join(' ')
-          .trim()
-        return { type: 'quote', children: parseInline(text), version: 1 }
-      }
-      return { type: 'paragraph', children: parseInline(trimmed), version: 1 }
-    })
-
-  return {
-    root: {
-      type: 'root',
-      children,
-      direction: null,
-      format: '' as const,
-      indent: 0,
-      version: 1,
-    },
-  }
-}
 
 const richText = (text: string) => mdToLexical(text)
 
@@ -1503,7 +1440,7 @@ const seed = async (): Promise<void> => {
 
 **Newsletter.** Pokud se přihlásíte k odběru, uchováváme vaši e-mailovou adresu, abychom vám občas poslali nové články. Odhlásit se můžete kdykoli odpovědí na kterýkoli e-mail.
 
-**Analytika.** Používáme analytiku bez cookies, která ukládá pouze agregované statistiky návštěvnosti. Neukládáme žádné osobní údaje, identifikátory napříč weby ani sledovací cookies.
+${COOKIE_POLICY.cs}
 
 ## Jak dlouho údaje uchováváme
 
@@ -1511,7 +1448,7 @@ Poptávky uchováváme po dobu jednání a následně nejvýše 3 roky pro navaz
 
 ## Kdo údaje zpracovává
 
-Web provozujeme na platformě Vercel a data ukládáme v EU. E-maily odesíláme přes službu Resend. Údaje neprodáváme ani je nepředáváme třetím stranám pro marketing.
+${HOSTING_SENTENCE.cs} E-maily odesíláme přes službu Resend. Údaje neprodáváme ani je nepředáváme třetím stranám pro marketing.
 
 ## Vaše práva
 
@@ -1525,7 +1462,7 @@ Podle GDPR máte právo na přístup ke svým údajům, jejich opravu, výmaz, p
 
 **Newsletter.** If you subscribe, we keep your email address to send you occasional new posts. You can unsubscribe at any time by replying to any email.
 
-**Analytics.** We use cookieless analytics that stores only aggregated traffic statistics. No personal data, no cross-site identifiers and no tracking cookies.
+${COOKIE_POLICY.en}
 
 ## How long we keep it
 
@@ -1533,7 +1470,7 @@ Inquiries are kept for the duration of our conversation and then for at most 3 y
 
 ## Who processes it
 
-The site runs on Vercel; data is stored in the EU. Emails are delivered via Resend. We do not sell your data or share it for third-party marketing.
+${HOSTING_SENTENCE.en} Emails are delivered via Resend. We do not sell your data or share it for third-party marketing.
 
 ## Your rights
 
