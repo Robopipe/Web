@@ -413,3 +413,16 @@ test('13: an editor sees the read-only attribution of the scenario 1 lead', asyn
   await expect(gclid).toBeDisabled()
   await expect(page.locator('#field-attribution__consentMarketing')).toBeChecked()
 })
+
+// Tester finding B1 (test-report.md). Fails until fixed: Postgres rejects the NUL byte,
+// the lead is lost, and rp_click keeps the value for 90 days.
+test('11: a click ID with a NUL byte in the landing URL does not stop the form', async ({
+  page,
+}) => {
+  await page.goto(`${LOCALES.cs.home}?gclid=%00E2E_nul_${Date.now()}`)
+  await banner(page).getByRole('button', { name: LOCALES.cs.accept }).click()
+  const email = `e2e-nul-${Date.now()}@firma-e2e.cz`
+  await page.goto(LOCALES.cs.contact)
+  await submitForm(page, email)
+  expect(await findLead(email)).toBeDefined()
+})

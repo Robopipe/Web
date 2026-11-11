@@ -442,3 +442,46 @@ describe('export route with the Local API (criteria 5 to 9, 13)', () => {
     expect(lead.attribution?.consentMarketing).toBe(true)
   })
 })
+
+/** Tester findings, docs/specs/26-offline-conversions/test-report.md. They fail until fixed. */
+describe('tester findings (test-report.md B1 to B3)', () => {
+  it('B1: a click ID with a NUL byte never reaches the database (Postgres rejects 0x00)', () => {
+    expect(clickIdFromSearch('?gclid=%00abc', NOW)).toBeNull()
+    expect(clickIdFromSearch('?gclid=abc%00', NOW)).toBeNull()
+    expect(parseClickId(serializeClickId(click({ id: '\u0000abc' })), NOW)).toBeNull()
+    const attribution = attributionFromCookies(
+      cookieJar({
+        [CONSENT_COOKIE]: serializeConsent(createConsent(true, true)),
+        [CLICK_COOKIE]: serializeClickId(click({ id: 'a\u0000b' })),
+      }),
+      NOW,
+    )
+    expect(JSON.stringify(attribution)).not.toContain('\\u0000')
+  })
+
+  it('B2: no export cell that comes from a click ID starts a spreadsheet formula', () => {
+    for (const id of ['=1+1', '+SUM(A1)', '@SUM(A1)', '=HYPERLINK(1)']) {
+      const fromUrl = clickIdFromSearch(`?gclid=${encodeURIComponent(id)}`, NOW)
+      const row = toExportRow(
+        {
+          id: 1,
+          email: 'novak@firma.cz',
+          createdAt: NOW.toISOString(),
+          attribution: { consentMarketing: true, gclid: fromUrl?.id ?? null },
+        },
+        'Firemni poptavka (import)',
+      )
+      for (const cell of toCsv([row]).split('\n')[1].split(',')) {
+        expect(cell).not.toMatch(/^[=+@\t\r]/)
+      }
+    }
+  })
+
+  it('B3: clickedAt from the cookie is always an ISO time that Postgres accepts', () => {
+    const landed = new Date(NOW.getTime() - 60 * 60 * 1000)
+    for (const at of [landed.toString(), landed.toUTCString()]) {
+      const parsed = parseClickId(serializeClickId(click({ at })), NOW)
+      if (parsed) expect(parsed.at).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?Z$/)
+    }
+  })
+})
