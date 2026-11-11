@@ -6,6 +6,7 @@ import * as migration_20261110_212327_seo_geo_stage2 from './20261110_212327_seo
 import * as migration_20261111_111049_feature_grid_link from './20261111_111049_feature_grid_link'
 import * as migration_20261111_121632_case_study_metric_listing from './20261111_121632_case_study_metric_listing'
 import * as migration_20261111_135405_case_study_metric_drop_listing from './20261111_135405_case_study_metric_drop_listing'
+import * as migration_20261111_151806_hero_video_localized from './20261111_151806_hero_video_localized'
 
 export const migrations = [
   {
@@ -47,5 +48,10 @@ export const migrations = [
     up: migration_20261111_135405_case_study_metric_drop_listing.up,
     down: migration_20261111_135405_case_study_metric_drop_listing.down,
     name: '20261111_135405_case_study_metric_drop_listing',
+  },
+  {
+    up: migration_20261111_151806_hero_video_localized.up,
+    down: migration_20261111_151806_hero_video_localized.down,
+    name: '20261111_151806_hero_video_localized',
   },
 ]
