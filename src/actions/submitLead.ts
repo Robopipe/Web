@@ -10,6 +10,7 @@ import {
   type LeadAttribution,
 } from '@/lib/googleAds'
 import { createLeadWithAttribution } from '@/lib/leadStore'
+import { safeErrorFields } from '@/lib/logSafe'
 import { getPayloadClient } from '@/lib/queries'
 
 const leadSchema = z.object({
@@ -53,10 +54,7 @@ const isRateLimited = (ip: string): boolean => {
   return false
 }
 
-export async function submitLead(
-  _prev: LeadFormState,
-  formData: FormData,
-): Promise<LeadFormState> {
+export async function submitLead(_prev: LeadFormState, formData: FormData): Promise<LeadFormState> {
   const parsed = leadSchema.safeParse(Object.fromEntries(formData))
   if (!parsed.success) {
     // Honeypot hits also land here — pretend success so bots learn nothing.
@@ -83,7 +81,7 @@ export async function submitLead(
       const store = await cookies()
       attribution = attributionFromCookies((name) => store.get(name)?.value, new Date())
     } catch (attributionError) {
-      payload.logger.warn({ err: attributionError, msg: 'Lead attribution failed' })
+      payload.logger.warn({ ...safeErrorFields(attributionError), msg: 'Lead attribution failed' })
     }
 
     const stored = await createLeadWithAttribution(payload, lead, attribution)
@@ -112,7 +110,10 @@ export async function submitLead(
         })
       } catch (emailError) {
         // Lead is stored — a failed notification must not fail the submission.
-        payload.logger.error({ err: emailError, msg: 'Lead notification email failed' })
+        payload.logger.error({
+          ...safeErrorFields(emailError),
+          msg: 'Lead notification email failed',
+        })
       }
     }
 
@@ -123,11 +124,11 @@ export async function submitLead(
         adsUserData = { sha256_email_address: hashEmail(lead.email) }
       }
     } catch (hashError) {
-      payload.logger.warn({ err: hashError, msg: 'Lead email hash failed' })
+      payload.logger.warn({ ...safeErrorFields(hashError), msg: 'Lead email hash failed' })
     }
     return { status: 'success', adsUserData }
   } catch (error) {
-    console.error('Lead submission failed', error)
+    console.error('Lead submission failed', safeErrorFields(error))
     return { status: 'error', error: 'server' }
   }
 }

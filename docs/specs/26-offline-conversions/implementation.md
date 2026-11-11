@@ -212,3 +212,27 @@ Text musí být na produkci dřív, než Arthur nastaví plán v Google Ads.
 ### Co nešlo ověřit
 
 Body 1 až 6 z kapitoly „Co místně nešlo ověřit“ ve zprávě testera platí dál. Znění B4 čeká na schválení.
+
+## Kolo 3
+
+Oprava chyby C1 ze zprávy testera kola 2.
+
+### Co se změnilo
+
+- Nový pomocník `safeErrorFields` v `src/lib/logSafe.ts` vrátí jen název chyby a kód (`cause.code`, jinak `code`). Text chyby, dotaz ani `params` do logu nedá.
+- `createLeadWithAttribution` zapíše do varování o záložním uložení jen tato pole.
+- `submitLead` zapíše jen tato pole ve vnějším `catch` a také v `catch` pro atribuci, e-mail a hash. Chyba odeslání e-mailu může nést adresu poptávky.
+- Nový int test `tests/int/offlineConversionsRound3.int.spec.ts`. První test spustí skutečnou chybu Postgres (bajt NUL, kód `22021`). Druhý test zavolá `submitLead` s chybou ve tvaru Drizzle. Oba testy ověří, že log nemá jméno, e-mail, telefon, zprávu ani `params`. Na kódu před opravou oba testy selžou.
+
+### Výsledky kontrol
+
+| Kontrola | Výsledek |
+| --- | --- |
+| `tsc --noEmit` | bez chyb |
+| `npm run lint` | 0 chyb, 2 starší varování mimo změnu |
+| `npm run test:int` | 31 souborů, 272 testů prošlo |
+| `npm run build` | prošel |
+
+### Co nešlo ověřit
+
+E2e jsem nespustil. Změna mění jen zápis do logu a int testy ji pokrývají. Body z kola 2 platí dál.

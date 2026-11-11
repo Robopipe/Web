@@ -2,6 +2,8 @@ import type { Payload, RequiredDataFromCollectionSlug } from 'payload'
 
 import type { Lead } from '@/payload-types'
 
+import { safeErrorFields } from './logSafe'
+
 export type LeadData = Omit<RequiredDataFromCollectionSlug<'leads'>, 'attribution'>
 
 /**
@@ -22,7 +24,10 @@ export const createLeadWithAttribution = async (
       context: { skipRevalidate: true },
     })
   } catch (attributionError) {
-    payload.logger.warn({ err: attributionError, msg: 'Lead with attribution failed, saving without it' })
+    payload.logger.warn({
+      ...safeErrorFields(attributionError),
+      msg: 'Lead with attribution failed, saving without it',
+    })
     return payload.create({
       collection: 'leads',
       data,
