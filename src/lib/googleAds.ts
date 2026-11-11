@@ -76,8 +76,17 @@ export const toExportRow = (lead: ExportLead, conversionName: string): ExportRow
   'Ad User Data': 'Granted',
 })
 
-const csvField = (value: string): string =>
-  /[",\r\n]/.test(value) ? `"${value.replaceAll('"', '""')}"` : value
+/**
+ * A spreadsheet reads a cell that starts with one of these characters as a formula (OWASP CSV
+ * injection). The export values do not start with one: the Order ID, the time and the hash start
+ * with a letter or a digit, and Google click IDs start with a letter or a digit. Second guard (B2).
+ */
+const FORMULA_START = /^[=+\-@\t\r]/
+
+const csvField = (raw: string): string => {
+  const value = FORMULA_START.test(raw) ? `'${raw}` : raw
+  return /[",\r\n]/.test(value) ? `"${value.replaceAll('"', '""')}"` : value
+}
 
 /** UTF-8 text without BOM, `\n` line ends, the header row always first. */
 export const toCsv = (rows: ExportRow[]): string =>
