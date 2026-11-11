@@ -198,3 +198,5 @@ prázdná ID. Tento běh to vylučuje.
 Otevřená otázka pro Filipa: text o cookies (`src/seed/cookiePolicy.ts`, kapitola 15 architektury) jmenuje jen
 `_gcl_*`. Pokud má text jmenovat i `_gac_*`, je nutné ho upravit. Text jsem bez souhlasu neměnil.
 
+Rozhodnutí (Filip, 11. 11. 2026 22:18): text jmenuje `_gcl_*` i `_gac_*`. Upraveno v `src/seed/cookiePolicy.ts`.
+

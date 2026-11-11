@@ -17,7 +17,7 @@ export const COOKIE_POLICY: Record<Locale, string> = {
 
 S vaším souhlasem s analytikou používáme Google Analytics. Měříme, které stránky lidé čtou a odkud přišli. Google ukládá cookies _ga a _ga_* až na 2 roky.
 
-S vaším souhlasem s marketingem používáme značku Google Ads. Měříme výsledky reklam a ukazujeme naše reklamy na jiných webech. Google ukládá cookies _gcl_* až na 90 dní.
+S vaším souhlasem s marketingem používáme značku Google Ads. Měříme výsledky reklam a ukazujeme naše reklamy na jiných webech. Google ukládá cookies _gcl_* a _gac_* až na 90 dní.
 
 Bez souhlasu Google neukládá žádné cookies. Dostává jen anonymní signály bez identifikátorů. Z nich odhaduje počet návštěv.
 
@@ -28,7 +28,7 @@ Volbu kdykoli změníte odkazem „Nastavení cookies“ v patičce webu.`,
 
 With your consent to analytics, we use Google Analytics. We measure which pages people read and where they came from. Google stores the cookies _ga and _ga_* for up to 2 years.
 
-With your consent to marketing, we use the Google Ads tag. We measure ad results and show our ads on other sites. Google stores the cookies _gcl_* for up to 90 days.
+With your consent to marketing, we use the Google Ads tag. We measure ad results and show our ads on other sites. Google stores the cookies _gcl_* and _gac_* for up to 90 days.
 
 Without consent, Google stores no cookies. It gets only anonymous signals without identifiers. It uses them to estimate visits.
 
