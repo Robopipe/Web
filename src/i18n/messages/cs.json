@@ -25,6 +25,7 @@
   },
   "blog": {
     "title": "Blog",
+    "metaTitle": "Blog o strojovém vidění a kontrole kvality | Robopipe",
     "headline": "Poznámky ke strojovému vidění přímo z výroby.",
     "description": "Návody, příběhy a technické poznámky o provozu strojového vidění ve výrobě.",
     "allPosts": "Všechny články",

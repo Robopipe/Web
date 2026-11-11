@@ -233,6 +233,9 @@ export interface HeroBlock {
    * Looping full-width video below the copy (takes precedence over image).
    */
   video?: (number | null) | Media;
+  /**
+   * Shown when there is no video. With a video, it is the poster shown until the video plays.
+   */
   image?: (number | null) | Media;
   /**
    * Trust strip under the media (e.g. "Trusted in operations running …").

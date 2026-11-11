@@ -1,6 +1,5 @@
-import { track } from '@vercel/analytics'
-
-/** Custom events require the Vercel Pro plan; on Hobby the calls are silently dropped. */
-export const trackEvent = (event: string, props?: Record<string, string>): void => {
-  track(event, props)
-}
+/**
+ * Custom event hook. Vercel Analytics is gone (the site runs on Coolify, where
+ * its script answers 404), so this does nothing until a new tool is chosen.
+ */
+export const trackEvent = (_event: string, _props?: Record<string, string>): void => {}

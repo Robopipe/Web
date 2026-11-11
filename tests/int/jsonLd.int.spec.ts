@@ -6,6 +6,7 @@ import {
   faqsFromLayout,
   offersFromPricing,
   organizationLd,
+  postalAddressLd,
   parsePrice,
   serializeJsonLd,
   type FaqItem,
@@ -116,8 +117,8 @@ describe('organizationLd', () => {
     expect(ld).toMatchObject({
       '@type': 'Organization',
       '@id': `${SERVER_URL}/#organization`,
-      address: 'Ulice 1, Praha',
-      sameAs: ['https://github.com/robopipe'],
+      address: { '@type': 'PostalAddress', streetAddress: 'Ulice 1, Praha' },
+      sameAs: ['https://github.com/robopipe', 'https://www.linkedin.com/company/robopipe-io'],
       memberOf: [
         {
           '@type': 'Organization',
@@ -195,5 +196,60 @@ describe('organizationLd company facts (issue #6)', () => {
       expect(ld).not.toHaveProperty('identifier')
       expect(ld).not.toHaveProperty('description')
     }
+  })
+})
+
+describe('organizationLd company facts (issue #19)', () => {
+  const base = { id: 1, siteName: 'Robopipe' } as SiteSetting
+
+  it('adds the founding date, team size and parent company', () => {
+    expect(organizationLd(base)).toMatchObject({
+      foundingDate: '2025-12-31',
+      numberOfEmployees: { '@type': 'QuantitativeValue', value: 5 },
+      parentOrganization: {
+        '@type': 'Organization',
+        name: 'KOALA42',
+        sameAs: 'https://www.linkedin.com/company/koala42',
+      },
+    })
+  })
+
+  it('adds the Robopipe LinkedIn page to sameAs once', () => {
+    const ld = organizationLd({
+      ...base,
+      socials: [{ platform: 'linkedin', url: 'https://www.linkedin.com/company/robopipe-io' }],
+    } as unknown as SiteSetting)
+    expect(ld.sameAs).toEqual(['https://www.linkedin.com/company/robopipe-io'])
+  })
+})
+
+describe('postalAddressLd', () => {
+  it('splits the office address into PostalAddress fields', () => {
+    const text = 'robopipe s.r.o.\nSokolovská 81/55\n186 00 Praha 8 - Karlín\nCzech Republic'
+    expect(postalAddressLd(text, 'robopipe s.r.o.')).toEqual({
+      '@type': 'PostalAddress',
+      streetAddress: 'Sokolovská 81/55',
+      postalCode: '186 00',
+      addressLocality: 'Praha 8 - Karlín',
+      addressCountry: 'CZ',
+    })
+  })
+
+  it('reads a comma-separated address the same way', () => {
+    expect(
+      postalAddressLd('Sokolovská 81/55, 186 00 Praha 8 - Karlín, Česká republika'),
+    ).toMatchObject({
+      streetAddress: 'Sokolovská 81/55',
+      postalCode: '186 00',
+      addressCountry: 'CZ',
+    })
+  })
+
+  it('keeps text without a postcode as the street address', () => {
+    expect(postalAddressLd('Somewhere 1')).toEqual({
+      '@type': 'PostalAddress',
+      streetAddress: 'Somewhere 1',
+    })
+    expect(postalAddressLd('')).toBeUndefined()
   })
 })

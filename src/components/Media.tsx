@@ -5,7 +5,7 @@ import { SERVER_URL } from '@/lib/paths'
 import type { Media as MediaType } from '@/payload-types'
 
 /** Same-origin media URLs become relative so next/image's localPatterns match them. */
-const relativize = (url: string): string =>
+export const relativize = (url: string): string =>
   url.startsWith(SERVER_URL) ? url.slice(SERVER_URL.length) : url
 
 type Props = {
@@ -42,6 +42,7 @@ export const Media: React.FC<Props> = ({ media, size, className, priority, fill,
         className={className}
         style={style}
         priority={priority}
+        fetchPriority={priority ? 'high' : undefined}
         sizes={sizes}
       />
     )
@@ -57,6 +58,7 @@ export const Media: React.FC<Props> = ({ media, size, className, priority, fill,
       className={className}
       style={style}
       priority={priority}
+      fetchPriority={priority ? 'high' : undefined}
       sizes={sizes}
     />
   )

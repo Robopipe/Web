@@ -1,42 +1,31 @@
 'use client'
 
-import { useLocale } from 'next-intl'
 import { usePathname } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { createContext, createElement, useContext, type ReactNode } from 'react'
 
-import { locales, type Locale } from '@/i18n/routing'
+import type { Locale } from '@/i18n/routing'
+
+import { localeSwitchHref, type LocaleSwitchPaths } from './paths'
+
+const LocaleSwitchContext = createContext<LocaleSwitchPaths>({})
+
+/** Gives the layout's language-switch map to the switcher and the locale suggestion. */
+export const LocaleSwitchProvider = ({
+  paths,
+  children,
+}: {
+  paths: LocaleSwitchPaths
+  children: ReactNode
+}) => createElement(LocaleSwitchContext.Provider, { value: paths }, children)
 
 /**
- * Resolves the translated-slug URL for each locale by reading the hreflang
- * <link rel="alternate"> tags each page emits via its metadata. Falls back to
- * swapping the locale prefix when a page has no alternate for a locale (e.g.
- * an untranslated blog post); the target route 404s gracefully to that
- * locale's homepage via not-found handling.
+ * Resolves the translated-slug URL for each locale from the layout's map, the
+ * same paths each page gives as hreflang. It works in the server render too,
+ * so crawlers without JavaScript get a link that answers 200. A page without
+ * a version in the target locale links to that locale's homepage.
  */
 export function useLocaleHref(): (target: Locale) => string {
-  const locale = useLocale() as Locale
+  const paths = useContext(LocaleSwitchContext)
   const pathname = usePathname()
-  const [alternates, setAlternates] = useState<Partial<Record<Locale, string>>>({})
-
-  useEffect(() => {
-    const links = document.querySelectorAll<HTMLLinkElement>('link[rel="alternate"][hreflang]')
-    const found: Partial<Record<Locale, string>> = {}
-    links.forEach((link) => {
-      const lang = link.hreflang as Locale
-      if ((locales as readonly string[]).includes(lang)) {
-        try {
-          found[lang] = new URL(link.href).pathname
-        } catch {
-          /* ignore malformed hrefs */
-        }
-      }
-    })
-    // Syncing FROM an external system (the document head) into state — the sanctioned
-    // use of an effect; the head only updates after navigation, tracked via pathname.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setAlternates(found)
-  }, [pathname])
-
-  return (target: Locale) =>
-    alternates[target] ?? (pathname.replace(new RegExp(`^/${locale}(?=/|$)`), `/${target}`) || `/${target}`)
+  return (target: Locale) => localeSwitchHref(paths, pathname, target)
 }

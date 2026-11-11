@@ -29,7 +29,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   ])
   return buildMeta({
     title: t('title'),
-    seo: { description: t('description') },
+    seo: { title: t('metaTitle'), description: t('description') },
     locale,
     paths: sectionPaths('/blog'),
     fallbackImage: settings.defaultSeo?.image,

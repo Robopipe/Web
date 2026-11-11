@@ -41,6 +41,10 @@ export const Hero: Block = {
       name: 'image',
       type: 'upload',
       relationTo: 'media',
+      admin: {
+        description:
+          'Shown when there is no video. With a video, it is the poster shown until the video plays.',
+      },
     },
     {
       name: 'trust',

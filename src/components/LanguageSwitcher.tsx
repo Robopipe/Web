@@ -25,6 +25,7 @@ export const LanguageSwitcher: React.FC = () => {
           ) : (
             <Link
               href={hrefFor(target)}
+              data-locale-switch={target}
               // An explicit switch is the stored choice for the root `/` and
               // silences the locale suggestion too.
               onClick={() => commitLocaleChoice(target)}
