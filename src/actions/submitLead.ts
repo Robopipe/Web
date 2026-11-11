@@ -1,8 +1,14 @@
 'use server'
 
-import { headers } from 'next/headers'
+import { cookies, headers } from 'next/headers'
 import { z } from 'zod'
 
+import {
+  attributionFromCookies,
+  hashEmail,
+  isGoogleAdsLead,
+  type LeadAttribution,
+} from '@/lib/googleAds'
 import { getPayloadClient } from '@/lib/queries'
 
 const leadSchema = z.object({
@@ -25,6 +31,8 @@ const leadSchema = z.object({
 export type LeadFormState = {
   status: 'idle' | 'success' | 'error'
   error?: 'validation' | 'rate-limit' | 'server'
+  /** Hashed email for enhanced conversions for leads (issue #26). Only for a Google Ads lead. */
+  adsUserData?: { sha256_email_address: string }
 }
 
 // Per-instance rate limit: fine on Cloud Run with min-instances=1 and low form volume.
@@ -67,9 +75,19 @@ export async function submitLead(
 
   try {
     const payload = await getPayloadClient()
+
+    // Consent and ad click at submission (issue #26). Measurement never stops the lead.
+    let attribution: LeadAttribution = { consentAnalytics: false, consentMarketing: false }
+    try {
+      const store = await cookies()
+      attribution = attributionFromCookies((name) => store.get(name)?.value, new Date())
+    } catch (attributionError) {
+      payload.logger.warn({ err: attributionError, msg: 'Lead attribution failed' })
+    }
+
     await payload.create({
       collection: 'leads',
-      data: lead,
+      data: { ...lead, attribution },
       overrideAccess: true,
       context: { skipRevalidate: true },
     })
@@ -101,7 +119,16 @@ export async function submitLead(
         payload.logger.error({ err: emailError, msg: 'Lead notification email failed' })
       }
     }
-    return { status: 'success' }
+
+    let adsUserData: LeadFormState['adsUserData']
+    try {
+      if (isGoogleAdsLead({ ...lead, attribution })) {
+        adsUserData = { sha256_email_address: hashEmail(lead.email) }
+      }
+    } catch (hashError) {
+      payload.logger.warn({ err: hashError, msg: 'Lead email hash failed' })
+    }
+    return { status: 'success', adsUserData }
   } catch (error) {
     console.error('Lead submission failed', error)
     return { status: 'error', error: 'server' }
