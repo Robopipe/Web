@@ -452,6 +452,13 @@ export interface FeatureGridBlock {
       | null;
     title: string;
     text?: string | null;
+    link?: {
+      label?: string | null;
+      type?: ('internal' | 'external') | null;
+      page?: (number | null) | Page;
+      url?: string | null;
+      newTab?: boolean | null;
+    };
     id?: string | null;
   }[];
   id?: string | null;
@@ -1577,6 +1584,15 @@ export interface FeatureGridBlockSelect<T extends boolean = true> {
         icon?: T;
         title?: T;
         text?: T;
+        link?:
+          | T
+          | {
+              label?: T;
+              type?: T;
+              page?: T;
+              url?: T;
+              newTab?: T;
+            };
         id?: T;
       };
   id?: T;

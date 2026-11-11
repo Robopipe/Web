@@ -68,11 +68,11 @@ The script is idempotent: it finds existing documents and never overwrites a fie
 
 | File | Content |
 |---|---|
-| `landing-pages.json`, `landing-<key>.cs.md`, `landing-<key>.md` | Solution, task and about pages. An existing page gets only the blocks it does not have yet (by block `id`). `obsolete` lists stage 1 slugs the script reports but never deletes. |
+| `landing-pages.json`, `landing-<key>.cs.md`, `landing-<key>.md` | Solution, task and about pages. An existing page gets only the blocks it does not have yet (by block `id`). `obsolete` lists stage 1 slugs the script reports but never deletes. `cardImage` sets `seo.image` (the home page card and the share preview) only while it is empty. |
 | `faqs.json` | All FAQs. Every key is used by a page, a case study or the pricing page. |
 | `settings.json` | `site-settings.solutions` (page keys in display order) and `site-settings.company`. Written only while empty. |
 | `existing-pages.json` | Additions to existing content: pricing FAQs, and the first H2, `seo.title` and one paragraph of the vision guide (changed only from the exact current value). |
-| `home.json`, `navigation.json` | Home page blocks, header label, footer about link, the stage 1 footer column to remove. |
+| `home.json`, `navigation.json` | Home page blocks, header label, footer about link, the stage 1 footer column to remove. `removeBlocks` lists home blocks (by `blockName`) the script removes on every run, also after a restore from the version history. `featureLinks` adds a link at the end of a `featureGrid` card text, only in a locale where the link label is empty. The memberships strip goes after the first `testimonialBar`. The script moves it there only from its stage 1 position right after the customer logos. Anywhere else it stays. |
 
 **Copy markers.** A document whose text still contains `[doplnit Filip]` or `[ověřit]` is never published. It stays a draft and the report says `draft (markers): <document>`.
 

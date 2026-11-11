@@ -251,6 +251,7 @@
     {
       "key": "label-inspection",
       "image": "camera-front.png",
+      "cardImage": "label-inspection-card.jpg",
       "replaceImage": "product-classification-screen.jpeg",
       "caseStudies": [],
       "faqs": [

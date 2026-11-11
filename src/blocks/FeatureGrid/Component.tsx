@@ -1,5 +1,6 @@
 import React from 'react'
 
+import { CMSLink } from '@/components/CMSLink'
 import { Icon, iconData, type IconName } from '@/components/icons'
 import { Media } from '@/components/Media'
 import type { FeatureGridBlock } from '@/payload-types'
@@ -78,13 +79,26 @@ export const FeatureGridComponent: React.FC<FeatureGridBlock> = ({
                     </div>
                   )}
                   <h5 className={dark ? 'text-text-invert' : undefined}>{feature.title}</h5>
-                  {feature.text && (
+                  {(feature.text || feature.link?.label) && (
                     <p
                       className={`mt-2 text-sm leading-relaxed ${
                         dark ? 'text-text-invert-60' : 'text-text-60'
                       }`}
                     >
                       {feature.text}
+                      {feature.link?.label && (
+                        <>
+                          {feature.text ? ' ' : null}
+                          <CMSLink
+                            link={feature.link}
+                            className={`underline underline-offset-2 ${
+                              dark
+                                ? 'text-brand hover:text-text-invert'
+                                : 'text-brand-fg hover:text-brand-fg-hover'
+                            }`}
+                          />
+                        </>
+                      )}
                     </p>
                   )}
                 </div>
