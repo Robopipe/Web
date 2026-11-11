@@ -105,14 +105,6 @@ export const CaseStudies: CollectionConfig = {
           required: true,
           localized: true,
         },
-        {
-          name: 'hideInListing',
-          type: 'checkbox',
-          defaultValue: false,
-          admin: {
-            description: 'Show this result only on the detail page, not on the listing card.',
-          },
-        },
       ],
     },
     // Detail page sections, rendered in this order. Empty sections are skipped.

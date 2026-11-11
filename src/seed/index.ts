@@ -410,7 +410,6 @@ const seed = async (): Promise<void> => {
           'Crocodille vyrábí čerstvé sendviče a bagety tempem 3 600 kusů za hodinu na každé lince. Kamera nad linkou zvedla kvalitu samotné výroby: obsluha vidí výsledky své práce v reálném čase na displeji přímo na hale — a je podle nich hodnocená. Týmu jsme ukázali, jak označit první produkt; každý další už si přidali sami.',
         metrics: [
           ['3 600', 'kusů / hod / linka'],
-          ['95 %', 'přesnost detekce'],
           ['19', 'různých kontrol na bagetě'],
         ],
       },
@@ -421,7 +420,6 @@ const seed = async (): Promise<void> => {
           "Crocodille produces fresh sandwiches and baguettes at 3,600 pieces per hour per line. Installing the camera raised production quality itself: operators see the quality of their work in real time on the floor display — and are evaluated on it. We showed the team how to label one product; every product since, they've added themselves.",
         metrics: [
           ['3,600', 'pieces / hour / line'],
-          ['95%', 'detection precision'],
           ['19', 'different checks per baguette'],
         ],
       },
@@ -488,7 +486,6 @@ const seed = async (): Promise<void> => {
         excerpt:
           'Zákazníci vracejí každý kus, který není stoprocentní — a ruční kontrola je drahá a stejně nikdy nezachytí všechno. Robopipe proto kontroluje každé balení: těsnost svaru, fazole správně zabalené ve slanině i to, že se do obalu nedostal žádný cizí předmět.',
         metrics: [
-          ['95 %', 'přesnost detekce'],
           ['5', 'různých kontrol na balení'],
         ],
       },
@@ -498,7 +495,6 @@ const seed = async (): Promise<void> => {
         excerpt:
           "Customers return products that aren't 100% — and human quality checks are expensive and never catch everything. Robopipe inspects every pack: seal tightness, beans properly wrapped in bacon, and no foreign objects inside the packaging.",
         metrics: [
-          ['95%', 'detection precision'],
           ['5', 'different checks per pack'],
         ],
       },

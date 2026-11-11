@@ -8,9 +8,5 @@
         "en": "Robopipe camera above a line of filled baguettes"
       }
     }
-  },
-  "hideInListing": {
-    "crocodille-line-quality": [{ "value": "95%", "label": "detection precision" }],
-    "mg-servis-packaging-checks": [{ "value": "95%", "label": "detection precision" }]
   }
 }

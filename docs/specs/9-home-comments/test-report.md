@@ -142,3 +142,153 @@ Složka `screens/test/`:
 - `feature-link-{cs,en}-{375,1440}.jpg`: odkaz v kartě „Nastavíte si sami“.
 - `footer-{home,post}-{375,1440}.jpg`: patička na úvodní stránce a na článku.
 - `edge-long-link-{cs,en}-320.jpg`, `edge-long-link-cs-1440.jpg`: chyba C3 (testovací data, ne skutečný obsah).
+
+## Kola 2 a 3
+
+Testovaný commit: `7bae574` (kód `cba553f`). Datum: 11. 11. 2026, 13:35 až 14:10.
+Během testu se větev dostala do `master` (PR #11, `84a605d`) a do produkce. Zpráva proto popisuje stav, který už běží.
+
+### Verdikt
+
+**Neprošlo.** Ze 13 kritérií prošlo 11, kritérium 7.4 prošlo s výhradou (D3) a kritérium 7.7 neprošlo (D1, D4).
+
+- D4 (vysoká): v produkci detail obou případů neukazuje „95 %“. Řádek údaje v produkci chybí. Kód větve ho lokálně nechá, příčinu z veřejných dat neurčím.
+- D1 (střední): skript znovu skryje údaj, který Filip v administraci vrátil na kartu.
+- D2 a D3 (nízká): chybné hlášení skriptu a ořezané dlouhé slovo u karty se třemi údaji.
+
+### Prostředí
+
+- Server: worktree `robopipe-web-home`, `next build` a `next start` na portu 3820 (ukončen podle PID).
+- Databáze `robopipe_h9r3`: prázdná, migrace a `pnpm seed` z `master` `917e87c` (stav po kole 1). Kopie před migrací kola 3: `robopipe_h9r3_pre`.
+- Okrajové případy: kopie `robopipe_h9r3_edge`, úpravy přes REST API. Int testy: kopie `robopipe_h9r3_int`.
+- Prohlížeč: `chrome-headless-shell` 1248. Šířky 1440, 1280, 1024, 768, 640, 375 a 320 px.
+- Produkci jsem jen četl přes HTTP GET (`robopipe.io`, veřejné API a stránky).
+
+### Akceptační kritéria
+
+| Kritérium | Výsledek | Důkaz |
+|---|---|---|
+| 6.1 Pořadí úvodní stránky | Prošlo | Pořadí sekcí v DOM (cs, en, 1440 a 375 px) odpovídá 6.1. `homeComments.e2e.spec.ts` prošlo. `home-{cs,en}-{1440,375}.jpg` |
+| 6.2 Žádné dvě mřížky za sebou | Prošlo | Mezi mřížkami je tmavá sekce, obory, příběh zákazníka. e2e prošlo. |
+| 6.3 Přechody pozadí | Prošlo | Tmavé sekce nesousedí. Čáru nahoře má jen pruh „Jsme součástí“, žádná sekce nemá spodní čáru. `home-cs-1440-transitions.jpg` |
+| 6.4 Idempotence a ruční pořadí | Prošlo | 1. běh ze stavu po kole 1: `home page (order)`. 2. běh: `created (0)`, `updated (0)`. Ručně prohozené `processSteps` a `industryCards` přes API: `home page (order changed by hand)`, pořadí zůstane. |
+| 6.5 Texty a kritéria kola 1 | Prošlo | e2e testy kola 1 prošly. Pruh je za řešeními a před blogem. |
+| 6.6 C1, C2, C3 | Prošlo | `homeCommentsEdge.int.spec.ts` (C1, C2) a `homeCommentsEdge.e2e.spec.ts` (C3) prošly. |
+| 7.1 Fotka hlavního případu | Prošlo | Soubor 1080×756 jsem prohlédl v plné velikosti: kamera nad linkou s bagetami, bez lidí. Štítek na kameře je nečitelný, vpravo nahoře je jen bezpečnostní piktogram. Alt cs „Kamera Robopipe nad linkou s plněnými bagetami“, en „Robopipe camera above a line of filled baguettes“. Viz D2. |
+| 7.2 Bez 95 % na kartě Crocodille | Prošlo | Karta: „3 600“ a „19“ (cs, en, všechny šířky). |
+| 7.3 Bez 95 % na třetí kartě | Prošlo | Karta MG Servis: jen „5 různých kontrol na balení“ (cs, en). |
+| 7.4 Údaje vedle sebe | Prošlo s výhradou | Se současným obsahem jsou údaje v jednom řádku na 1440, 1024 a 768 px. Na 375 px se karta Crocodille a druhá karta zalomí pod sebe. Vodorovné posouvání na 375 a 320 px není. Na 1024 px slovo „zdokumentovaných“ přesahuje sloupec o 4 px do okraje karty, není to vidět. Viz D3. |
+| 7.5 Citát nad „Řešení podle úlohy“ | Prošlo | Pořadí v DOM: citát, „Řešení podle úlohy“, výzva (cs, en). |
+| 7.6 Nadpis výzvy | Prošlo | „Třeba je na řadě právě váš provoz.“ a „Your operation could be next.“ |
+| 7.7 Detail a ruční změny | Neprošlo | Lokálně detail obou případů ukazuje 95 % (cs, en, 1440 a 375 px, `detail-*.jpg`). Skript nepřepíše ručně změněnou fotku, text údaje ani smazaný řádek. Přepíše ale ručně vypnuté `hideInListing` (D1). V produkci 95 % na detailu chybí (D4). |
+
+### Migrace `20261111_121632_case_study_metric_listing`
+
+| Kontrola | Výsledek |
+|---|---|
+| `payload migrate` na kopii stavu před kolem 3 (`NODE_ENV=production`) | Prošlo za 10 ms. Sloupec `hide_in_listing` je v `case_studies_metrics` a `_case_studies_v_version_metrics`, 9 stávajících řádků má `false`. |
+| `payload migrate:down` | Prošlo. Oba sloupce zmizely. |
+| Znovu `payload migrate` | Prošlo. |
+| Stránka po migraci, skript ještě neběžel | `/cs`, `/en`, `/{cs,en}/case-studies` a detail: 200. Karty ukazují 95 % jako dřív. |
+
+### Skript obsahu
+
+1. běh ze stavu po kole 1: `created (1): media crocodille-camera-line.jpg`, `updated (8)` (fotka, údaje Crocodille, údaje MG Servis, pořadí úvodní stránky, zveřejnění).
+2. běh: `created (0)`, `updated (0)`. Hlášení ale říká `case study crocodille-line-quality (hero image) changed by hand` (D2).
+
+| Ruční změna po 1. běhu | Výsledek |
+|---|---|
+| Jiná fotka | Zůstane. Hlášení `(hero image) changed by hand`. Prošlo (int test vývojáře). |
+| Upravený text údaje (95% na 97%) | Zůstane, údaj se neskryje. Prošlo (int test vývojáře). |
+| Smazaný řádek 95 % | Ostatní řádky zůstanou. Hlášení `(listing results) changed by hand`. Prošlo (nový int test). |
+| Vypnuté `hideInListing` u 95 % | **Skript ho znovu zapne.** Chyba D1. |
+
+### Okrajové případy (kopie databáze, REST API)
+
+| Případ | Výsledek |
+|---|---|
+| Případ bez údajů | Karta nemá čáru ani prázdný řádek. Bez chyby. |
+| Jeden údaj | Bez chyby. |
+| Tři viditelné údaje, dlouhé české slovo | Slovo se ořízne na okraji karty. Chyba D3. |
+| Čtyři údaje (jeden skrytý) | Viz řádek výše, tři viditelné. |
+| Velmi dlouhý popis údaje (100 znaků s mezerami) | Zalomí se ve sloupci. Bez chyby. |
+| Hodnota údaje jako slovo o 43 znacích bez mezer | Na 375 a 320 px se stránka posouvá do strany. Hodnota je číslo, takový obsah není reálný. Stejné chování má `master` (údaje měly `flex-wrap` už dřív). Poznámka, ne chyba. |
+| Případ bez fotky | Karta ukáže logo, štítek, text a údaje. Bez chyby. `edge-cards-cs-1440.jpg` |
+| Případ jen v češtině | `/cs/case-studies` ho ukáže, `/en/case-studies` ne, `/en/...` detail 404. Bez chyby. |
+
+### Nalezené chyby
+
+#### D4 V produkci detail případu neukazuje „95 %“ (vysoká)
+
+Veřejné API `robopipe.io/api/case-studies` (GET, 11. 11. 14:05) vrací:
+
+- `crocodille-line-quality`: údaje `3,600` a `19`. Řádek `95%` chybí.
+- `mg-servis-packaging-checks`: jen řádek `mg-servis-packaging-checks_m1` (`5`). Řádek `_m0` chybí.
+- Obě změny mají `updatedAt` 12:45 UTC (13:45 místního času).
+
+Stránky `/cs/case-studies/crocodille-kvalita-na-lince`, `/en/case-studies/crocodille-line-quality` a `/cs/case-studies/mg-servis-kontrola-baleni` údaj 95 % neukazují. Kritérium 7.7 v produkci neplatí.
+Kód větve řádek nemaže (lokálně ověřeno, detail 95 % ukazuje). Příčinu z veřejných dat neurčím. Návrh: v administraci podívat se do historie verzí obou případů kolem 12:45 UTC a řádky vrátit s `hideInListing` zapnutým.
+
+#### D1 Skript znovu skryje údaj, který Filip vrátil na kartu (střední)
+
+Skript skryje řádek, kdykoli najde řádek `95%` / `detection precision` s `hideInListing` vypnutým (`src/seed/seoGeo.ts:476` až `:481`). Nerozliší „skript ještě neběžel“ od „Filip pole vypnul“. Porušuje 7.7 a princip 6.4.
+
+Reprodukce:
+
+1. Spusť skript (`pnpm seed:seo-geo --status=published`).
+2. V administraci u údaje 95 % případu MG Servis vypni „Show this result only on the detail page“ a ulož.
+3. Spusť skript znovu.
+4. Výsledek: `updated: case study mg-servis-packaging-checks (listing results)`, karta 95 % znovu nemá. Očekávání: změna zůstane.
+
+Automatický test: `tests/int/caseStudiesListingEdge.int.spec.ts`, „keeps a result Filip put back on the listing by hand“. Dnes selže.
+
+#### D2 Druhý běh hlásí ručně změněnou fotku, i když je fotka nová (nízká)
+
+Skript porovná název souboru fotky přesně s `crocodille-camera-line.jpg` (`seoGeo.ts:454`). Payload při shodném názvu soubor přejmenuje (`crocodille-camera-line-1.jpg`), stejně jako `tablet-line-2.png` v produkci. Druhý běh pak hlásí `(hero image) changed by hand`. Data se nezmění, hlášení ale klame toho, kdo skript spouští.
+
+Stejná citlivost na název souboru shodí int testy vývojáře: na čisté databázi a se složkou `media/`, kde soubor už je, selžou 3 testy v `caseStudiesListing.int.spec.ts` (a navazující `seoGeo` a `solutions`). Helper `media()` soubor nenajde a vytvoří ho znovu. Pod `jsdom` pak `payload.create` selže na `ValidationError: file`. S přesným názvem v databázi prošlo 124/124.
+
+Reprodukce: čistá databáze, `pnpm seed`, v `media/` už je `crocodille-camera-line.jpg`. Spusť skript dvakrát. Automatický test: `caseStudiesListingEdge.int.spec.ts`, „reports the new hero image as in place when Payload renamed the file“. Dnes selže.
+Návrh: porovnat název se stejným vzorem jako `replaceIf` (přípona `-\d+`).
+
+#### D3 Dlouhé slovo v popisu údaje se ořízne na okraji karty, když má karta tři údaje (nízká)
+
+Na `sm` a výš jsou údaje ve stejně širokých sloupcích. Popis nemá `break-words` ani `hyphens`. Slovo delší než sloupec přeteče a `overflow-hidden` karty ho ořízne. Implementace (K3, 7.4) tvrdí, že se dlouhý popis zalomí ve svém sloupci. To platí jen pro text s mezerami.
+Se současným obsahem nenastane (karta má nejvýš dva viditelné údaje).
+
+Reprodukce: karta MG Servis s údaji „5 různých kontrol na balení“, „24/7 nepřetržitý provoz“, „100 % zdokumentovaných balení“. Otevři `/cs/case-studies` na 1440 px. Slovo „zdokumentovaný“ je oříznuté (`edge-three-results-cs-{1440,1024}.jpg`).
+Automatický test: `tests/e2e/caseStudiesListingEdge.e2e.spec.ts` (1440, 1024 a 768 px, údaje přidá jen do DOM). Dnes selže, přesah 13 až 28 px.
+
+### Poznámky bez chyby
+
+- V `CaseStudyMetrics` je `dd` před `dt`. HTML chce `dt` před `dd`. Stav je stejný jako na `master`.
+- Mé první spuštění e2e šlo bez `DATABASE_URL`, takže testy zapsaly testovacího uživatele do `robopipe_h9`. Výsledek toho běhu (7 selhání) jsem zahodil.
+
+### Automatické kontroly
+
+| Kontrola | Výsledek |
+|---|---|
+| `tsc --noEmit` | 0 chyb |
+| `eslint .` | 0 chyb, 2 stávající varování |
+| `next build` | OK (57 stránek), třikrát bez chyby spojení |
+| `test:int` | 125 prošlo, 2 selhaly (127, 23 souborů). Selhaly nové testy D1 a D2. Bez nového souboru 124/124, jen s přesným názvem fotky v databázi (D2). |
+| `test:e2e` | 92 prošlo, 5 selhalo (97). Selhaly 3 nové testy D3 a 2 známé testy. |
+
+Dvě známá selhání e2e jsou stejná jako v kole 1 a selhávají i na `master` `9371383` (část „Automatické kontroly“ výše):
+`blogFeaturedCard.e2e.spec.ts` „long unbroken title“ (`Expected <= 359, Received 749.6875`) a `seo-stage2.e2e.spec.ts` „every internal link … answers 200“ (404 na článek, který je jen v produkci).
+
+### Nové testy
+
+- `tests/int/caseStudiesListingEdge.int.spec.ts`: vypnuté `hideInListing` zůstane (D1), smazaný řádek 95 % (prošlo), přejmenovaný soubor fotky (D2).
+- `tests/e2e/caseStudiesListingEdge.e2e.spec.ts`: tři údaje s dlouhým slovem zůstanou v kartě (D3).
+
+### Screenshoty
+
+Složka `screens/test-round23/`:
+
+- `case-studies-{cs,en}-{1440,375}.jpg`: stránka Případy užití, cílový stav.
+- `case-studies-{cs,en}-{1440,375}-edge.jpg`: okrajové případy (bez fotky, bez údajů, jeden údaj, dlouhé texty).
+- `edge-cards-cs-1440.jpg`: karty bez fotky, s jedním údajem, se třemi údaji a případ jen v češtině.
+- `edge-three-results-cs-{1440,1024}.jpg`: chyba D3.
+- `detail-*-1440.jpg`, `detail-mg-servis-*-375.jpg`: detail Crocodille a MG Servis s údajem 95 % (cs, en, lokálně).
+- `home-{cs,en}-{1440,375}.jpg`, `home-cs-1440-transitions.jpg`: úvodní stránka a přechody sekcí.

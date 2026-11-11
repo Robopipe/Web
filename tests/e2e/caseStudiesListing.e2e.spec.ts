@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 
 /**
- * Case studies page, round 3 of docs/specs/9-home-comments (7.1 to 7.6).
+ * Case studies page, round 3 of docs/specs/9-home-comments (7.1 to 7.6) and the cleanup after it.
  * Needs a seeded local database (pnpm seed, then pnpm seed:seo-geo --status=published)
  * and a server at E2E_BASE_URL.
  */
@@ -60,10 +60,11 @@ for (const [locale, p] of Object.entries(PAGE)) {
       expect(first!.y).toBe(second!.y)
     })
 
-    test('7.7: the detail page still shows the 95% result', async ({ page }) => {
+    // Cleanup: Filip removed the 95% detection precision claim (11. 11.).
+    test('the detail page has no 95% result', async ({ page }) => {
       const response = await page.goto(p.detail)
       expect(response?.status()).toBe(200)
-      await expect(page.locator('main dl', { hasText: p.precision })).toHaveCount(1)
+      await expect(page.locator('main')).not.toContainText(/\b95\s?%/)
     })
   })
 }

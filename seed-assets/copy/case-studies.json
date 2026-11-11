@@ -15,7 +15,6 @@
     "body": "Crocodille produces fresh sandwiches and baguettes at 3,600 pieces per hour per line. Installing the camera raised production quality itself: operators see the quality of their work in real time on the floor display — and are evaluated on it. We showed the team how to label one product; every product since, they've added themselves.",
     "metrics": [
       { "value": "3,600", "label": "pieces / hour / line" },
-      { "value": "95%", "label": "detection precision" },
       { "value": "19", "label": "different checks per baguette" }
     ],
     "image": "tablet-line.png",
@@ -52,7 +51,6 @@
       "title": "Packaging quality checked 100% — without the cost of manual inspection.",
       "body": "Customers return products that aren't 100% — and human quality checks are expensive and never catch everything. Robopipe inspects every pack: seal tightness, beans properly wrapped in bacon, and no foreign objects inside the packaging.",
       "metrics": [
-        { "value": "95%", "label": "detection precision" },
         { "value": "5", "label": "different checks per pack" }
       ],
       "image": "inspection-detection.jpg",
