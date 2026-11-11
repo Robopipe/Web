@@ -20,10 +20,14 @@ export type ClickIdType = (typeof CLICK_PARAMS)[number]
 /** `at` is the ISO time of the landing. */
 export type ClickId = { v: 1; type: ClickIdType; id: string; at: string }
 
-/** Google keeps the case of the ID, so the code never changes the value. */
-const VALID_ID = /^[^\s;,"\\]{1,512}$/
+/**
+ * Google click IDs use only the base64url alphabet. Anything else (a NUL byte, a formula
+ * character, a quote) never reaches the cookie, the database or the export (B1, B2).
+ * Google keeps the case of the ID, so the code never changes the value.
+ */
+const VALID_ID = /^[A-Za-z0-9_-]{1,512}$/
 
-/** First of gclid, gbraid, wbraid in this order. Value 1 to 512 chars without whitespace, `;`, `,`, `"` or `\`. */
+/** First of gclid, gbraid, wbraid in this order. Value 1 to 512 chars of `A-Z`, `a-z`, `0-9`, `_` and `-`. */
 export const clickIdFromSearch = (search: string, now: Date = new Date()): ClickId | null => {
   const params = new URLSearchParams(search)
   for (const type of CLICK_PARAMS) {
@@ -57,7 +61,8 @@ export const parseClickId = (raw: string | null | undefined, now: Date): ClickId
     if (Number.isNaN(landed)) return null
     const age = now.getTime() - landed
     if (age < -CLOCK_SKEW_MS || age > CLICK_MAX_AGE_SECONDS * 1000) return null
-    return { v: CLICK_VERSION, type: type as ClickIdType, id, at }
+    // The database accepts only an ISO time, not every format that Date.parse reads (B3).
+    return { v: CLICK_VERSION, type: type as ClickIdType, id, at: new Date(landed).toISOString() }
   } catch {
     return null
   }

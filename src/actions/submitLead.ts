@@ -9,6 +9,7 @@ import {
   isGoogleAdsLead,
   type LeadAttribution,
 } from '@/lib/googleAds'
+import { createLeadWithAttribution } from '@/lib/leadStore'
 import { getPayloadClient } from '@/lib/queries'
 
 const leadSchema = z.object({
@@ -85,12 +86,7 @@ export async function submitLead(
       payload.logger.warn({ err: attributionError, msg: 'Lead attribution failed' })
     }
 
-    await payload.create({
-      collection: 'leads',
-      data: { ...lead, attribution },
-      overrideAccess: true,
-      context: { skipRevalidate: true },
-    })
+    const stored = await createLeadWithAttribution(payload, lead, attribution)
 
     const settings = await payload.findGlobal({ slug: 'site-settings', depth: 0 })
     const to = settings.leadNotificationEmail
@@ -122,7 +118,8 @@ export async function submitLead(
 
     let adsUserData: LeadFormState['adsUserData']
     try {
-      if (isGoogleAdsLead({ ...lead, attribution })) {
+      // The stored attribution decides, so the tag and the export always agree.
+      if (isGoogleAdsLead(stored)) {
         adsUserData = { sha256_email_address: hashEmail(lead.email) }
       }
     } catch (hashError) {
