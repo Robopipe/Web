@@ -107,6 +107,7 @@ type Args = {
   depth?: number
   draft?: boolean
   limit?: number
+  page?: number
   where?: Query
   fallbackLocale?: unknown
   data?: Record<string, unknown>
@@ -225,6 +226,7 @@ export const createRemoteClient = async ({
       depth: args.depth,
       draft: args.draft ? 'true' : undefined,
       limit: args.limit,
+      page: args.page,
       where: args.where,
       'fallback-locale': args.fallbackLocale === false ? 'none' : undefined,
     })
