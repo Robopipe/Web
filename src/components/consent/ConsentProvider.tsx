@@ -50,6 +50,9 @@ const trackContactClick = (event: MouseEvent) => {
   else if (href.startsWith('tel:')) trackEvent('contact_click', { method: 'phone' })
 }
 
+/** Tells other tabs of this site that `rp_consent` changed. The message carries no data. */
+const CONSENT_CHANNEL = 'rp_consent'
+
 /**
  * Cookie banner, settings dialog and the Google tag (issue #21). Renders nothing of its
  * own before the first effect, so the server HTML is the same for every visitor.
@@ -83,12 +86,30 @@ export const ConsentProvider: React.FC<Props> = ({ analyticsId, adsId, children 
     setChoice(next)
   }, [])
 
+  // Other open tabs keep their banner and their consent mode until they hear of a new choice.
+  // The cookie stays the only store (architecture R2): a message only says "read it again".
+  const channel = useRef<BroadcastChannel | null>(null)
+  useEffect(() => {
+    if (!enabled || typeof BroadcastChannel === 'undefined') return
+    const current = new BroadcastChannel(CONSENT_CHANNEL)
+    current.onmessage = () => {
+      const stored = parseConsent(readCookie(CONSENT_COOKIE))
+      if (stored) apply(stored)
+    }
+    channel.current = current
+    return () => {
+      current.close()
+      channel.current = null
+    }
+  }, [enabled, apply])
+
   const save = useCallback(
     (analytics: boolean, marketing: boolean) => {
       const next = createConsent(analytics, marketing)
       writeCookie(CONSENT_COOKIE, serializeConsent(next), CONSENT_MAX_AGE_SECONDS)
       apply(next)
       setSettingsOpen(false)
+      channel.current?.postMessage(null)
     },
     [apply],
   )

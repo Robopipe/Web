@@ -379,6 +379,35 @@ test('13: a choice saved in the settings dialog from the banner also moves focus
   await expect(page.locator('main')).toBeFocused()
 })
 
+test('6, 7: a choice in one tab reaches the other open tabs at once', async ({ context }) => {
+  const first = await context.newPage()
+  const second = await context.newPage()
+  for (const page of [first, second]) {
+    await page.route(/googletagmanager\.com|google-analytics\.com|doubleclick\.net/, (route) =>
+      route.abort(),
+    )
+    await page.goto(HOME.cs)
+    await expect(banner(page)).toBeVisible()
+  }
+
+  await banner(first).getByRole('button', { name: 'Přijmout vše' }).click()
+  await expect(banner(second)).toBeHidden()
+  await expect.poll(async () => (await lastConsent(second))[2].analytics_storage).toBe('granted')
+
+  await second.getByRole('button', { name: 'Nastavení cookies' }).click()
+  const dialog = second.getByRole('dialog', { name: 'Nastavení cookies' })
+  await dialog.getByRole('switch', { name: 'Analytika' }).click()
+  await dialog.getByRole('switch', { name: 'Marketing' }).click()
+  await dialog.getByRole('button', { name: 'Uložit volbu' }).click()
+  // The first tab stops measuring without a reload.
+  await expect.poll(async () => (await lastConsent(first))[2]).toEqual({
+    analytics_storage: 'denied',
+    ad_storage: 'denied',
+    ad_user_data: 'denied',
+    ad_personalization: 'denied',
+  })
+})
+
 test.describe('phone', () => {
   test.use({ viewport: { width: 390, height: 844 } })
 
