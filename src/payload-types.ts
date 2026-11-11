@@ -2450,6 +2450,19 @@ export interface SiteSetting {
      */
     seznam?: string | null;
   };
+  /**
+   * Google measurement. Empty = no Google tag and no cookie banner. Publish the cookie paragraph on the privacy page before you fill these.
+   */
+  measurement?: {
+    /**
+     * GA4 measurement ID, e.g. G-ABC123XYZ9.
+     */
+    googleAnalyticsId?: string | null;
+    /**
+     * Google Ads tag ID, e.g. AW-123456789. Used for remarketing.
+     */
+    googleAdsId?: string | null;
+  };
   defaultSeo?: {
     /**
      * Default meta title, also used as suffix: "Page — Robopipe".
@@ -2624,6 +2637,12 @@ export interface SiteSettingsSelect<T extends boolean = true> {
     | {
         bing?: T;
         seznam?: T;
+      };
+  measurement?:
+    | T
+    | {
+        googleAnalyticsId?: T;
+        googleAdsId?: T;
       };
   defaultSeo?:
     | T
