@@ -34,6 +34,7 @@ export const Hero: Block = {
       name: 'video',
       type: 'upload',
       relationTo: 'media',
+      localized: true,
       admin: { description: 'Looping full-width video below the copy (takes precedence over image).' },
     },
     {
