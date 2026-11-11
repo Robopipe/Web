@@ -5,7 +5,7 @@ import { cache } from 'react'
 import { routing, type Locale } from '@/i18n/routing'
 import type { Media, Page } from '@/payload-types'
 
-import { pathFor } from './paths'
+import { localeSwitchPaths, pathFor, type LocaleSwitchPaths } from './paths'
 
 /** Payload caches the instance internally — safe to call per request. */
 export const getPayloadClient = () => getPayload({ config })
@@ -204,6 +204,38 @@ export const getLocalizedSlugs = async (
   }
   return out
 }
+
+/**
+ * Language-switch map for `locale`, cached per request. The layout gives it to
+ * the footer switcher, so the server HTML already links to the translated slug.
+ * Includes noindex documents: they still have hreflang alternates.
+ */
+export const getLocaleSwitchPaths = cache(async (locale: Locale): Promise<LocaleSwitchPaths> => {
+  const payload = await getPayloadClient()
+  const collections = ['pages', 'posts', 'case-studies'] as const
+  const results = await Promise.all(
+    collections.map(async (collection) => {
+      const result = await payload.find({
+        collection,
+        locale: 'all',
+        depth: 0,
+        limit: 1000,
+        pagination: false,
+        select: { slug: true },
+        // Published documents only, as on the public pages.
+        overrideAccess: false,
+      })
+      return result.docs.map((doc) => {
+        const slugs: Partial<Record<Locale, string>> = {}
+        for (const [loc, value] of Object.entries((doc.slug ?? {}) as Record<string, unknown>)) {
+          if (typeof value === 'string' && value.length) slugs[loc as Locale] = value
+        }
+        return { collection, slugs }
+      })
+    }),
+  )
+  return localeSwitchPaths(locale, results.flat())
+})
 
 export const getRedirect = async (fromPath: string) => {
   const payload = await getPayloadClient()

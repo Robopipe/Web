@@ -44,6 +44,41 @@ export const localizedPaths = (
 export const sectionPaths = (section: '/blog' | '/case-studies'): Record<Locale, string> =>
   Object.fromEntries(locales.map((loc) => [loc, `/${loc}${section}`])) as Record<Locale, string>
 
+/** Paths of one page per locale, keyed by its path in the current locale. */
+export type LocaleSwitchPaths = Record<string, Partial<Record<Locale, string>>>
+
+/**
+ * Language-switch map for one locale: every public path in `locale` with its
+ * paths in the other locales (the same paths the pages give as hreflang).
+ * Section indexes are added here as they have no document of their own.
+ */
+export const localeSwitchPaths = (
+  locale: Locale,
+  docs: { collection: PreviewCollection; slugs: Partial<Record<Locale, string>> }[],
+): LocaleSwitchPaths => {
+  const all = [
+    sectionPaths('/blog'),
+    sectionPaths('/case-studies'),
+    ...docs.map((doc) => localizedPaths(doc.collection, doc.slugs)),
+  ]
+  const out: LocaleSwitchPaths = {}
+  for (const paths of all) {
+    const own = paths[locale]
+    if (own) out[own] = paths
+  }
+  return out
+}
+
+/**
+ * Switcher target for `pathname`: the page's own path in `target`. A page
+ * without a `target` version links to that locale's homepage, never to a 404.
+ */
+export const localeSwitchHref = (
+  paths: LocaleSwitchPaths,
+  pathname: string,
+  target: Locale,
+): string => paths[pathname.replace(/(.)\/+$/, '$1')]?.[target] ?? `/${target}`
+
 /**
  * hreflang map for one document. `x-default` is the English URL, never `/`:
  * the root only redirects, and a hreflang target must answer 200. Without an

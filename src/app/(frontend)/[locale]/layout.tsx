@@ -15,7 +15,8 @@ import { routing, type Locale } from '@/i18n/routing'
 import { organizationLd, websiteLd } from '@/lib/jsonLd'
 import { verificationMeta } from '@/lib/meta'
 import { SERVER_URL } from '@/lib/paths'
-import { getGlobals, getSolutionPages } from '@/lib/queries'
+import { getGlobals, getLocaleSwitchPaths, getSolutionPages } from '@/lib/queries'
+import { LocaleSwitchProvider } from '@/lib/useLocaleHref'
 
 import '../styles.css'
 
@@ -64,9 +65,10 @@ export default async function LocaleLayout({ children, params }: Props) {
   if (!hasLocale(routing.locales, locale)) notFound()
   setRequestLocale(locale)
 
-  const [{ header, footer, settings }, solutions] = await Promise.all([
+  const [{ header, footer, settings }, solutions, switchPaths] = await Promise.all([
     getGlobals(locale as Locale),
     getSolutionPages(locale as Locale),
+    getLocaleSwitchPaths(locale as Locale),
   ])
 
   return (
@@ -77,10 +79,12 @@ export default async function LocaleLayout({ children, params }: Props) {
       <body className="flex min-h-screen flex-col">
         <JsonLd data={[organizationLd(settings), websiteLd(settings, locale as Locale)]} />
         <NextIntlClientProvider>
-          <Header header={header} />
-          <main className="flex-1">{children}</main>
-          <Footer footer={footer} settings={settings} solutions={solutions} />
-          <LocaleSuggestion />
+          <LocaleSwitchProvider paths={switchPaths}>
+            <Header header={header} />
+            <main className="flex-1">{children}</main>
+            <Footer footer={footer} settings={settings} solutions={solutions} />
+            <LocaleSuggestion />
+          </LocaleSwitchProvider>
         </NextIntlClientProvider>
         <Analytics />
         <SpeedInsights />
