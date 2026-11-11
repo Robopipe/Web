@@ -164,7 +164,9 @@ export const createRemoteClient = async ({
   const url = parseRemoteUrl(baseUrl)
   const anonymous = !email && !password
   if (!anonymous && (!email || !password)) {
-    throw new Error('The REST client needs both email and password, or neither for anonymous reads.')
+    throw new Error(
+      'The REST client needs both email and password, or neither for anonymous reads.',
+    )
   }
   if (anonymous && !readOnly) {
     throw new Error('An anonymous REST client is read-only: pass readOnly: true or an account.')

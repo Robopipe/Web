@@ -26,7 +26,11 @@ export const PULL_COLLECTIONS = [
   'redirects',
 ] as const satisfies readonly CollectionSlug[]
 
-export const PULL_GLOBALS = ['header', 'footer', 'site-settings'] as const satisfies readonly GlobalSlug[]
+export const PULL_GLOBALS = [
+  'header',
+  'footer',
+  'site-settings',
+] as const satisfies readonly GlobalSlug[]
 
 const LOCALES = ['cs', 'en'] as const
 const PAGE_SIZE = 100
@@ -59,7 +63,16 @@ type Doc = Record<string, unknown>
 
 /** Fields that Payload sets itself. Media also loses the file fields: the upload makes them again. */
 const META = ['createdAt', 'updatedAt']
-const MEDIA_FILE = ['url', 'thumbnailURL', 'filename', 'filesize', 'width', 'height', 'mimeType', 'sizes']
+const MEDIA_FILE = [
+  'url',
+  'thumbnailURL',
+  'filename',
+  'filesize',
+  'width',
+  'height',
+  'mimeType',
+  'sizes',
+]
 
 export const stripMeta = (doc: Doc, collection: string): Doc => {
   const drop = new Set(collection === 'media' ? [...META, ...MEDIA_FILE] : META)
@@ -126,11 +139,7 @@ export const downloadCandidates = (doc: Doc): string[] => {
   return [doc.url as string, ...sizes.map((size) => size.url as string)].filter(Boolean)
 }
 
-const download = async (
-  doc: Doc,
-  dir: string,
-  log: (line: string) => void,
-): Promise<string> => {
+const download = async (doc: Doc, dir: string, log: (line: string) => void): Promise<string> => {
   const file = path.join(dir, path.basename(doc.filename as string))
   const failed: string[] = []
   for (const url of downloadCandidates(doc)) {
@@ -182,7 +191,8 @@ export const pullProduction = async (
         // Some production media miss the alt (a required field) in one locale. Alt is the
         // only localized media field, so that locale is not written and falls back.
         const locales = LOCALES.filter((l) => data[l] && (collection !== 'media' || data[l].alt))
-        if (!locales.length) throw new Error(`${collection} ${id}: no locale with the required fields`)
+        if (!locales.length)
+          throw new Error(`${collection} ${id}: no locale with the required fields`)
         if (collection === 'pages') pages.push({ id, ...data })
         const [first, ...rest] = locales
         await payload.create({
