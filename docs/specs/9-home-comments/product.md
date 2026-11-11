@@ -43,10 +43,30 @@ Karta „Kontrola etiket“ má ukazovat skutečný záběr z provozu, ne ilustr
 5.1 Změny platí pro `/cs` i `/en`. Ostatní stránky se nemění (kromě patičky, která je společná).
 5.2 Nic se nedostane do produkce bez Filipova pokynu. To platí i pro obsah v Payload (produkční databáze).
 
+## Kolo 2 (Filip 11. 11. 2026, 12:51)
+
+Filip: sekce „AI kontrola kvality, kterou zvládne váš vlastní tým“, „Postaveno pro váš obor“ a „Kontrola kvality
+ve výrobě podle úlohy“ jsou si podobné (mřížky karet) a jdou hned za sebou. Nepůsobí to hezky. Chce je rozložit
+po stránce.
+
+### Akceptační kritéria kola 2
+
+6.1 Pořadí úvodní stránky (cs i en): úvod s videem, loga zákazníků, „AI kontrola kvality, kterou zvládne váš
+    vlastní tým“, „AI kontrola v provozu za jediný den“ (tmavá sekce s čísly), „Postaveno pro váš obor“,
+    příběh zákazníka, „Kontrola kvality ve výrobě podle úlohy“, „Jsme součástí“, Z blogu a časté otázky, výzva k akci.
+6.2 Žádné dvě mřížky karet nejdou hned za sebou.
+6.3 Střídání pozadí sekcí zůstane čisté: žádné dvě sousední sekce nemají rušivý přechod (dvojitý okraj, dvojitá
+    mezera, stejné tmavé pozadí hned za sebou). Platí na 375 px i 1440 px.
+6.4 Skript obsahu nastaví pořadí idempotentně. Pořadí, které Filip ručně změnil v administraci, skript nepřepíše
+    (stejný princip jako u pruhu „Jsme součástí“).
+6.5 Texty a obsah sekcí se nemění. Ostatní kritéria kola 1 platí dál (pruh „Jsme součástí“ je za sekcí úloh
+    a před blogem).
+6.6 Chyby C1, C2 a C3 z `test-report.md` jsou opravené a mají testy.
+
 ## Mimo rozsah
 
 - Nové video na úvodní stránku (samostatný úkol).
-- Jiné úpravy textů a pořadí sekcí.
+- Jiné úpravy textů a pořadí sekcí (kromě kola 2).
 
 ## Vstupy
 
