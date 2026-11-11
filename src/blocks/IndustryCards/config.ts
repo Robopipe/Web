@@ -42,6 +42,7 @@ export const IndustryCards: Block = {
           name: 'image',
           type: 'upload',
           relationTo: 'media',
+          localized: true,
         },
         {
           name: 'title',
