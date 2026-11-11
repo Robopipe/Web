@@ -24,7 +24,7 @@ Poptávka s firemním e-mailem je hlavní konverze. Každý odeslaný formulář
 ## Scénáře
 
 1. Návštěvník klikne na reklamu, přijme cookies a odešle formulář s adresou novak@firma.cz.
-   Web uloží k poptávce značku kliknutí. Google Ads dostane do 24 hodin konverzi „firemní poptávka“.
+   Web uloží k poptávce značku kliknutí. Řádek je v exportu hned. Google Ads ukáže konverzi „firemní poptávka“ nejpozději za 3 dny.
 2. Stejný návštěvník s adresou novak@gmail.com. Poptávka se uloží, do Google Ads jako firemní poptávka nejde.
 3. Návštěvník odmítne cookies. Poptávka se uloží bez značky kliknutí. Web nepošle do Googlu otisk e-mailu.
    Poptávka do Google Ads nejde.
@@ -37,8 +37,8 @@ Poptávka s firemním e-mailem je hlavní konverze. Každý odeslaný formulář
    Značka se uloží jen se souhlasem pro reklamu (`ad_storage`).
 2. Značka kliknutí přežije přechod mezi stránkami od vstupu na web po odeslání formuláře.
    Bez souhlasu ji web nikam neukládá.
-3. Se souhlasem `ad_user_data` pošle web při odeslání formuláře do Google značky e-mail jako uživatelská data
-   (rozšířené konverze pro zájemce). Bez souhlasu nepošle nic. Čitelný e-mail neodchází v adrese ani v parametru události.
+3. Se souhlasem `ad_user_data` pošle web při odeslání formuláře do Google značky otisk e-mailu jako uživatelská data
+   (rozšířené konverze pro zájemce), jen u poptávky, která jde do exportu. Bez souhlasu nepošle nic. Čitelný e-mail neodchází v adrese ani v parametru události.
 4. Jedna funkce rozhoduje, jestli je e-mail firemní. Používá ji export i každé další místo. Má testy.
 5. Web vystavuje export firemních poptávek pro plánované nahrání v Google Ads, ve formátu, který Google Ads přijímá.
    Přednost má zdroj bez nového přístupu k API (soubor přes HTTPS s přihlášením, nebo Google tabulka). Rozhodne architekt.
