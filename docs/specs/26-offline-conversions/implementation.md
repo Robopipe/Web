@@ -162,3 +162,53 @@ Když Data Manager zdroj HTTPS odmítne (neověřené N1, HTTP Basic), platí z�
 1. Po prvním běhu otevřete Goals, Conversions, Uploads (nebo Tools, Data manager, připojení `robopipe.io company leads`). Stav běhu je bez chyby formátu.
 2. Odešlete zkušební poptávku se souhlasem, s firemní doménou a se jménem bez „TEST“. V Tag Assistant ověřte `form_submit` s uživatelskými daty. Poptávku potom smažte.
 3. Za 24 až 48 hodin je v Diagnostics akce `Firemni poptavka (import)` přijatý řádek.
+
+## Kolo 2
+
+Opravy chyb B1 až B5 ze zprávy testera (`test-report.md`, kapitola „Chyby“).
+
+### Co se změnilo
+
+- B1: `VALID_ID` v `src/lib/clickId.ts` povolí jen `A-Z`, `a-z`, `0-9`, `_` a `-`, délku 1 až 512 znaků. Bajt NUL, kontrolní znaky, znaky vzorce, apostrof a znaky mimo ASCII značka nemá. Nová funkce `createLeadWithAttribution` v `src/lib/leadStore.ts` uloží poptávku s atribucí. Když databáze uložení odmítne, uloží poptávku znovu bez atribuce a zapíše varování do logu. `submitLead` ji používá.
+- B1: o otisku pro značku Google rozhoduje uložená poptávka (`isGoogleAdsLead(stored)`). Značka a export proto vždy souhlasí. Poptávka uložená bez atribuce nemá souhlas s marketingem, takže otisk nedostane.
+- B2: `toCsv` dá apostrof před buňku, která začíná `=`, `+`, `-`, `@`, tabulátorem nebo `\r`. Order ID (`lead-…`), čas, otisk (hex) a skutečné značky Google začínají písmenem nebo číslicí, takže je ochrana nemění. Ověřeno na exportu z místní databáze: žádná buňka nezačíná těmito znaky, řádky jsou stejné jako v kole 1.
+- B3: `parseClickId` vrátí `at` jako `new Date(landed).toISOString()`.
+- B4: nové znění `AD_CONVERSION_PARAGRAPH` (níže). `seed:cookie-policy` nahradí starší verzi odstavce na stejném místě. Starší verzi pozná podle prvních slov. Bez této změny by stránka s textem z kola 1 dostala druhý odstavec.
+- B5: `FREE_EMAIL_DOMAINS` má domény z B5 a další veřejné služby: národní varianty Outlook, Hotmail, Live, Yahoo a GMX, `t-online.de`, `freenet.de`, `posteo.de`, `mailbox.org`, české a slovenské služby, Proton, Tuta, Zoho, Fastmail, polské a ruské služby (`mail.ru`, `yandex.ru` a další). Seznam je dál jen v `src/lib/leadEmail.ts`.
+- Testy: nové `round 2 (B1, B2, B5)` a `createLeadWithAttribution (criterion 11, B1)` v `tests/int/offlineConversions.int.spec.ts`. Druhý test uloží značku s bajtem NUL přímo přes funkci, kterou Postgres odmítne, a ověří, že poptávka je v databázi bez atribuce. Nový test náhrady odstavce v `tests/int/cookiePolicy.int.spec.ts`. Testy testera jsou beze změny.
+
+### Text B4 ke schválení (Filip)
+
+Odstavec jde hned za odstavec o marketingu. Text je bez hvězdiček.
+
+**cs**
+
+Když přijdete z naší reklamy Google Ads a dáte souhlas s marketingem, uložíme značku kliknutí do cookie rp_click na 90 dní. Když odešlete poptávku z firemní e-mailové adresy a máte souhlas s marketingem, předáme Googlu otisk e-mailu (SHA-256), čas odeslání a značku kliknutí, pokud ji máme. To platí i tehdy, když jste na web nepřišli z reklamy. Značku kliknutí a vaši volbu cookies uložíme také k poptávce. Google z těchto údajů zjistí, která reklama poptávku přinesla. Čitelný e-mail Googlu nepředáváme. Bez souhlasu s marketingem nepředáme nic.
+
+**en**
+
+When you come from our Google Ads ad and consent to marketing, we store the click ID in the cookie rp_click for 90 days. When you send an inquiry from a company email address and you consent to marketing, we give Google a hash of the email (SHA-256), the time you sent it and the click ID, if we have it. This also applies when you did not come from an ad. We also store the click ID and your cookie choice with the inquiry. Google uses this data to find out which ad brought the inquiry. We never give Google the readable email. Without consent to marketing, we give Google nothing.
+
+Text musí být na produkci dřív, než Arthur nastaví plán v Google Ads.
+
+### Odchylky
+
+1. Délka značky zůstává 1 až 512 znaků jako v architektuře. Testy kola 1 tuto mez ověřují.
+2. Ochrana v `toCsv` má navíc `-` (OWASP), tester ho v B2 neuvedl. Značka Google, která by začínala `-`, by dostala apostrof a nespárovala by se. Skutečné značky začínají písmenem nebo číslicí (`Cj0K…`, `EAIa…`, `0AAA…`), proto je riziko malé.
+3. Záložní uložení ukládá poptávku bez celé skupiny `attribution`, i bez stavu souhlasu. Chybu může způsobit kterékoli pole skupiny, proto kód neukládá žádné.
+4. Odstavec B4 přidává větu „To platí i tehdy, když jste na web nepřišli z reklamy.“ Ta výslovně pokrývá scénář 4. Architektura (kapitola 15) má stále text z kola 1. Platí text v `src/seed/cookiePolicy.ts`.
+
+### Výsledky kontrol
+
+| Kontrola | Výsledek |
+| --- | --- |
+| `tsc --noEmit` | 0 chyb |
+| `pnpm lint` | 0 chyb, 2 starší varování |
+| `pnpm test:int` | 29 souborů, 256 testů prošlo, z toho B1 až B3 testera |
+| `pnpm build` | prošel |
+| `pnpm test:e2e` | 150 prošlo, 2 starší selhání (`blogFeaturedCard … long unbroken title`, `seo-stage2 … answers 200`). `offlineConversions.e2e.spec.ts` včetně testu B1 prošel celý |
+| `seed:cookie-policy` místně | náhled 2 změny („replaced with the current text“), ostré spuštění 2 změny, druhý náhled 0 změn. Vykreslené stránky cs a en mají nový text |
+
+### Co nešlo ověřit
+
+Body 1 až 6 z kapitoly „Co místně nešlo ověřit“ ve zprávě testera platí dál. Znění B4 čeká na schválení.
