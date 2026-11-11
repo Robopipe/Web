@@ -20,11 +20,11 @@ const doc = (
 const docs: IndexableDoc[] = [
   doc(
     'pages',
-    ['/cs/strojove-videni', 'Strojové vidění'],
-    ['/en/machine-vision', 'Machine vision'],
+    ['/cs/kontrola-etiket', 'Kontrola etiket'],
+    ['/en/label-inspection', 'Label inspection'],
   ),
   doc('pages', ['/cs', 'Úvod'], ['/en', 'Home']),
-  doc('pages', ['/cs/ai-kontrola-kvality', 'AI kontrola kvality'], null),
+  doc('pages', ['/cs/detekce-vad-na-vyrobni-lince', 'Detekce vad na výrobní lince'], null),
   doc('case-studies', ['/cs/case-studies/a', 'Studie A'], ['/en/case-studies/a', 'Study A']),
   doc('posts', null, ['/en/blog/p', 'Post']),
 ]
@@ -34,6 +34,8 @@ const text = buildLlmsTxt(docs, {
   descriptions: { cs: 'Česky.', en: 'English.' },
   contactEmail: 'info@example.com',
   phone: '+420 1',
+  legalName: 'robopipe s.r.o.',
+  companyId: '24111791',
 })
 
 describe('buildLlmsTxt', () => {
@@ -46,9 +48,9 @@ describe('buildLlmsTxt', () => {
     expect(pages).toEqual([
       `- [Úvod](${SERVER_URL}/cs): Úvod popis`,
       `- [Home](${SERVER_URL}/en)`,
-      `- [AI kontrola kvality](${SERVER_URL}/cs/ai-kontrola-kvality): AI kontrola kvality popis`,
-      `- [Strojové vidění](${SERVER_URL}/cs/strojove-videni): Strojové vidění popis`,
-      `- [Machine vision](${SERVER_URL}/en/machine-vision)`,
+      `- [Detekce vad na výrobní lince](${SERVER_URL}/cs/detekce-vad-na-vyrobni-lince): Detekce vad na výrobní lince popis`,
+      `- [Kontrola etiket](${SERVER_URL}/cs/kontrola-etiket): Kontrola etiket popis`,
+      `- [Label inspection](${SERVER_URL}/en/label-inspection)`,
     ])
   })
 
@@ -57,6 +59,14 @@ describe('buildLlmsTxt', () => {
       `## Případy užití / Use cases\n- [Studie A](${SERVER_URL}/cs/case-studies/a)`,
     )
     expect(text).toContain(`## Blog\n- [Post](${SERVER_URL}/en/blog/p)`)
-    expect(text).toContain('## Kontakt / Contact\n- info@example.com, +420 1')
+    expect(text).toContain(
+      '## Kontakt / Contact\n- robopipe s.r.o., IČO 24111791\n- info@example.com, +420 1',
+    )
+  })
+
+  it('leaves the company line out without company facts', () => {
+    const bare = buildLlmsTxt(docs, { descriptions: {}, contactEmail: 'info@example.com' })
+    expect(bare).toContain('## Kontakt / Contact\n- info@example.com\n')
+    expect(bare).not.toContain('IČO')
   })
 })

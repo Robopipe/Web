@@ -40,11 +40,17 @@ export const organizationLd = (settings: SiteSetting): JsonLdObject => {
       logo: ogImageUrl(m.logo),
     }),
   )
+  const company = settings.company
   return compact({
     '@context': CONTEXT,
     '@type': 'Organization',
     '@id': ORGANIZATION_ID,
     name: settings.siteName,
+    legalName: company?.legalName,
+    description: settings.defaultSeo?.description,
+    identifier: company?.companyId
+      ? { '@type': 'PropertyValue', propertyID: 'IČO', value: company.companyId }
+      : undefined,
     url: SERVER_URL,
     logo: absoluteUrl('/logo.svg'),
     email: settings.contactEmail,

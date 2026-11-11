@@ -56,15 +56,35 @@ Integration tests stop when `DATABASE_URL` is not localhost (`vitest.setup.ts`).
 
 ## SEO and GEO content script
 
-The landing pages, the auto annotation page, the case study sections, FAQs, home page blocks, navigation, memberships and the auto annotation blog draft live as files in `seed-assets/copy/seo-geo/`. `pnpm seed` applies them to a fresh local database. `pnpm seed:seo-geo` applies them to an existing one:
+The landing, task and about pages, the case study sections, FAQs, home page blocks, navigation, memberships, solutions, company facts, pricing FAQs, the vision guide changes and the auto annotation blog draft live as files in `seed-assets/copy/seo-geo/`. `pnpm seed` applies them to a fresh local database. `pnpm seed:seo-geo` applies them to an existing one:
 
 ```bash
 pnpm seed:seo-geo --dry-run             # list planned changes only
 pnpm seed:seo-geo                       # drafts only, published content and globals unchanged
-pnpm seed:seo-geo --status=published    # publish pages, case studies and globals
+pnpm seed:seo-geo --status=published    # publish pages, case studies, posts and globals
 ```
 
-The script is idempotent: it finds existing documents and never overwrites a field that has a value. The blog post always stays a draft. It refuses a `DATABASE_URL` outside localhost unless you pass `--production`. Production steps are in `docs/specs/2-seo-geo/implementation.md`.
+The script is idempotent: it finds existing documents and never overwrites a field that has a value. The blog post always stays a draft. It refuses a `DATABASE_URL` outside localhost unless you pass `--production`. Production steps are in `docs/specs/2-seo-geo/implementation.md` and `docs/specs/6-seo-geo-stage2/implementation.md`.
+
+| File | Content |
+|---|---|
+| `landing-pages.json`, `landing-<key>.cs.md`, `landing-<key>.md` | Solution, task and about pages. An existing page gets only the blocks it does not have yet (by block `id`). `obsolete` lists stage 1 slugs the script reports but never deletes. |
+| `faqs.json` | All FAQs. Every key is used by a page, a case study or the pricing page. |
+| `settings.json` | `site-settings.solutions` (page keys in display order) and `site-settings.company`. Written only while empty. |
+| `existing-pages.json` | Additions to existing content: pricing FAQs, and the first H2, `seo.title` and one paragraph of the vision guide (changed only from the exact current value). |
+| `home.json`, `navigation.json` | Home page blocks, header label, footer about link, the stage 1 footer column to remove. |
+
+**Copy markers.** A document whose text still contains `[doplnit Filip]` or `[ověřit]` is never published. It stays a draft and the report says `draft (markers): <document>`.
+
+**Through the REST API.** `--remote=<URL>` runs the same script against a running site through the Payload REST API, without database access. The account comes from `SEED_REMOTE_EMAIL` and `SEED_REMOTE_PASSWORD` (an editor role is enough). `--dry-run` is read-only: the client refuses every write before it is sent. An HTTP error stops the run with the method, path, status and error text.
+
+```bash
+SEED_REMOTE_EMAIL=… SEED_REMOTE_PASSWORD=… pnpm seed:seo-geo --remote=http://localhost:3000 --dry-run
+```
+
+## Search engine verification
+
+The Bing (`msvalidate.01`) and Seznam (`seznam-wmt`) verification tags come from **Site settings → Verification**. An empty value renders no tag. A change through the admin or `POST /api/globals/site-settings` (Payload uses POST for globals) shows on every page without a deploy. The content script never writes these values.
 
 ## AI-generated blog posts
 

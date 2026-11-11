@@ -35,4 +35,4 @@ Když návrh nesedí, napíšete Robopipe Vision, co je špatně. Anotace probě
 
 Pro automatickou anotaci můžete použít offline model. Případně Robopipe nasadí celé řešení přímo u vás (on-premise). Automatická anotace je v tarifech [Pro a Enterprise](/cs/cenik). Open-source verze ani tarif Standard ji neobsahují.
 
-Podrobný popis najdete na stránce [automatická anotace](/cs/automaticka-anotace). Jak z označených snímků vznikne kontrola na lince, popisuje stránka [AI kontrola kvality](/cs/ai-kontrola-kvality).
+Podrobný popis najdete na stránce [automatická anotace](/cs/automaticka-anotace). Jak z označených snímků vznikne kontrola na lince, popisuje stránka [kamerová kontrola kvality](/cs/kamerova-kontrola-kvality).

@@ -1,0 +1,1 @@
+Česky se computer vision říká počítačové vidění. Oba názvy označují stejný obor, v textech o výrobě se používají oba. Jak strojové vidění vypadá v provozu na lince, ukazuje stránka [kamerová kontrola kvality](/cs/kamerova-kontrola-kvality).

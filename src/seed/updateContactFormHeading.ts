@@ -32,7 +32,10 @@ for (const locale of ['cs', 'en'] as const) {
   for (const page of docs) {
     let previous: string | undefined
     const layout = (page.layout ?? []).map((block) => {
-      if (block.blockType !== 'contactForm' || !(from as readonly string[]).includes(block.heading ?? ''))
+      if (
+        block.blockType !== 'contactForm' ||
+        !(from as readonly string[]).includes(block.heading ?? '')
+      )
         return block
       previous = block.heading ?? ''
       return { ...block, heading: to }

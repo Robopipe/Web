@@ -17,11 +17,26 @@ export const PricingTable: Block = {
       localized: true,
     },
     {
+      name: 'source',
+      type: 'select',
+      defaultValue: 'custom',
+      options: [
+        { label: 'Tiers below', value: 'custom' },
+        { label: 'Pricing page', value: 'pricingPage' },
+      ],
+      admin: {
+        description: 'Pricing page shows the tiers of the pricing page, so prices have one source.',
+      },
+    },
+    {
       name: 'tiers',
       type: 'array',
-      required: true,
-      minRows: 1,
       maxRows: 4,
+      admin: { condition: (_, sibling) => sibling?.source !== 'pricingPage' },
+      validate: (value: unknown, { siblingData }: { siblingData: Record<string, unknown> }) =>
+        siblingData?.source === 'pricingPage' || (Array.isArray(value) && value.length > 0)
+          ? true
+          : 'Add at least one tier.',
       fields: [
         {
           name: 'name',
@@ -33,7 +48,10 @@ export const PricingTable: Block = {
           name: 'tagline',
           type: 'text',
           localized: true,
-          admin: { description: 'One-liner under the name, e.g. "Prove it on one camera before you scale."' },
+          admin: {
+            description:
+              'One-liner under the name, e.g. "Prove it on one camera before you scale."',
+          },
         },
         {
           name: 'price',
@@ -52,7 +70,9 @@ export const PricingTable: Block = {
           name: 'subNote',
           type: 'text',
           localized: true,
-          admin: { description: 'Billing note, e.g. "3-month minimum · hardware rental included".' },
+          admin: {
+            description: 'Billing note, e.g. "3-month minimum · hardware rental included".',
+          },
         },
         {
           name: 'featuresLeadIn',

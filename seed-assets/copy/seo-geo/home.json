@@ -1,4 +1,12 @@
 {
+  "hero": {
+    "eyebrow": {
+      "cs": {
+        "replaceIf": "Průmyslové strojové vidění",
+        "value": "Průmyslové strojové vidění (machine vision)"
+      }
+    }
+  },
   "seo": {
     "cs": {
       "description": "Kamerová a AI kontrola kvality pro potravinářství, farmacii, retail i logistiku. Kamera IP67, trénink svépomocí a živý přehled na hale.",
@@ -69,6 +77,17 @@
         ]
       ],
       "button": "How auto annotation works"
+    }
+  },
+  "solutions": {
+    "blockName": "seo-geo-solutions",
+    "cs": {
+      "heading": "Kontrola kvality ve výrobě podle úlohy",
+      "text": "Jedna AI kamera nad linkou, různé úlohy. Vyberte tu, kterou řešíte."
+    },
+    "en": {
+      "heading": "Quality control in production, by task",
+      "text": "One AI camera over the line, many tasks. Pick the one you need."
     }
   }
 }

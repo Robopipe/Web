@@ -35,4 +35,4 @@ When a proposal is off, tell Robopipe Vision what went wrong. It runs again and 
 
 You can use an offline model for auto annotation. Alternatively, Robopipe can deploy the whole solution at your site (on-premise). Auto annotation is part of the [Pro and Enterprise](/en/pricing) plans. The open-source edition and the Standard plan do not include it.
 
-The [auto annotation](/en/auto-annotation) page has the full description. The [AI quality inspection](/en/ai-quality-inspection) page shows how labelled images become inspection on the line.
+The [auto annotation](/en/auto-annotation) page has the full description. The [camera quality inspection](/en/camera-quality-inspection) page shows how labelled images become inspection on the line.

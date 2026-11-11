@@ -167,10 +167,7 @@ export const CS_COPY_FIXES: [string, string][] = [
     'Nasazení napříč závody, zapojené do vašich systémů.',
     'Nasazení napříč závody, napojené na vaše systémy.',
   ],
-  [
-    'objemové ceny · vyhrazený success manažer',
-    'množstevní ceny · vyhrazená kontaktní osoba',
-  ],
+  ['objemové ceny · vyhrazený success manažer', 'množstevní ceny · vyhrazená kontaktní osoba'],
   ['Vše z plánu Pro a navíc', 'Vše z tarifu Pro a navíc'],
   ['Integrace ERP a MES', 'Napojení na ERP a MES'],
   [
@@ -483,14 +480,8 @@ export const EN_COPY_FIXES: [string, string][] = [
   // pricing hero selling tireless AI labor instead of scaling cost.
   // The "your own team trains" claim pair was removed on 2026-11-10, see the
   // Czech list above.
-  [
-    "Let's put a camera on your process.",
-    "Let's put a camera in your operation.",
-  ],
-  [
-    'Pricing that scales with your operation.',
-    'Hire AI that never sleeps.',
-  ],
+  ["Let's put a camera on your process.", "Let's put a camera in your operation."],
+  ['Pricing that scales with your operation.', 'Hire AI that never sleeps.'],
 ]
 
 /**

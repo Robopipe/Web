@@ -26,4 +26,4 @@ If the feedback is a rule for the whole project, Robopipe Vision saves it as a p
 
 ## Where annotation fits
 
-Labelled images are the basis of [AI quality inspection](/en/ai-quality-inspection). The sooner you have them, the sooner [camera quality inspection](/en/camera-quality-inspection) can start on your line.
+Labelled images are the basis of [AI quality inspection](/en). The sooner you have them, the sooner [camera quality inspection](/en/camera-quality-inspection) can start on your line.

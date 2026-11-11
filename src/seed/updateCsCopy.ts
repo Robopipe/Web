@@ -81,7 +81,10 @@ const makeDict = (pairs: [string, string][]): Map<string, string> => {
 }
 
 /** Replace exact full-string matches anywhere in the value. Returns a copy. */
-const applyDict = (value: unknown, dict: Map<string, string>): { value: unknown; count: number } => {
+const applyDict = (
+  value: unknown,
+  dict: Map<string, string>,
+): { value: unknown; count: number } => {
   let count = 0
   const walk = (v: unknown): unknown => {
     if (typeof v === 'string') {
@@ -95,7 +98,9 @@ const applyDict = (value: unknown, dict: Map<string, string>): { value: unknown;
     }
     if (Array.isArray(v)) return v.map(walk)
     if (v && typeof v === 'object') {
-      return Object.fromEntries(Object.entries(v as Record<string, unknown>).map(([k, val]) => [k, walk(val)]))
+      return Object.fromEntries(
+        Object.entries(v as Record<string, unknown>).map(([k, val]) => [k, walk(val)]),
+      )
     }
     return v
   }
@@ -153,24 +158,49 @@ const run = async (): Promise<void> => {
   }
 
   // --- Collections, cs locale ---
-  await updateCollection('pages', ['title', 'layout', 'seo'], { locale: 'cs', dict: CS, versioned: true })
+  await updateCollection('pages', ['title', 'layout', 'seo'], {
+    locale: 'cs',
+    dict: CS,
+    versioned: true,
+  })
   await updateCollection('faqs', ['question', 'answer'], { locale: 'cs', dict: CS })
   await updateCollection('testimonials', ['quote', 'personRole'], { locale: 'cs', dict: CS })
-  await updateCollection('case-studies', ['title', 'excerpt', 'metrics'], { locale: 'cs', dict: CS, versioned: true })
-  await updateCollection('posts', ['title', 'excerpt', 'ctaHeadline', 'seo'], { locale: 'cs', dict: CS, versioned: true })
+  await updateCollection('case-studies', ['title', 'excerpt', 'metrics'], {
+    locale: 'cs',
+    dict: CS,
+    versioned: true,
+  })
+  await updateCollection('posts', ['title', 'excerpt', 'ctaHeadline', 'seo'], {
+    locale: 'cs',
+    dict: CS,
+    versioned: true,
+  })
 
   // --- Pages, en locale (privacy hosting fix + mirrored copy rounds) ---
-  await updateCollection('pages', ['title', 'layout', 'seo'], { locale: 'en', dict: EN, versioned: true })
+  await updateCollection('pages', ['title', 'layout', 'seo'], {
+    locale: 'en',
+    dict: EN,
+    versioned: true,
+  })
 
   // --- Blog post bodies (cs) regenerated from the updated markdown ---
-  const { docs: posts } = await payload.find({ collection: 'posts', locale: 'cs', depth: 0, limit: 50, draft: false })
+  const { docs: posts } = await payload.find({
+    collection: 'posts',
+    locale: 'cs',
+    depth: 0,
+    limit: 50,
+    draft: false,
+  })
   for (const post of posts) {
     const base = POST_MD[post.slug ?? '']
     if (!base) {
       log(`posts#${post.id}: no seed markdown for slug "${post.slug}" — content left as is`)
       continue
     }
-    const md = fs.readFileSync(path.resolve(process.cwd(), 'seed-assets', 'copy', `post-${base}.cs.md`), 'utf8')
+    const md = fs.readFileSync(
+      path.resolve(process.cwd(), 'seed-assets', 'copy', `post-${base}.cs.md`),
+      'utf8',
+    )
     await payload.update({
       collection: 'posts',
       id: post.id,
@@ -190,12 +220,22 @@ const run = async (): Promise<void> => {
   })
   for (const cat of categories) {
     if (cat.title === 'Technologie') continue
-    await payload.update({ collection: 'categories', id: cat.id, locale: 'cs', data: { title: 'Technologie' } })
+    await payload.update({
+      collection: 'categories',
+      id: cat.id,
+      locale: 'cs',
+      data: { title: 'Technologie' },
+    })
     log(`categories#${cat.id} (cs): "${cat.title}" → "Technologie"`)
   }
 
   // --- Media alt texts: Czech to cs, original English to en ---
-  const { docs: media } = await payload.find({ collection: 'media', locale: 'cs', depth: 0, limit: 200 })
+  const { docs: media } = await payload.find({
+    collection: 'media',
+    locale: 'cs',
+    depth: 0,
+    limit: 200,
+  })
   for (const doc of media) {
     const base = (doc.filename ?? '').replace(/-\d+(\.[a-z0-9]+)$/i, '$1')
     const czech = MEDIA_ALT_CS[base]
@@ -212,7 +252,12 @@ const run = async (): Promise<void> => {
     })
     if (!enDoc.alt) {
       const english = doc.alt !== czech ? doc.alt : czech
-      await payload.update({ collection: 'media', id: doc.id, locale: 'en', data: { alt: english } })
+      await payload.update({
+        collection: 'media',
+        id: doc.id,
+        locale: 'en',
+        data: { alt: english },
+      })
       log(`media#${doc.id} (en): alt set to "${english}"`)
     }
     if (doc.alt !== czech) {
@@ -222,10 +267,19 @@ const run = async (): Promise<void> => {
   }
 
   // --- Globals (cs + en) ---
-  for (const [locale, dict] of [['cs', CS], ['en', EN]] as const) {
+  for (const [locale, dict] of [
+    ['cs', CS],
+    ['en', EN],
+  ] as const) {
     for (const slug of ['header', 'footer', 'site-settings'] as const) {
       const globalDoc = await payload.findGlobal({ slug, locale, depth: 0 })
-      const { id: _id, globalType: _g, createdAt: _c, updatedAt: _u, ...data } = globalDoc as unknown as Record<string, unknown>
+      const {
+        id: _id,
+        globalType: _g,
+        createdAt: _c,
+        updatedAt: _u,
+        ...data
+      } = globalDoc as unknown as Record<string, unknown>
       const { value, count } = applyDict(data, dict)
       if (count === 0) continue
       await payload.updateGlobal({ slug, locale, data: value as Record<string, unknown> })

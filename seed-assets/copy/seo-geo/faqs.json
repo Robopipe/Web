@@ -49,146 +49,6 @@
       "a": "Yes. The model judges images on the controller at the line, so inspection also works offline."
     }
   },
-  "aqi-data-scientists": {
-    "cs": {
-      "q": "Potřebujeme k AI kontrole kvality datové vědce?",
-      "a": "Ne. Průvodce vás provede nasnímáním, označením i tréninkem modelu. Strojové učení znát nepotřebujete."
-    },
-    "en": {
-      "q": "Do we need data scientists for AI quality inspection?",
-      "a": "No. A wizard guides you through capturing, labelling and training. You do not need to know machine learning."
-    }
-  },
-  "aqi-samples": {
-    "cs": {
-      "q": "Kolik snímků potřebujeme na začátek?",
-      "a": "Na začátek stačí několik správných kusů. Ukážete je kameře, potvrdíte, jak má vypadat kus v pořádku, a kontrola může začít."
-    },
-    "en": {
-      "q": "How many images do we need to start?",
-      "a": "A few good pieces are enough to start. Show them to the camera, confirm what a good piece looks like and inspection can start."
-    }
-  },
-  "aqi-change": {
-    "cs": {
-      "q": "Co když se změní produkt nebo receptura?",
-      "a": "Přidáte nové snímky a model přetrénujete. Tarif Standard má 5 tréninků modelu měsíčně, tarify Pro a Enterprise neomezeně."
-    },
-    "en": {
-      "q": "What if the product or recipe changes?",
-      "a": "Add new images and retrain the model. The Standard plan includes 5 model trainings a month, Pro and Enterprise are unlimited."
-    }
-  },
-  "aqi-vs-rules": {
-    "cs": {
-      "q": "Jaký je rozdíl mezi AI kontrolou a klasickým strojovým viděním?",
-      "a": "Klasické strojové vidění kontroluje podle nastavených pravidel. AI kontrola se učí z označených snímků, takže zvládne i výrobky, které vypadají pokaždé trochu jinak."
-    },
-    "en": {
-      "q": "How does AI inspection differ from classic machine vision?",
-      "a": "Classic machine vision checks against rules that someone sets. AI inspection learns from labelled images, so it also handles products that look a little different every time."
-    }
-  },
-  "aqi-rollback": {
-    "cs": {
-      "q": "Můžeme se vrátit ke staršímu modelu?",
-      "a": "Ano. Datasety, anotace, konfigurace i váhy modelu jsou verzované. K předchozímu modelu se vrátíte jedním kliknutím."
-    },
-    "en": {
-      "q": "Can we go back to an older model?",
-      "a": "Yes. Datasets, annotations, configurations and model weights are versioned. You roll back to the previous model with one click."
-    }
-  },
-  "cv-vs-machine-vision": {
-    "cs": {
-      "q": "Jaký je rozdíl mezi počítačovým a strojovým viděním?",
-      "a": "Počítačové vidění je obecný obor, který učí počítač rozumět obrazu. Strojové vidění je jeho průmyslové použití: kamera na lince, vyhodnocení v taktu výroby a napojení na stroje."
-    },
-    "en": {
-      "q": "What is the difference between computer vision and machine vision?",
-      "a": "Computer vision is the general field that teaches computers to understand images. Machine vision is its industrial use: a camera on the line, a verdict at line speed and a connection to machines."
-    }
-  },
-  "cv-tasks": {
-    "cs": {
-      "q": "Co počítačové vidění umí ve výrobě?",
-      "a": "Nejčastěji tři úlohy: klasifikaci (OK nebo NOK), detekci objektů (vady, cizí předměty) a počítání kusů. Z nich se skládají konkrétní kontroly."
-    },
-    "en": {
-      "q": "What can computer vision do in manufacturing?",
-      "a": "Mostly three tasks: classification (OK or NOK), object detection (defects, foreign objects) and counting. Specific checks are built from them."
-    }
-  },
-  "cv-gpu": {
-    "cs": {
-      "q": "Potřebujeme vlastní server s GPU?",
-      "a": "Ne. Model běží na řídicí jednotce AI PLC u linky. Trénovat můžete na jednotce nebo ve vlastní infrastruktuře."
-    },
-    "en": {
-      "q": "Do we need our own GPU server?",
-      "a": "No. The model runs on the AI PLC controller at the line. You can train on the controller or on your own infrastructure."
-    }
-  },
-  "cv-open-source": {
-    "cs": {
-      "q": "Je Robopipe open source?",
-      "a": "Ano. Open-source variantu si provozujete na vlastní infrastruktuře, běží i na Raspberry Pi. Podporu poskytuje komunita na GitHubu."
-    },
-    "en": {
-      "q": "Is Robopipe open source?",
-      "a": "Yes. You run the open-source edition on your own infrastructure, and it even runs on a Raspberry Pi. The community provides support on GitHub."
-    }
-  },
-  "mv-plc": {
-    "cs": {
-      "q": "Napojí se Robopipe na naše PLC?",
-      "a": "Ano. Řídicí jednotka AI PLC má analogové i digitální vstupy a výstupy, RS485/RS232, Modbus a EtherCAT po Ethernetu."
-    },
-    "en": {
-      "q": "Does Robopipe connect to our PLC?",
-      "a": "Yes. The AI PLC controller has analogue and digital I/O, RS485/RS232, Modbus and EtherCAT over Ethernet."
-    }
-  },
-  "mv-erp": {
-    "cs": {
-      "q": "Napojíte Robopipe na naše ERP nebo MES?",
-      "a": "Ano, v tarifu Enterprise. Robopipe propojíme s vaším ERP i MES přes Modbus, EtherCAT nebo Ethernet."
-    },
-    "en": {
-      "q": "Can you connect Robopipe to our ERP or MES?",
-      "a": "Yes, on the Enterprise plan. We connect Robopipe to your ERP and MES over Modbus, EtherCAT or Ethernet."
-    }
-  },
-  "mv-integrator": {
-    "cs": {
-      "q": "Potřebujeme k nasazení integrátora?",
-      "a": "Ne. V tarifech Pro a Enterprise kameru namontujeme a zprovozníme sami přímo u vás. Nové produkty pak přidáváte sami v aplikaci Studio."
-    },
-    "en": {
-      "q": "Do we need an integrator?",
-      "a": "No. On the Pro and Enterprise plans we mount and commission the camera on site ourselves. You then add new products yourself in the Studio app."
-    }
-  },
-  "mv-vs-classic": {
-    "cs": {
-      "q": "Čím se Robopipe liší od klasických systémů strojového vidění?",
-      "a": "Klasické systémy kontrolují podle pravidel. Robopipe se učí ze snímků vašich výrobků, takže nový produkt přidáte bez psaní pravidel."
-    },
-    "en": {
-      "q": "How is Robopipe different from classic machine vision systems?",
-      "a": "Classic systems check against rules. Robopipe learns from images of your products, so you add a new product without writing rules."
-    }
-  },
-  "mv-wet": {
-    "cs": {
-      "q": "Funguje to i v mokrém nebo prašném provozu?",
-      "a": "Ano. Kameru namontujeme i v mokrém, chladném nebo prašném provozu. Má krytí IP67 a vydrží tlakové mytí."
-    },
-    "en": {
-      "q": "Does it work in wet or dusty operations?",
-      "a": "Yes. We mount the camera in wet, cold or dusty operations too. It is IP67 rated and handles pressure washing."
-    }
-  },
   "aa-what": {
     "cs": {
       "q": "Co automatická anotace umí?",
@@ -327,6 +187,176 @@
     "en": {
       "q": "Which plans include auto annotation?",
       "a": "Auto annotation is part of the Pro and Enterprise plans. The open-source edition and the Standard plan do not include it."
+    }
+  },
+  "dd-new-defect": {
+    "cs": {
+      "q": "Co když se objeví nová vada?",
+      "a": "Přidáte snímky nové vady a model přetrénujete. Tarif Standard má 5 tréninků modelu měsíčně, tarify Pro a Enterprise neomezeně."
+    },
+    "en": {
+      "q": "What if a new defect appears?",
+      "a": "You add images of the new defect and retrain the model. The Standard plan has 5 model trainings a month, the Pro and Enterprise plans have no limit."
+    }
+  },
+  "dd-speed": {
+    "cs": {
+      "q": "Zpomalí detekce vad linku?",
+      "a": "Ne. Kamera se montuje nad stávající pás a linka nepotřebuje žádný mechanický krok navíc. Rychlost vyhodnocení popisuje stránka [kamerová kontrola kvality](/cs/kamerova-kontrola-kvality)."
+    },
+    "en": {
+      "q": "Does defect detection slow the line down?",
+      "a": "No. The camera mounts over your existing belt and the line needs no extra mechanical step. The [camera quality inspection](/en/camera-quality-inspection) page gives the inspection speed."
+    }
+  },
+  "dd-training": {
+    "cs": {
+      "q": "Co potřebujeme, aby se model vady naučil?",
+      "a": "Snímky dobrých a vadných kusů z vaší linky. Nasnímáte je kamerou, označíte v aplikaci Studio a model natrénujete. Průvodce vás provede od začátku do konce."
+    },
+    "en": {
+      "q": "What do we need for the model to learn the defects?",
+      "a": "Images of good and defective pieces from your line. You take them with the camera, label them in the Studio app and train the model. A wizard guides you from start to finish."
+    }
+  },
+  "dd-wet": {
+    "cs": {
+      "q": "Funguje detekce vad v mokrém provozu?",
+      "a": "Ano. Kamera má krytí IP67 a je plně utěsněná. Vydrží páru, tlakové mytí, prach i mráz v chladírně."
+    },
+    "en": {
+      "q": "Does defect detection work in a wet plant?",
+      "a": "Yes. The camera is IP67 rated and fully sealed. It withstands steam, pressure washing, dust and the cold of a chiller."
+    }
+  },
+  "pc-overlap": {
+    "cs": {
+      "q": "Co když se kusy překrývají?",
+      "a": "Záleží na výrobku a na tom, jak kusy na pásu leží. Model se učí na snímcích z vaší linky. Na demu to ověříme na vašich vzorcích."
+    },
+    "en": {
+      "q": "What if the pieces overlap?",
+      "a": "It depends on the product and on how the pieces lie on the belt. The model learns from images of your line. In a demo, we check it on your own samples."
+    }
+  },
+  "pc-display": {
+    "cs": {
+      "q": "Jak obsluha uvidí počet kusů?",
+      "a": "Na displeji přímo na hale. Displej ukazuje počty kusů, podíl OK kusů, nejčastější vady, prostoje i takt. Vedoucí sledují trendy v analytickém portálu."
+    },
+    "en": {
+      "q": "How do operators see the count?",
+      "a": "On a display on the floor. It shows piece counts, the share of OK pieces, the most common defects, downtime and the line rate. Managers follow trends in the analytics portal."
+    }
+  },
+  "pc-setup": {
+    "cs": {
+      "q": "Jak dlouho trvá, než počítání začne?",
+      "a": "AI kontrola je v provozu za jediný den. Snímky nasnímáte, označíte a model natrénujete sami v aplikaci Studio."
+    },
+    "en": {
+      "q": "How long until counting starts?",
+      "a": "AI inspection runs on your line within a single day. You take the images, label them and train the model yourself in the Studio app."
+    }
+  },
+  "li-types": {
+    "cs": {
+      "q": "Zvládne kamera různé druhy etiket na jedné lince?",
+      "a": "Ano. Každý druh etikety přidáte do kontroly jako produkt sami v aplikaci Studio. Kolik produktů tarif obsahuje, najdete v [ceníku](/cs/cenik)."
+    },
+    "en": {
+      "q": "Can the camera handle different labels on one line?",
+      "a": "Yes. You add each kind of label to the inspection as a product yourself in the Studio app. The [pricing](/en/pricing) page shows how many products a plan includes."
+    }
+  },
+  "li-date": {
+    "cs": {
+      "q": "Umí kamera přečíst datum spotřeby?",
+      "a": "Ano. Kamera přečte datum spotřeby z etikety u každého kusu přímo na lince. Jak čtení data spotřeby funguje na vašich etiketách, ukážeme na demu."
+    },
+    "en": {
+      "q": "Can the camera read the best-before date?",
+      "a": "Yes. The camera reads the best-before date from the label on every piece right on the line. In a demo, we show you how it works on your own labels."
+    }
+  },
+  "li-missing": {
+    "cs": {
+      "q": "Co se stane s kusem bez etikety?",
+      "a": "Kamera kus označí jako NOK a obsluha to vidí na displeji na hale. Řídicí jednotka může sepnout váš stávající vyhazovač nebo signální maják. Snímek kusu zůstane v archivu."
+    },
+    "en": {
+      "q": "What happens to a piece without a label?",
+      "a": "The camera marks the piece as NOK and operators see it on the floor display. The control unit can trigger your existing reject unit or signal light. The image of the piece stays in the archive."
+    }
+  },
+  "li-change": {
+    "cs": {
+      "q": "Co když změníme etiketu?",
+      "a": "Přidáte snímky nové etikety a model přetrénujete. Tarif Standard má 5 tréninků modelu měsíčně, tarify Pro a Enterprise neomezeně."
+    },
+    "en": {
+      "q": "What if we change the label?",
+      "a": "You add images of the new label and retrain the model. The Standard plan has 5 model trainings a month, the Pro and Enterprise plans have no limit."
+    }
+  },
+  "pk-multiple": {
+    "cs": {
+      "q": "Zvládne kamera víc kontrol na jednom balení?",
+      "a": "Ano. Jedna kamera může u každého balení hlídat víc věcí najednou, například těsnost svaru i cizí předmět v obalu. Příklady z provozu najdete mezi [případy užití](/cs/case-studies)."
+    },
+    "en": {
+      "q": "Can the camera run several checks on one pack?",
+      "a": "Yes. One camera can check several things on every pack at once, for example seal integrity and a foreign object in the pack. See the [use cases](/en/case-studies) for examples."
+    }
+  },
+  "pk-change": {
+    "cs": {
+      "q": "Co když změníme druh balení?",
+      "a": "Nový druh balení přidáte do kontroly sami v aplikaci Studio. Nasnímáte snímky, označíte je a model přetrénujete."
+    },
+    "en": {
+      "q": "What if we change the kind of pack?",
+      "a": "You add the new kind of pack to the inspection yourself in the Studio app. You take images, label them and retrain the model."
+    }
+  },
+  "pk-audit": {
+    "cs": {
+      "q": "Máme ke každému balení záznam pro audit?",
+      "a": "Ano. Robopipe uloží snímek ke každé kontrole. Obrazový archiv OK i NOK kusů můžete exportovat pro audit."
+    },
+    "en": {
+      "q": "Do we get a record of every pack for audits?",
+      "a": "Yes. Robopipe saves an image of every check. You can export the image archive of OK and NOK pieces for an audit."
+    }
+  },
+  "price-camera-inspection": {
+    "cs": {
+      "q": "Kolik stojí kamerová kontrola kvality?",
+      "a": "Placené tarify mají jednu měsíční cenu za kameru. Aktuální částky jsou v tabulce tarifů na této stránce. Open-source verze je zdarma na vlastním hardwaru."
+    },
+    "en": {
+      "q": "How much does camera quality inspection cost?",
+      "a": "Paid plans have one monthly price per camera. The current amounts are in the plan table on this page. The open-source version is free on your own hardware."
+    }
+  },
+  "price-included": {
+    "cs": {
+      "q": "Co je v ceně kamerového systému pro kontrolu kvality?",
+      "a": "V placených tarifech je v ceně průmyslová kamera s krytím IP67, živý přehled výroby na hale a aplikace Studio pro nastavení produktů. Tarif Pro přidává PLC s digitálními výstupy, RS485, EtherCAT a Modbus, instalaci u vás a zaškolení obsluhy. Přesný obsah tarifů ukazuje srovnání na této stránce."
+    },
+    "en": {
+      "q": "What is included in the price of the camera inspection system?",
+      "a": "Paid plans include an IP67 industrial camera, a live production dashboard on the floor and the Studio app for setting up products. The Pro plan adds a PLC with digital outputs, RS485, EtherCAT and Modbus, installation at your site and operator training. The comparison on this page shows the exact content of each plan."
+    }
+  },
+  "price-auto-annotation": {
+    "cs": {
+      "q": "Kolik stojí automatická anotace?",
+      "a": "Automatická anotace je v ceně tarifů Pro a Enterprise. Tarif Standard ani open-source verze ji neobsahují. Popis funkce najdete na stránce [automatická anotace](/cs/automaticka-anotace)."
+    },
+    "en": {
+      "q": "How much does auto annotation cost?",
+      "a": "Auto annotation is included in the Pro and Enterprise plans. The Standard plan and the open-source version do not include it. The [auto annotation](/en/auto-annotation) page describes the feature."
     }
   }
 }

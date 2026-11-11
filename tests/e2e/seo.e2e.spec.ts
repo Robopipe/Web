@@ -21,12 +21,12 @@ const baseURL = process.env.E2E_BASE_URL || `http://localhost:${process.env.PORT
 // Absolute URLs in canonical, hreflang, sitemap and llms.txt use the server URL.
 const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || baseURL
 
-/** Pairs of [cs, en] paths from architecture.md, chapter 3. */
+/**
+ * Pairs of [cs, en] paths from architecture.md, chapter 3. Stage 2 (issue #6)
+ * removed three of them from the seed. Its new pages are in seo-stage2.e2e.spec.ts.
+ */
 const LANDING_PAGES: [string, string][] = [
   ['/cs/kamerova-kontrola-kvality', '/en/camera-quality-inspection'],
-  ['/cs/ai-kontrola-kvality', '/en/ai-quality-inspection'],
-  ['/cs/pocitacove-videni', '/en/computer-vision'],
-  ['/cs/strojove-videni', '/en/machine-vision'],
   ['/cs/automaticka-anotace', '/en/auto-annotation'],
 ]
 const CASE_STUDIES: [string, string][] = [

@@ -13,8 +13,9 @@ import { JsonLd } from '@/components/JsonLd'
 import { LocaleSuggestion } from '@/components/LocaleSuggestion'
 import { routing, type Locale } from '@/i18n/routing'
 import { organizationLd, websiteLd } from '@/lib/jsonLd'
+import { verificationMeta } from '@/lib/meta'
 import { SERVER_URL } from '@/lib/paths'
-import { getGlobals } from '@/lib/queries'
+import { getGlobals, getSolutionPages } from '@/lib/queries'
 
 import '../styles.css'
 
@@ -40,9 +41,13 @@ const inter = Inter({
   variable: '--font-inter',
 })
 
-export const metadata: Metadata = {
-  metadataBase: new URL(SERVER_URL),
-  title: 'Robopipe',
+export async function generateMetadata({ params }: Pick<Props, 'params'>): Promise<Metadata> {
+  const { locale } = await params
+  const metadata: Metadata = { metadataBase: new URL(SERVER_URL), title: 'Robopipe' }
+  // Unknown locales get a 404 from the layout. Do not ask Payload with them.
+  if (!hasLocale(routing.locales, locale)) return metadata
+  const { settings } = await getGlobals(locale)
+  return { ...metadata, verification: verificationMeta(settings) }
 }
 
 export function generateStaticParams() {
@@ -59,7 +64,10 @@ export default async function LocaleLayout({ children, params }: Props) {
   if (!hasLocale(routing.locales, locale)) notFound()
   setRequestLocale(locale)
 
-  const { header, footer, settings } = await getGlobals(locale as Locale)
+  const [{ header, footer, settings }, solutions] = await Promise.all([
+    getGlobals(locale as Locale),
+    getSolutionPages(locale as Locale),
+  ])
 
   return (
     <html
@@ -71,7 +79,7 @@ export default async function LocaleLayout({ children, params }: Props) {
         <NextIntlClientProvider>
           <Header header={header} />
           <main className="flex-1">{children}</main>
-          <Footer footer={footer} settings={settings} />
+          <Footer footer={footer} settings={settings} solutions={solutions} />
           <LocaleSuggestion />
         </NextIntlClientProvider>
         <Analytics />

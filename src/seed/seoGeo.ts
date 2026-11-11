@@ -1,18 +1,21 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import type { Payload } from 'payload'
 
 import type { Locale } from '@/i18n/routing'
 import { markdownToLexical } from '@/jobs/markdown'
 import type { CaseStudy, Footer, Header, Page } from '@/payload-types'
 
+import { nullIfNotFound, type SeoGeoClient } from './remoteClient'
+
 /**
- * Content for issue #2 (SEO and GEO): landing pages, the auto annotation page,
- * case study sections, FAQs, home page blocks, navigation, memberships and the
- * auto annotation blog draft. All copy lives in seed-assets/copy/seo-geo.
+ * Content for issues #2 and #6 (SEO and GEO, stages 1 and 2): landing, task and
+ * about pages, case study sections, FAQs, home page blocks, navigation,
+ * memberships, solutions, company facts, pricing FAQs, the vision guide and
+ * the auto annotation blog draft. All copy lives in seed-assets/copy/seo-geo.
  *
  * Idempotent: existing documents are found and kept, fields that already have
- * a value are never overwritten. See docs/specs/2-seo-geo/architecture.md, 7.1.
+ * a value are never overwritten. See docs/specs/2-seo-geo/architecture.md, 7.1,
+ * and docs/specs/6-seo-geo-stage2/architecture.md, 6.6.
  */
 
 export type SeoGeoOptions = {
@@ -31,19 +34,35 @@ type LandingLocale = {
   slug: string
   seo: { title: string; description: string }
   hero: { eyebrow: string; heading: string; text: string; button: string }
+  /** Markdown file for the main content block. */
   content: string
-  steps: { heading: string; text: string; items: Pair[]; stats?: Pair[] }
-  caseStudiesHeading: string
-  faqHeading: string
-  cta: { heading: string; text: string; button: string }
+  /** Markdown file for a second content block after the main one. */
+  tasks?: string
+  steps?: { heading: string; text: string; items: Pair[]; stats?: Pair[] }
+  caseStudiesHeading?: string
+  /** Pricing tiers from the pricing page (pricingTable with source "pricingPage"). */
+  pricing?: { heading: string; text: string }
+  faqHeading?: string
+  /** Contact form with the sidebar (address, phone, company facts). */
+  contact?: { heading: string; microcopy: string }
+  cta?: { heading: string; text: string; button: string }
 }
 
 type LandingPage = {
   key: string
-  image: string
+  /** Hero image. Without it the hero is centered. */
+  image?: string
+  /** Hero image of an earlier seed. An existing page with it gets `image` instead. */
+  replaceImage?: string
   caseStudies: string[]
   faqs: string[]
 } & Localized<LandingLocale>
+
+type LandingCopy = {
+  pages: LandingPage[]
+  /** Czech slugs of stage 1 pages that left the seed. Reported, never deleted. */
+  obsolete: string[]
+}
 
 type FaqCopy = Localized<{ q: string; a: string }>
 
@@ -51,6 +70,8 @@ type CaseStudySections = Record<'problem' | 'solution' | 'result' | 'technique',
 type CaseStudyCopy = { faqs: string[] } & Localized<CaseStudySections>
 
 type HomeCopy = {
+  /** Hero eyebrow with the English name of the field. Only replaces the exact old value. */
+  hero: { eyebrow: Partial<Localized<ReplaceIf>> }
   /** New home SEO texts. A field changes only when it is empty or still has the replaceIf value. */
   seo: Localized<{
     title?: string
@@ -67,11 +88,40 @@ type HomeCopy = {
     image: string
     page: string
   } & Localized<{ heading: string; text: string; steps: Pair[]; button: string }>
+  /** industryCards block with source "solutions", after the first industryCards block. */
+  solutions: { blockName: string } & Localized<{ heading: string; text: string }>
 }
 
 type NavigationCopy = {
   renameLabels: Localized<{ from: string; to: string }>
-  footerColumn: { title: Localized<string>; pages: string[] }
+  /** Footer column added by stage 1. Removed in published mode (site-settings.solutions replaces it). */
+  removeFooterColumn: Localized<string>
+  /** Link to a landing page, added to a footer column once the page is published. */
+  aboutLink: { column: Localized<string>; page: string }
+}
+
+type SettingsCopy = {
+  /** Landing page keys in display order. */
+  solutions: string[]
+  company: {
+    legalName: string
+    companyId: string
+    registration: Localized<string>
+    /** Values that may be replaced, e.g. the old footer copyright copied by the migration. */
+    replaceIf?: { legalName?: string }
+  }
+  /**
+   * Filip's decision: the company name is "robopipe s.r.o." everywhere. Replaces
+   * the old spelling in the contact address and in the text of these pages (cs slugs).
+   */
+  companyName: ReplaceIf & { pages: string[] }
+}
+
+type ReplaceIf = { replaceIf: string; value: string }
+
+type ExistingPagesCopy = {
+  pricing: { slug: string; faqs: string[] }
+  guide: { slug: string; heading: ReplaceIf; seoTitle: ReplaceIf; paragraph: string }
 }
 
 type PostCopy = {
@@ -90,6 +140,20 @@ const CASE_STUDY_SECTIONS = ['problem', 'solution', 'result', 'technique'] as co
 
 const readJson = <T>(file: string): T => JSON.parse(fs.readFileSync(path.join(COPY, file), 'utf8'))
 const readText = (file: string): string => fs.readFileSync(path.join(COPY, file), 'utf8')
+
+/** Copy markers that must never reach a published page. */
+export const COPY_MARKERS = ['[doplnit Filip]', '[ověřit]'] as const
+
+/** True when the document (any shape, all locales) still contains a copy marker. */
+export const hasCopyMarkers = (value: unknown): boolean => {
+  const text = JSON.stringify(value) ?? ''
+  return COPY_MARKERS.some((marker) => text.includes(marker))
+}
+
+type LexicalNode = { type?: string; tag?: string; text?: string; children?: LexicalNode[] }
+
+const plainText = (node: LexicalNode): string =>
+  node.text ?? (node.children ?? []).map(plainText).join('')
 
 /** Splits the `---` header (key: value lines) from the markdown body. */
 export const parseFrontmatter = (source: string): PostCopy => {
@@ -116,7 +180,7 @@ const idOf = (value: unknown): number | undefined =>
  * Applies the SEO and GEO content. Run twice, it changes nothing the second time.
  */
 export const applySeoGeo = async (
-  payload: Payload,
+  payload: SeoGeoClient,
   { status, dryRun = false }: SeoGeoOptions,
 ): Promise<SeoGeoReport> => {
   const report: SeoGeoReport = { created: [], updated: [], skipped: [] }
@@ -126,9 +190,35 @@ export const applySeoGeo = async (
 
   /* ------------------------- versions and publishing ------------------------ */
 
-  type Versioned = 'pages' | 'case-studies'
+  type Versioned = 'pages' | 'case-studies' | 'posts'
   // Documents this script manages. Published mode publishes their latest draft.
-  const managed: { collection: Versioned; id: number; label: string }[] = []
+  // A dry run creates nothing, so a planned new document has no id, only its data.
+  const managed: {
+    collection: Versioned
+    id?: number
+    label: string
+    planned?: Record<string, unknown>
+    /** The seed has copy in all locales: never publish while one is missing. */
+    allLocales?: boolean
+  }[] = []
+  // Data of the new draft versions of this run, also in a dry run. The publish
+  // step uses it, so the dry run plan lists the same publications as a real run.
+  const drafted = new Map<string, Record<string, unknown>[]>()
+  const noteDraft = (collection: Versioned, id: number, data: Record<string, unknown>) => {
+    const key = `${collection}:${id}`
+    drafted.set(key, [...(drafted.get(key) ?? []), data])
+  }
+
+  /** Locales in which the document has no title or slug, for example after an interrupted run. */
+  const missingLocales = (doc: Record<string, unknown>): Locale[] =>
+    LOCALES.filter((locale) =>
+      (['title', 'slug'] as const).some((field) => {
+        const value = doc[field]
+        return !(value && typeof value === 'object'
+          ? (value as Record<string, unknown>)[locale]
+          : value)
+      }),
+    )
 
   const latest = <C extends Versioned>(collection: C, id: number, locale: Locale | 'all') =>
     payload.findByID({ collection, id, locale, draft: true, depth: 0, fallbackLocale: false })
@@ -140,6 +230,7 @@ export const applySeoGeo = async (
     locale: Locale,
     data: Record<string, unknown>,
   ) => {
+    noteDraft(collection, id, data)
     if (write) {
       await payload.update({
         collection,
@@ -159,17 +250,22 @@ export const applySeoGeo = async (
     await payload.update({ collection, id, data: { _status: 'published' } })
   }
 
-  const landing = readJson<{ pages: LandingPage[] }>('landing-pages.json').pages
+  const { pages: landing, obsolete } = readJson<LandingCopy>('landing-pages.json')
   const faqCopy = readJson<Record<string, FaqCopy>>('faqs.json')
   const caseStudyCopy = readJson<Record<string, CaseStudyCopy>>('case-studies.json')
   const home = readJson<HomeCopy>('home.json')
   const navigation = readJson<NavigationCopy>('navigation.json')
+  const settingsCopy = readJson<SettingsCopy>('settings.json')
+  const existingPages = readJson<ExistingPagesCopy>('existing-pages.json')
 
   /* --------------------------------- media --------------------------------- */
 
+  // A dry run creates nothing, so planned media and FAQs have no id. List each once.
+  const planned = new Set<string>()
   const mediaIds = new Map<string, number>()
   const media = async (filename: string, alt: Localized<string>): Promise<number | undefined> => {
     if (mediaIds.has(filename)) return mediaIds.get(filename)
+    if (planned.has(`media ${filename}`)) return undefined
     const found = await payload.find({
       collection: 'media',
       where: { filename: { equals: filename } },
@@ -181,6 +277,7 @@ export const applySeoGeo = async (
       report.skipped.push(`media ${filename}`)
     } else {
       report.created.push(`media ${filename}`)
+      planned.add(`media ${filename}`)
       if (write) {
         const doc = await payload.create({
           collection: 'media',
@@ -206,6 +303,7 @@ export const applySeoGeo = async (
   const faqIds = new Map<string, number>()
   const faq = async (key: string): Promise<number | undefined> => {
     if (faqIds.has(key)) return faqIds.get(key)
+    if (planned.has(`faq ${key}`)) return undefined
     const copy = faqCopy[key]
     if (!copy) throw new Error(`faqs.json has no entry "${key}".`)
     const found = await payload.find({
@@ -220,6 +318,7 @@ export const applySeoGeo = async (
       report.skipped.push(`faq ${key}`)
     } else {
       report.created.push(`faq ${key}`)
+      planned.add(`faq ${key}`)
       if (write) {
         const doc = await payload.create({
           collection: 'faqs',
@@ -301,10 +400,16 @@ export const applySeoGeo = async (
       ? { link: { label, type: 'internal' as const, page: contactPage.id } }
       : { link: { label, type: 'external' as const, url: '/cs/kontakt' } }
 
+  /**
+   * Blocks in this order: hero, content, tasks, steps, case studies, pricing,
+   * FAQs, contact form, CTA. An optional block without copy is left out.
+   */
   const landingLayout = async (page: LandingPage, locale: Locale): Promise<Page['layout']> => {
     const c = page[locale]
     const id = (block: string) => `seo-geo-page-${page.key}-${block}`
-    const image = await media(page.image, { cs: page.cs.title, en: page.en.title })
+    const image = page.image
+      ? await media(page.image, { cs: page.cs.title, en: page.en.title })
+      : undefined
     const caseStudies = page.caseStudies
       .map((slug) => caseStudyIds.get(slug))
       .filter((studyId): studyId is number => studyId !== undefined)
@@ -326,7 +431,17 @@ export const applySeoGeo = async (
         content: await md(readText(c.content)),
         width: 'narrow',
       },
-      {
+    ]
+    if (c.tasks) {
+      layout.push({
+        id: id('tasks'),
+        blockType: 'content',
+        content: await md(readText(c.tasks)),
+        width: 'narrow',
+      })
+    }
+    if (c.steps) {
+      layout.push({
         id: id('steps'),
         blockType: 'processSteps',
         heading: c.steps.heading,
@@ -337,9 +452,9 @@ export const applySeoGeo = async (
           value,
           label,
         })),
-      },
-    ]
-    if (caseStudies.length) {
+      })
+    }
+    if (caseStudies.length && c.caseStudiesHeading) {
       layout.push({
         id: id('case-studies'),
         blockType: 'caseStudyGrid',
@@ -348,49 +463,169 @@ export const applySeoGeo = async (
         limit: caseStudies.length,
       })
     }
-    if (faqs.length) {
+    if (c.pricing) {
+      layout.push({
+        id: id('pricing'),
+        blockType: 'pricingTable',
+        source: 'pricingPage',
+        heading: c.pricing.heading,
+        text: c.pricing.text,
+      })
+    }
+    if (faqs.length && c.faqHeading) {
       layout.push({ id: id('faqs'), blockType: 'faqAccordion', heading: c.faqHeading, faqs })
     }
-    layout.push({
-      id: id('cta'),
-      blockType: 'ctaBanner',
-      heading: c.cta.heading,
-      text: c.cta.text,
-      links: [{ id: id('cta-link'), ...contactLink(c.cta.button) }],
-    })
+    if (c.contact) {
+      layout.push({
+        id: id('contact'),
+        blockType: 'contactForm',
+        heading: c.contact.heading,
+        microcopy: c.contact.microcopy,
+        showSidebar: true,
+      })
+    }
+    if (c.cta) {
+      layout.push({
+        id: id('cta'),
+        blockType: 'ctaBanner',
+        heading: c.cta.heading,
+        text: c.cta.text,
+        links: [{ id: id('cta-link'), ...contactLink(c.cta.button) }],
+      })
+    }
     return layout
   }
 
+  type Block = NonNullable<Page['layout']>[number]
+
+  /**
+   * Adds the blocks of `target` whose id is missing in `current`, each right
+   * after the block that precedes it in `target`. Existing blocks stay as they are.
+   */
+  const withMissingBlocks = (current: Block[], target: Block[]): Block[] => {
+    const out = [...current]
+    target.forEach((block, i) => {
+      if (out.some((b) => b.id === block.id)) return
+      const before = target
+        .slice(0, i)
+        .reverse()
+        .map((b) => out.findIndex((o) => o.id === b.id))
+        .find((index) => index !== -1)
+      out.splice(before === undefined ? 0 : before + 1, 0, block)
+    })
+    return out
+  }
+
+  const pageData = (page: LandingPage, locale: Locale) => ({
+    title: page[locale].title,
+    slug: page[locale].slug,
+    seo: { title: page[locale].seo.title, description: page[locale].seo.description },
+  })
+
   const pageIds = new Map<string, number>()
+  // New pages of a dry run. They have no id, see `managed`.
+  const plannedPages = new Set<string>()
   for (const page of landing) {
     const existing = await findPage(page.cs.slug, 'cs')
     if (existing) {
       pageIds.set(page.key, existing.id)
-      managed.push({ collection: 'pages', id: existing.id, label: `page ${page.cs.slug}` })
-      report.skipped.push(`page ${page.cs.slug}`)
+      managed.push({
+        collection: 'pages',
+        id: existing.id,
+        label: `page ${page.cs.slug}`,
+        allLocales: true,
+      })
+      const targets = { cs: await landingLayout(page, 'cs'), en: await landingLayout(page, 'en') }
+      const current = (await latest('pages', existing.id, 'cs')).layout ?? []
+      const missing = targets.cs.filter((block) => !current.some((b) => b.id === block.id))
+      // A run that stopped between the two requests of a new page left a locale
+      // without title, slug and blocks. Write that locale again in full.
+      const incomplete = missingLocales(
+        (await latest('pages', existing.id, 'all')) as unknown as Record<string, unknown>,
+      )
+      const heroId = `seo-geo-page-${page.key}-hero`
+      const heroImage = (blocks: Block[] | null | undefined) =>
+        idOf(
+          (blocks?.find((block) => block.id === heroId) as { image?: unknown } | undefined)?.image,
+        )
+      const oldImage = page.replaceImage
+        ? (
+            await payload.find({
+              collection: 'media',
+              where: { filename: { equals: page.replaceImage } },
+              limit: 1,
+              depth: 0,
+            })
+          ).docs[0]?.id
+        : undefined
+      const heroFix = oldImage !== undefined && heroImage(current) === oldImage
+      if (!missing.length && !incomplete.length && !heroFix) {
+        report.skipped.push(`page ${page.cs.slug}`)
+        continue
+      }
+      report.updated.push(
+        `page ${page.cs.slug} (${[
+          ...(missing.length ? [`blocks ${missing.map((b) => b.id).join(', ')}`] : []),
+          ...(incomplete.length ? [`missing locale ${incomplete.join(', ')}`] : []),
+          ...(heroFix ? ['hero image'] : []),
+        ].join('; ')})`,
+      )
+      for (const locale of LOCALES) {
+        const repair = incomplete.includes(locale)
+        if (!repair && !missing.length && !heroFix) continue
+        const replaced = new Set((repair ? targets[locale] : missing).map((block) => block.id))
+        // Re-read in this locale so existing blocks keep their values in it. Payload
+        // copies the Czech values of a new block to English, so new blocks are replaced.
+        const localeLayout = ((await latest('pages', existing.id, locale)).layout ?? []).filter(
+          (block) => !replaced.has(block.id),
+        )
+        const layout = withMissingBlocks(localeLayout, targets[locale]).map((block) =>
+          heroFix && block.id === heroId
+            ? { ...block, image: heroImage(targets[locale]) ?? null }
+            : block,
+        )
+        await saveDraft('pages', existing.id, locale, {
+          ...(repair ? pageData(page, locale) : {}),
+          layout,
+        })
+      }
       continue
     }
     report.created.push(`page ${page.cs.slug}`)
     // Built before the write check, so a dry run also lists the FAQs and media.
     const layouts = { cs: await landingLayout(page, 'cs'), en: await landingLayout(page, 'en') }
-    if (!write) continue
-    const pageData = (locale: Locale) => ({
-      title: page[locale].title,
-      slug: page[locale].slug,
-      seo: { title: page[locale].seo.title, description: page[locale].seo.description },
-    })
+    if (!write) {
+      plannedPages.add(page.key)
+      managed.push({
+        collection: 'pages',
+        label: `page ${page.cs.slug}`,
+        allLocales: true,
+        planned: {
+          cs: { ...pageData(page, 'cs'), layout: layouts.cs },
+          en: { ...pageData(page, 'en'), layout: layouts.en },
+        },
+      })
+      continue
+    }
     const doc = await payload.create({
       collection: 'pages',
       locale: 'cs',
       draft: true,
-      data: { ...pageData('cs'), layout: layouts.cs, _status: 'draft' },
+      data: { ...pageData(page, 'cs'), layout: layouts.cs, _status: 'draft' },
     })
-    await saveDraft('pages', doc.id, 'en', {
-      ...pageData('en'),
-      layout: await landingLayout(page, 'en'),
-    })
+    await saveDraft('pages', doc.id, 'en', { ...pageData(page, 'en'), layout: layouts.en })
     pageIds.set(page.key, doc.id)
-    managed.push({ collection: 'pages', id: doc.id, label: `page ${page.cs.slug}` })
+    managed.push({
+      collection: 'pages',
+      id: doc.id,
+      label: `page ${page.cs.slug}`,
+      allLocales: true,
+    })
+  }
+
+  for (const slug of obsolete) {
+    // Stage 1 pages that left the seed. Never deleted here, see architecture 11.3.
+    if (await findPage(slug, 'cs')) report.skipped.push(`obsolete: ${slug}`)
   }
 
   /* ------------------------------- home page ------------------------------- */
@@ -453,6 +688,26 @@ export const applySeoGeo = async (
       addedBlocks.push({ id, locale: { cs: localized('cs'), en: localized('en') } })
     }
 
+    if (!has(home.solutions.blockName)) {
+      const id = home.solutions.blockName
+      const at = blocks.findIndex((block) => block.blockType === 'industryCards')
+      blocks.splice(at === -1 ? blocks.length : at + 1, 0, {
+        id,
+        blockType: 'industryCards',
+        blockName: id,
+        source: 'solutions',
+        heading: home.solutions.cs.heading,
+        text: home.solutions.cs.text,
+      })
+      addedBlocks.push({
+        id,
+        locale: {
+          cs: { heading: home.solutions.cs.heading, text: home.solutions.cs.text },
+          en: { heading: home.solutions.en.heading, text: home.solutions.en.text },
+        },
+      })
+    }
+
     managed.push({ collection: 'pages', id: homePage.id, label: 'home page' })
     const current = await latest('pages', homePage.id, 'all')
     const seoFor = (locale: Locale) => {
@@ -470,22 +725,36 @@ export const applySeoGeo = async (
       return out
     }
 
+    // The hero heading, title and seo.title stay as they are: Filip may have edited them.
+    const heroId = blocks.find((block) => block.blockType === 'hero')?.id
+    let eyebrowChanged = false
     for (const locale of LOCALES) {
       const seo = seoFor(locale)
-      if (!addedBlocks.length && !Object.keys(seo).length) continue
       // Re-read in this locale so existing blocks keep their values in it.
       const localeDoc = await latest('pages', homePage.id, locale)
+      const eyebrow = home.hero.eyebrow[locale]
+      const hero = localeDoc.layout?.find((b) => b.id === heroId) as
+        { eyebrow?: string | null } | undefined
+      const fixEyebrow = !!eyebrow && hero?.eyebrow === eyebrow.replaceIf
+      if (!addedBlocks.length && !Object.keys(seo).length && !fixEyebrow) continue
+      eyebrowChanged ||= fixEyebrow
       const layout = blocks.map((block) => {
         const added = addedBlocks.find((b) => b.id === block.id)
         if (added) return { ...block, ...added.locale[locale] }
-        return localeDoc.layout?.find((b) => b.id === block.id) ?? block
+        const localeBlock = localeDoc.layout?.find((b) => b.id === block.id) ?? block
+        return fixEyebrow && block.id === heroId
+          ? { ...localeBlock, eyebrow: eyebrow.value }
+          : localeBlock
       })
       await saveDraft('pages', homePage.id, locale, {
         layout,
         ...(Object.keys(seo).length ? { seo: { ...localeDoc.seo, ...seo } } : {}),
       })
     }
-    const changed = addedBlocks.length > 0 || LOCALES.some((l) => Object.keys(seoFor(l)).length > 0)
+    const changed =
+      addedBlocks.length > 0 ||
+      eyebrowChanged ||
+      LOCALES.some((l) => Object.keys(seoFor(l)).length > 0)
     report[changed ? 'updated' : 'skipped'].push('home page')
   }
 
@@ -503,23 +772,35 @@ export const applySeoGeo = async (
     limit: 1,
     depth: 0,
   })
-  if (existingPost.docs.length) {
-    report.skipped.push(`post ${post.cs.slug}`)
+  const postData = async (locale: Locale) => ({
+    title: post[locale].title,
+    slug: post[locale].slug,
+    excerpt: post[locale].excerpt,
+    content: await md(post[locale].body),
+    seo: { title: post[locale].seoTitle, description: post[locale].seoDescription },
+    // Never published by this script. Filip approves the text first.
+    _status: 'draft' as const,
+  })
+  const postDoc = existingPost.docs[0]
+  if (postDoc) {
+    // Same repair as for pages: an interrupted run left the post without English.
+    const incomplete = missingLocales(
+      (await latest('posts', postDoc.id, 'all')) as unknown as Record<string, unknown>,
+    )
+    if (!incomplete.length) {
+      report.skipped.push(`post ${post.cs.slug}`)
+    } else {
+      report.updated.push(`post ${post.cs.slug} (missing locale ${incomplete.join(', ')})`)
+      for (const locale of incomplete) {
+        await saveDraft('posts', postDoc.id, locale, await postData(locale))
+      }
+    }
   } else {
     report.created.push(`post ${post.cs.slug} (draft)`)
     if (write) {
       const heroImage = await media(home.autoAnnotation.image, {
         cs: post.cs.title,
         en: post.en.title,
-      })
-      const postData = async (locale: Locale) => ({
-        title: post[locale].title,
-        slug: post[locale].slug,
-        excerpt: post[locale].excerpt,
-        content: await md(post[locale].body),
-        seo: { title: post[locale].seoTitle, description: post[locale].seoDescription },
-        // Never published by this script. Filip approves the text first.
-        _status: 'draft' as const,
       })
       const doc = await payload.create({
         collection: 'posts',
@@ -537,6 +818,173 @@ export const applySeoGeo = async (
     }
   }
 
+  /* ------------------------------ pricing FAQs ----------------------------- */
+
+  // Appended to the first FAQ block of the pricing page. The published version
+  // decides whether the page is managed, so a draft run is published later.
+  const pricingPage = await findPage(existingPages.pricing.slug, 'cs')
+  if (!pricingPage) {
+    report.skipped.push(`page ${existingPages.pricing.slug} (not found)`)
+  } else {
+    const wanted = await faqList(existingPages.pricing.faqs)
+    const faqBlockOf = (doc: Page) =>
+      doc.layout?.find((block) => block.blockType === 'faqAccordion')
+    const missingIn = (doc: Page) => {
+      const block = faqBlockOf(doc)
+      if (block?.blockType !== 'faqAccordion') return []
+      const present = (block.faqs ?? []).map(idOf)
+      return wanted.filter((faqId) => !present.includes(faqId))
+    }
+    const current = await latest('pages', pricingPage.id, 'cs')
+    const block = faqBlockOf(current)
+    const published = await payload
+      .findByID({ collection: 'pages', id: pricingPage.id, locale: 'cs', depth: 0, draft: false })
+      .catch(nullIfNotFound)
+    const toAdd = missingIn(current)
+    let plannedFaqs = false
+    if (block?.blockType !== 'faqAccordion') {
+      report.skipped.push(`page ${existingPages.pricing.slug} FAQs (no FAQ block)`)
+    } else if (!write && wanted.length < existingPages.pricing.faqs.length) {
+      // Dry run: the new FAQs do not exist yet, so they have no id to compare.
+      const count = existingPages.pricing.faqs.length - wanted.length + toAdd.length
+      report.updated.push(`page ${existingPages.pricing.slug} FAQs (+${count})`)
+      // A real run saves a new draft, so the plan lists the publication too.
+      noteDraft('pages', pricingPage.id, { faqs: count })
+      plannedFaqs = true
+    } else if (toAdd.length) {
+      report.updated.push(`page ${existingPages.pricing.slug} FAQs (+${toAdd.length})`)
+      // The FAQ relation is not localized. One locale carries the change to both.
+      await saveDraft('pages', pricingPage.id, 'cs', {
+        layout: (current.layout ?? []).map((b) =>
+          b.id === block.id ? { ...block, faqs: [...(block.faqs ?? []).map(idOf), ...toAdd] } : b,
+        ),
+      })
+    } else {
+      report.skipped.push(`page ${existingPages.pricing.slug} FAQs`)
+    }
+    if (plannedFaqs || toAdd.length || (published && missingIn(published).length)) {
+      managed.push({
+        collection: 'pages',
+        id: pricingPage.id,
+        label: `page ${existingPages.pricing.slug}`,
+      })
+    }
+  }
+
+  /* ------------------------------ vision guide ----------------------------- */
+
+  // Czech only. Changes the first H2 and seo.title only from their exact
+  // current value and adds one paragraph at the end of the first section.
+  const guideCopy = existingPages.guide
+  const guideSearch = await payload.find({
+    collection: 'posts',
+    where: { slug: { equals: guideCopy.slug } },
+    locale: 'cs',
+    draft: true,
+    limit: 1,
+    depth: 0,
+  })
+  const guide = guideSearch.docs[0]
+  if (!guide) {
+    report.skipped.push(`post ${guideCopy.slug} (not found)`)
+  } else {
+    const paragraph = (await md(readText(guideCopy.paragraph))).root.children as LexicalNode[]
+    const paragraphStart = paragraph.map(plainText).join(' ').slice(0, 60)
+    const pending = (doc: { content?: unknown; seo?: { title?: string | null } | null }) => {
+      const nodes = ((doc.content as { root?: LexicalNode } | null)?.root?.children ??
+        []) as LexicalNode[]
+      const h2s = nodes.flatMap((node, i) =>
+        node.type === 'heading' && node.tag === 'h2' ? [i] : [],
+      )
+      return {
+        nodes,
+        h2s,
+        heading: h2s.length > 0 && plainText(nodes[h2s[0]]) === guideCopy.heading.replaceIf,
+        paragraph: !nodes.map(plainText).join(' ').includes(paragraphStart),
+        seoTitle: doc.seo?.title === guideCopy.seoTitle.replaceIf,
+      }
+    }
+    const isPending = (p: ReturnType<typeof pending>) => p.heading || p.paragraph || p.seoTitle
+
+    const current = await payload.findByID({
+      collection: 'posts',
+      id: guide.id,
+      locale: 'cs',
+      draft: true,
+      depth: 0,
+      fallbackLocale: false,
+    })
+    const todo = pending(current)
+    if (isPending(todo)) {
+      report.updated.push(
+        `post ${guideCopy.slug} (${(['heading', 'paragraph', 'seoTitle'] as const).filter((k) => todo[k]).join(', ')})`,
+      )
+      const nodes = todo.nodes.map((node, i) =>
+        todo.heading && i === todo.h2s[0]
+          ? { ...node, children: [{ ...node.children?.[0], text: guideCopy.heading.value }] }
+          : node,
+      )
+      // Last node of the first section: right before the second H2 (or at the end).
+      if (todo.paragraph) nodes.splice(todo.h2s[1] ?? nodes.length, 0, ...paragraph)
+      const content = current.content as unknown as { root: Record<string, unknown> }
+      noteDraft('posts', guide.id, { content: nodes })
+      if (write) {
+        await payload.update({
+          collection: 'posts',
+          id: guide.id,
+          locale: 'cs',
+          draft: true,
+          data: {
+            content: {
+              ...content,
+              root: { ...content.root, children: nodes },
+            } as typeof current.content,
+            ...(todo.seoTitle ? { seo: { ...current.seo, title: guideCopy.seoTitle.value } } : {}),
+            _status: 'draft',
+          },
+        })
+      }
+    } else {
+      report.skipped.push(`post ${guideCopy.slug}`)
+    }
+    const published = await payload
+      .findByID({ collection: 'posts', id: guide.id, locale: 'cs', depth: 0, draft: false })
+      .catch(nullIfNotFound)
+    if (isPending(todo) || (published && isPending(pending(published)))) {
+      managed.push({ collection: 'posts', id: guide.id, label: `post ${guideCopy.slug}` })
+    }
+  }
+
+  /* ------------------------------ company name ----------------------------- */
+
+  const { companyName } = settingsCopy
+  const withCompanyName = <T>(value: T): T =>
+    JSON.parse(JSON.stringify(value).replaceAll(companyName.replaceIf, companyName.value))
+  for (const slug of companyName.pages) {
+    const page = await findPage(slug, 'cs')
+    if (!page) {
+      report.skipped.push(`page ${slug} company name (not found)`)
+      continue
+    }
+    let changed = false
+    for (const locale of LOCALES) {
+      const doc = await latest('pages', page.id, locale)
+      const data = { title: doc.title, layout: doc.layout, seo: doc.seo }
+      const fixed = withCompanyName(data)
+      if (JSON.stringify(fixed) === JSON.stringify(data)) continue
+      changed = true
+      await saveDraft('pages', page.id, locale, fixed)
+    }
+    report[changed ? 'updated' : 'skipped'].push(`page ${slug} company name`)
+    // A draft run fixes the draft only. The published version decides whether to publish it.
+    const published = await payload
+      .findByID({ collection: 'pages', id: page.id, locale: 'all', depth: 0, draft: false })
+      .catch(nullIfNotFound)
+    if (changed || JSON.stringify(published ?? {}).includes(companyName.replaceIf)) {
+      managed.push({ collection: 'pages', id: page.id, label: `page ${slug}` })
+    }
+  }
+
   /* -------------------------------- globals -------------------------------- */
 
   // Globals have no drafts: they change only when publishing.
@@ -545,11 +993,31 @@ export const applySeoGeo = async (
     return report
   }
 
+  const publishedLabels = new Set<string>()
   for (const doc of managed) {
-    const { _status } = await latest(doc.collection, doc.id, 'cs')
-    if (_status === 'published') continue
+    const current =
+      doc.id === undefined
+        ? undefined
+        : ((await latest(doc.collection, doc.id, 'all')) as unknown as Record<string, unknown>)
+    // Only in a dry run: the data this run would have saved as the latest draft.
+    const pending =
+      doc.id === undefined ? [doc.planned] : drafted.get(`${doc.collection}:${doc.id}`)
+    if (current?._status === 'published' && !(dryRun && pending)) continue
+    if (hasCopyMarkers(current) || hasCopyMarkers(pending)) {
+      // Never publish copy that still waits for a fact. It stays a draft.
+      report.skipped.push(`draft (markers): ${doc.label}`)
+      continue
+    }
+    // Never publish a page without all locales. The next run writes the missing one.
+    const incomplete =
+      doc.allLocales && current && !(dryRun && pending) ? missingLocales(current) : []
+    if (incomplete.length) {
+      report.skipped.push(`draft (missing locale ${incomplete.join(', ')}): ${doc.label}`)
+      continue
+    }
     report.updated.push(`${doc.label} published`)
-    if (write) await publishLatest(doc.collection, doc.id)
+    publishedLabels.add(doc.label)
+    if (write && doc.id !== undefined) await publishLatest(doc.collection, doc.id)
   }
 
   // Header: rename the case studies nav label.
@@ -582,20 +1050,26 @@ export const applySeoGeo = async (
   }
   report[headerChanged ? 'updated' : 'skipped'].push('header navigation label')
 
-  // Footer: rename the case studies link, add the Solutions column.
-  const columnId = 'seo-geo-solutions'
-  const solutionLinks = (locale: Locale) =>
-    navigation.footerColumn.pages.flatMap((key, i) => {
-      const target = pageIds.get(key)
-      const copy = landing.find((page) => page.key === key)
-      if (!target || !copy) return []
-      return [
-        {
-          id: `${columnId}-${i}`,
-          link: { label: copy[locale].title, type: 'internal' as const, page: target },
-        },
-      ]
-    })
+  // Footer: rename the case studies link, remove the stage 1 Solutions column
+  // (the layout renders it from site-settings.solutions), link the about page.
+  const allFooter = await payload.findGlobal({ slug: 'footer', locale: 'all', depth: 0 })
+  type LocalizedTitle = Partial<Record<Locale, string | null>> | null | undefined
+  const titleIn = (column: unknown, locale: Locale) =>
+    ((column as { title?: LocalizedTitle }).title ?? {})[locale]
+  const columnIdOf = (titles: Localized<string>) =>
+    (allFooter.columns ?? []).find((column) =>
+      LOCALES.every((locale) => titleIn(column, locale) === titles[locale]),
+    )?.id
+  const removeColumnId = columnIdOf(navigation.removeFooterColumn)
+  const aboutColumnId = columnIdOf(navigation.aboutLink.column)
+  const aboutKey = navigation.aboutLink.page
+  const aboutId = pageIds.get(aboutKey)
+  const aboutCopy = landing.find((page) => page.key === aboutKey)
+  const aboutPublished =
+    (aboutCopy !== undefined && publishedLabels.has(`page ${aboutCopy.cs.slug}`)) ||
+    (aboutId !== undefined && (await latest('pages', aboutId, 'cs'))._status === 'published')
+  const aboutLinkId = `seo-geo-${aboutKey}-link`
+
   let footerChanged = false
   for (const locale of LOCALES) {
     const footer = await payload.findGlobal({
@@ -605,26 +1079,35 @@ export const applySeoGeo = async (
       fallbackLocale: false,
     })
     const { from, to } = navigation.renameLabels[locale]
-    const title = navigation.footerColumn.title[locale]
     let changed = false
-    const columns: NonNullable<Footer['columns']> = (footer.columns ?? []).map((column) => {
-      // The column exists from the other locale but has no text in this one yet.
-      if (column.id === columnId && !column.title) {
+    const columns: NonNullable<Footer['columns']> = []
+    for (const column of footer.columns ?? []) {
+      if (removeColumnId && column.id === removeColumnId) {
         changed = true
-        return { ...column, title, links: solutionLinks(locale) }
+        continue
       }
-      return {
-        ...column,
-        links: (column.links ?? []).map((item) => {
-          if (item.link.label !== from) return item
+      const links = (column.links ?? []).map((item) => {
+        if (item.link.label === from) {
           changed = true
           return { ...item, link: { ...item.link, label: to } }
-        }),
+        }
+        // The link exists from the other locale but has no label in this one yet.
+        if (item.id === aboutLinkId && !item.link.label && aboutCopy) {
+          changed = true
+          return { ...item, link: { ...item.link, label: aboutCopy[locale].title } }
+        }
+        return item
+      })
+      const linksAbout =
+        aboutId !== undefined && links.some((item) => idOf(item.link.page) === aboutId)
+      if (column.id === aboutColumnId && aboutPublished && aboutCopy && !linksAbout) {
+        changed = true
+        links.push({
+          id: aboutLinkId,
+          link: { label: aboutCopy[locale].title, type: 'internal', page: aboutId },
+        })
       }
-    })
-    if (!columns.some((column) => column.id === columnId || column.title === title)) {
-      changed = true
-      columns.push({ id: columnId, title, links: solutionLinks(locale) })
+      columns.push({ ...column, links })
     }
     if (!changed) continue
     footerChanged = true
@@ -656,6 +1139,69 @@ export const applySeoGeo = async (
         })),
       },
     })
+  }
+
+  // Site settings: solutions and company facts. Written only while empty.
+  const current = await payload.findGlobal({ slug: 'site-settings', locale: 'all', depth: 0 })
+  const solutions = settingsCopy.solutions.flatMap((key) => {
+    const pageId = pageIds.get(key)
+    return pageId === undefined ? [] : [pageId]
+  })
+  // A dry run counts the planned new pages too, so it lists the same write.
+  const solutionCount = settingsCopy.solutions.filter(
+    (key) => pageIds.has(key) || plannedPages.has(key),
+  ).length
+  const settingsData: Record<string, unknown> = {}
+  if (!current.solutions?.length && solutionCount) settingsData.solutions = solutions
+  const company = { ...current.company } as Record<string, unknown>
+  const registration = (company.registration ?? {}) as Partial<Record<Locale, string | null>>
+  let companyChanged = false
+  for (const field of ['legalName', 'companyId'] as const) {
+    const replaceable =
+      field === 'legalName' && company[field] === settingsCopy.company.replaceIf?.legalName
+    if (company[field] && !replaceable) continue
+    if (company[field] === settingsCopy.company[field]) continue
+    company[field] = settingsCopy.company[field]
+    companyChanged = true
+  }
+  const registrationLocales = LOCALES.filter((locale) => !registration[locale])
+  report[settingsData.solutions ? 'updated' : 'skipped'].push('site-settings solutions')
+  report[companyChanged || registrationLocales.length ? 'updated' : 'skipped'].push(
+    'site-settings company',
+  )
+
+  // Contact address (not localized): only the old spelling of the company name changes.
+  const contactSettings = await payload.findGlobal({
+    slug: 'site-settings',
+    locale: 'cs',
+    depth: 0,
+  })
+  const address = contactSettings.contact?.address
+  const fixedAddress = address ? withCompanyName(address) : address
+  report[fixedAddress !== address ? 'updated' : 'skipped'].push('site-settings contact address')
+
+  if (!write) return report
+  if (fixedAddress !== address) {
+    await payload.updateGlobal({
+      slug: 'site-settings',
+      locale: 'cs',
+      data: { contact: { ...contactSettings.contact, address: fixedAddress } },
+    })
+  }
+  for (const locale of LOCALES) {
+    // verification is never written here. Arthur sets the tokens through the API.
+    const data: Record<string, unknown> = locale === 'cs' ? { ...settingsData } : {}
+    if (registrationLocales.includes(locale) || (locale === 'cs' && companyChanged)) {
+      data.company = {
+        legalName: company.legalName,
+        companyId: company.companyId,
+        registration: registrationLocales.includes(locale)
+          ? settingsCopy.company.registration[locale]
+          : registration[locale],
+      }
+    }
+    if (Object.keys(data).length)
+      await payload.updateGlobal({ slug: 'site-settings', locale, data })
   }
 
   return report

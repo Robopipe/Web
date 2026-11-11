@@ -17,10 +17,26 @@ export const IndustryCards: Block = {
       localized: true,
     },
     {
+      name: 'source',
+      type: 'select',
+      defaultValue: 'custom',
+      options: [
+        { label: 'Cards below', value: 'custom' },
+        { label: 'Solutions (Site settings)', value: 'solutions' },
+      ],
+      admin: {
+        description:
+          'Solutions shows the solution pages from Site settings, the same as the footer.',
+      },
+    },
+    {
       name: 'cards',
       type: 'array',
-      required: true,
-      minRows: 1,
+      admin: { condition: (_, sibling) => sibling?.source !== 'solutions' },
+      validate: (value: unknown, { siblingData }: { siblingData: Record<string, unknown> }) =>
+        siblingData?.source === 'solutions' || (Array.isArray(value) && value.length > 0)
+          ? true
+          : 'Add at least one card.',
       fields: [
         {
           name: 'image',
