@@ -25,6 +25,7 @@
   },
   "blog": {
     "title": "Blog",
+    "metaTitle": "Blog on machine vision and quality control | Robopipe",
     "headline": "Machine vision notes from the factory floor.",
     "description": "Guides, stories and engineering notes on running machine vision in production.",
     "allPosts": "All posts",

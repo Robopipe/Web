@@ -1,6 +1,6 @@
 # #19 Opravy SEO v kódu: implementace
 
-Podklad: audit viditelnosti z 11. 11. 2026, nálezy 1, 3, 5 a 7. Režim B (jeden vývojář).
+Podklad: audit viditelnosti z 11. 11. 2026, nálezy 1, 3, 5, 7 a 9. Režim B (jeden vývojář).
 
 ## Změny
 
@@ -10,6 +10,7 @@ Podklad: audit viditelnosti z 11. 11. 2026, nálezy 1, 3, 5 a 7. Režim B (jeden
 | b) Nález 3 | `<Analytics />` a `<SpeedInsights />` jsou pryč z layoutu. Balíčky `@vercel/analytics` a `@vercel/speed-insights` jsou pryč z `package.json`. `trackEvent` nic nedělá, dokud se nevybere nový nástroj. | Na Coolify oba skripty vrací 404 a dávají 2 chyby v konzoli. | `layout.tsx`, `src/lib/analytics.ts`, `package.json`, `pnpm-lock.yaml` |
 | c) Nález 5 | Video v bloku Hero má `preload="none"`. Přehrávání (ztlumené, ve smyčce, `playsinline`) spustí skript po události `load`. Pole `image` bloku slouží jako plakát (varianta 1080 px), když je vyplněné. Obrázek v Hero má `sizes` a `fetchpriority="high"`. | Video 5 MB se stahovalo hned se stránkou. Obrázek LCP na stránkách řešení stahoval variantu 3840 px. | `src/blocks/Hero/Component.tsx`, `src/blocks/Hero/HeroVideo.tsx`, `src/blocks/Hero/config.ts` (jen popis pole), `src/components/Media.tsx` |
 | d) Nález 7 | Organization má `foundingDate`, `numberOfEmployees`, `parentOrganization` (KOALA42) a LinkedIn Robopipe v `sameAs`. Adresa kanceláře z nastavení webu je `PostalAddress`. | Modely AI a Google skládají entitu firmy z těchto polí. | `src/lib/jsonLd.ts` |
+| e) Nález 9 | Titulek výpisu blogu je cs „Blog o strojovém vidění a kontrole kvality | Robopipe“ a en „Blog on machine vision and quality control | Robopipe“. Nový klíč `blog.metaTitle` jde do `seo.title`, stejně jako u případových studií. Chip, drobečková navigace a JSON-LD dál používají `blog.title` („Blog“). | Titulek „Blog \| Robopipe“ byl v obou jazycích stejný a neříkal, o čem blog je. | `blog/page.tsx`, `src/i18n/messages/cs.json`, `en.json` |
 
 Rozhodnutí:
 
@@ -41,6 +42,7 @@ Místní databáze `robopipe_19` (migrace přes `pnpm seed`), server `next start
 | a) `tests/e2e/localeSwitch.e2e.spec.ts` | Všech 44 adres z místní sitemap: odkaz přepínače v HTML ze serveru (bez JavaScriptu) se shoduje s hreflang stránky a vrací 200. Produkční sitemap má 58 adres. Místní seed má méně stránek. |
 | c) `tests/e2e/heroVideo.e2e.spec.ts` | Chromium (Chrome) a WebKit (iPhone 14): video má `preload="none"`, nemá `autoplay` a `currentTime` po načtení roste. |
 | c) Plakát | Ručně v místní databázi: s obrázkem v Hero má video `poster` (varianta 1080 px, odpověď 200). Bez obrázku `poster` chybí. |
+| e) Titulek blogu | Místní build: `/cs/blog` a `/en/blog` mají nový text v `<title>`, `og:title` a `twitter:title`. `tsc --noEmit` a `pnpm build` prošly. |
 
 Spuštění testů na jiném portu:
 
