@@ -63,10 +63,27 @@ po stránce.
     a před blogem).
 6.6 Chyby C1, C2 a C3 z `test-report.md` jsou opravené a mají testy.
 
+## Kolo 3 (Filip 11. 11. 2026, 13:01)
+
+Filip poslal 6 komentářů ke stránce `/cs/case-studies`. Platí i pro `/en/case-studies`.
+
+### Akceptační kritéria kola 3
+
+7.1 Hlavní fotka hlavního případu (Crocodille) je skutečný záběr z videa z provozu, ne obrázek vygenerovaný AI.
+    Na fotce nejsou tváře lidí ani cizí značky. Alt text popisuje fotku v cs i en.
+7.2 Karta hlavního případu v seznamu neukazuje údaj „95 % přesnost detekce“.
+7.3 Třetí karta v seznamu neukazuje údaj „95 % přesnost detekce“. Údaj „5 různých kontrol na balení“ zůstane.
+7.4 Údaje na kartě v seznamu jsou na 1440 px vedle sebe v jednom řádku (druhá karta: „< 1 min“ a „1 ušetřený
+    celý úvazek“). Na 375 px se smí zalomit pod sebe. Nic nepřeteče z karty.
+7.5 Citát (Vedoucí kvality, Crocodille) je nad sekcí „Řešení podle úlohy“.
+7.6 Nadpis výzvy je „Třeba je na řadě právě váš provoz.“, anglicky „Your operation could be next.“
+7.7 Detail případu se nemění: údaj „95 %“ tam zůstane. Skript obsahu běží idempotentně a nepřepíše fotku
+    ani údaje, které někdo změnil ručně v administraci. Kritéria kol 1 a 2 platí dál.
+
 ## Mimo rozsah
 
 - Nové video na úvodní stránku (samostatný úkol).
-- Jiné úpravy textů a pořadí sekcí (kromě kola 2).
+- Jiné úpravy textů a pořadí sekcí (kromě kol 2 a 3).
 
 ## Vstupy
 
