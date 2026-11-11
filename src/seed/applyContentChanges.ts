@@ -1,8 +1,9 @@
 import 'dotenv/config'
 
-import config from '@payload-config'
 import fs from 'node:fs'
 import path from 'node:path'
+
+import type { SanitizedConfig } from 'payload'
 
 import {
   applyChangeFile,
@@ -42,8 +43,8 @@ const run = async (): Promise<void> => {
     baseUrl: remote,
     email,
     password,
-    // The REST client does not use the config. Payload does not connect to a database.
-    config: await config,
+    // Change files need no Payload config. Not loading it keeps a local run at about a second.
+    config: {} as SanitizedConfig,
     readOnly: dryRun,
   })
   console.log(`Remote ${new URL(remote).origin} as ${email}${dryRun ? ' (dry run)' : ''}`)
