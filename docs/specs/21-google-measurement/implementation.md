@@ -172,7 +172,7 @@ Výška lišty s otevřenou stránkou `/cs`, změřená v Chrome:
 
 | Okno | Před | Po |
 | --- | --- | --- |
-| 1440 × 900 | 140 px | 140 px (16 %) |
+| 1440 × 900 | beze změny (třídy od `sm` výše se nemění) | 140 px (16 %) |
 | 390 × 844 | 36 % | 224 px (27 %) |
 | 320 × 568 | 50 % | 224 px (39 %) |
 
