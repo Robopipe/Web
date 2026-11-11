@@ -1,0 +1,14 @@
+name: no-comment-layer
+
+# Acceptance criterion 9 of issue #8: master never contains the local comment layer.
+on:
+  pull_request:
+    branches: [master]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - uses: actions/checkout@v4
+      - run: scripts/check-no-comment-layer.sh

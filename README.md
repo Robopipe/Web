@@ -82,6 +82,16 @@ The script is idempotent: it finds existing documents and never overwrites a fie
 SEED_REMOTE_EMAIL=… SEED_REMOTE_PASSWORD=… pnpm seed:seo-geo --remote=http://localhost:3000 --dry-run
 ```
 
+## Local copy and content changes
+
+Two scripts keep a local copy of the site in step with production (issue #8).
+
+**`pnpm pull:prod --from=https://robopipe.io`** copies the published production content into an empty local database: media, categories, authors, FAQs, testimonials, case studies, posts, pages, redirects and the header, footer and site settings globals. It reads production anonymously through REST, so it needs no production account and sees only what a visitor sees. Documents keep their production IDs (the script sets `PAYLOAD_ALLOW_ID_ON_CREATE=1`, which only this script uses). Media files come from the public bucket and go to `./media`. The script refuses a `DATABASE_URL` outside localhost and a database that already has pages or media. Users, leads, subscribers and the AI blog settings are not copied.
+
+**`pnpm content:apply --remote=<URL> [--dry-run] [--file=<path>]`** writes content change files from `seed-assets/content-changes/` through the Payload REST API. Every change carries the old value. The script writes only where the target still has that old value, and a conflict stops the whole file before it writes. Run it against the local site first, then against production with `--dry-run`, then without. The format and rules are in `seed-assets/content-changes/README.md`.
+
+**`scripts/check-no-comment-layer.sh`** fails when a file or dependency of the local comment layer reaches this repo. The `no-comment-layer` workflow runs it on every pull request to `master`.
+
 ## Search engine verification
 
 The Bing (`msvalidate.01`) and Seznam (`seznam-wmt`) verification tags come from **Site settings → Verification**. An empty value renders no tag. A change through the admin or `POST /api/globals/site-settings` (Payload uses POST for globals) shows on every page without a deploy. The content script never writes these values.
