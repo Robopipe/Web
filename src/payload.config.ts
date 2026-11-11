@@ -89,6 +89,9 @@ export default buildConfig({
   db: postgresAdapter({
     // Only `pnpm pull:prod` sets this, so the local copy keeps the production IDs.
     allowIDOnCreate: process.env.PAYLOAD_ALLOW_ID_ON_CREATE === '1',
+    // Dev push reads the whole schema again on every Payload init (20 s and more on a small
+    // machine). The local copy sets PAYLOAD_DB_PUSH=0 once its schema exists.
+    push: process.env.PAYLOAD_DB_PUSH !== '0',
     pool: {
       connectionString: process.env.DATABASE_URL || '',
     },
