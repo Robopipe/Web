@@ -20,6 +20,7 @@ import { ProcessStepsComponent } from './ProcessSteps/Component'
 import { SplitSectionComponent } from './SplitSection/Component'
 import { StatsComponent } from './Stats/Component'
 import { TestimonialBarComponent } from './TestimonialBar/Component'
+import { VideoEmbedComponent } from './VideoEmbed/Component'
 
 type LayoutBlock = NonNullable<Page['layout']>[number]
 
@@ -29,6 +30,7 @@ const components: Record<LayoutBlock['blockType'], React.FC<any>> = {
   featureGrid: FeatureGridComponent,
   content: ContentComponent,
   mediaBlock: MediaBlockComponent,
+  videoEmbed: VideoEmbedComponent,
   stats: StatsComponent,
   logoCloud: LogoCloudComponent,
   testimonialBar: TestimonialBarComponent,

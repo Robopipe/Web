@@ -1,10 +1,11 @@
 import { convertLexicalToPlaintext } from '@payloadcms/richtext-lexical/plaintext'
 
 import type { Locale } from '@/i18n/routing'
-import type { Faq, Page, Post, PricingTableBlock, SiteSetting } from '@/payload-types'
+import type { Faq, Page, Post, PricingTableBlock, SiteSetting, Video } from '@/payload-types'
 
 import { ogImageUrl } from './meta'
 import { absoluteUrl, SERVER_URL } from './paths'
+import { isoDuration, youTubeId, youTubeWatchUrl } from './youtube'
 
 /**
  * schema.org structured data built from the data a page already renders.
@@ -259,6 +260,41 @@ export const faqsFromLayout = (layout: Page['layout'] | null | undefined): FaqIt
           : undefined
     for (const faq of faqs ?? []) {
       if (isPopulated(faq) && !seen.has(faq.id)) seen.set(faq.id, faq)
+    }
+  }
+  return [...seen.values()]
+}
+
+/**
+ * VideoObject for a YouTube video shown with the `videoEmbed` block (issue #22).
+ * The thumbnail is the preview image from this site. `embedUrl` is the standard
+ * YouTube player: only crawlers read it, visitors get youtube-nocookie.com.
+ */
+export const videoObjectLd = (video: Video): JsonLdObject | null => {
+  const id = youTubeId(video.url)
+  const thumbnail = isPopulated(video.thumbnail) ? video.thumbnail.url : undefined
+  if (!id || !thumbnail) return null
+  return compact({
+    '@context': CONTEXT,
+    '@type': 'VideoObject',
+    name: video.title,
+    description: video.description,
+    thumbnailUrl: thumbnail.startsWith('/') ? absoluteUrl(thumbnail) : thumbnail,
+    uploadDate: video.uploadDate?.slice(0, 10),
+    duration: isoDuration(video.duration),
+    embedUrl: `https://www.youtube.com/embed/${id}`,
+    url: youTubeWatchUrl(id),
+    inLanguage: IN_LANGUAGE[video.language],
+    publisher: organizationRef,
+  })
+}
+
+/** Videos of the `videoEmbed` blocks on a page. A video used twice appears once. */
+export const videosFromLayout = (layout: Page['layout'] | null | undefined): Video[] => {
+  const seen = new Map<number, Video>()
+  for (const block of layout ?? []) {
+    if (block.blockType === 'videoEmbed' && isPopulated(block.video)) {
+      seen.set(block.video.id, block.video)
     }
   }
   return [...seen.values()]
