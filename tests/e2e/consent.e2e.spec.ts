@@ -27,7 +27,7 @@ type MeasurementIds = typeof TEST_IDS
 const HOME = { cs: '/cs', en: '/en' }
 const CONTACT = '/cs/kontakt'
 const AD_KEYS = ['ad_storage', 'ad_user_data', 'ad_personalization'] as const
-const GOOGLE_COOKIE = /^(_ga|_ga_.+|_gid|_gat.*|_gcl_.+)$/
+const GOOGLE_COOKIE = /^(_ga|_ga_.+|_gid|_gat.*|_gcl_.+|_gac_.+)$/
 const DAY_SECONDS = 24 * 60 * 60
 
 let session: APIRequestContext
@@ -366,14 +366,38 @@ test.describe('phone', () => {
     }))
     expect(size.scrollWidth).toBeLessThanOrEqual(size.clientWidth)
     expect(size.pageScrollWidth).toBeLessThanOrEqual(390)
-    expect(size.height).toBeLessThanOrEqual(844 / 2)
-    // Accept and reject sit under each other at full width.
+    expect(size.height).toBeLessThanOrEqual(844 * 0.3)
+    // Accept and reject sit side by side with the same size (criterion 2).
     const accept = await banner(page).getByRole('button', { name: 'Přijmout vše' }).boundingBox()
     const reject = await banner(page).getByRole('button', { name: 'Odmítnout' }).boundingBox()
     expect(accept?.width).toBe(reject?.width)
-    expect(reject!.y).toBeGreaterThan(accept!.y)
+    expect(accept?.height).toBe(reject?.height)
+    expect(reject!.y).toBe(accept!.y)
   })
 })
+
+for (const viewport of [
+  { width: 390, height: 844 },
+  { width: 320, height: 568 },
+]) {
+  test.describe(`${viewport.width} px`, () => {
+    test.use({ viewport })
+
+    test(`13, 16: at ${viewport.width} px the footer language switch is reachable with the banner open`, async ({
+      page,
+    }) => {
+      await page.goto(HOME.cs)
+      await expect(banner(page)).toBeVisible()
+      await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight))
+      const bannerTop = (await banner(page).boundingBox())!.y
+      const footerBottom = (await page.locator('footer').boundingBox())!
+      expect(footerBottom.y + footerBottom.height).toBeLessThanOrEqual(bannerTop + 1)
+      await page.locator('footer a[data-locale-switch="en"]').click({ timeout: 5_000 })
+      await expect(page).toHaveURL(/\/en$/)
+      await expect(banner(page)).toBeVisible()
+    })
+  })
+}
 
 test('16: the locale suggestion waits until the banner is closed', async ({ page, context }) => {
   await context.addCookies([
