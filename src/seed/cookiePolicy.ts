@@ -22,8 +22,8 @@ export const YOUTUBE_PARAGRAPH: Record<Locale, string> = {
  * the marketing paragraph. No asterisks: see `mdToLexical`.
  */
 export const AD_CONVERSION_PARAGRAPH: Record<Locale, string> = {
-  cs: 'Když přijdete z naší reklamy Google Ads a dáte souhlas s marketingem, uložíme značku kliknutí do cookie rp_click na 90 dní. Když potom odešlete poptávku z firemní e-mailové adresy, předáme Googlu otisk e-mailu (SHA-256) a značku kliknutí, pokud ji máme. Google z nich zjistí, která reklama poptávku přinesla. Čitelný e-mail Googlu nepředáváme. Bez souhlasu nepředáme nic.',
-  en: 'When you come from our Google Ads ad and consent to marketing, we store the click ID in the cookie rp_click for 90 days. When you then send an inquiry from a company email address, we give Google a hash of the email (SHA-256) and the click ID, if we have it. Google uses them to find out which ad brought the inquiry. We never give Google the readable email. Without consent, we give nothing.',
+  cs: 'Když přijdete z naší reklamy Google Ads a dáte souhlas s marketingem, uložíme značku kliknutí do cookie rp_click na 90 dní. Když odešlete poptávku z firemní e-mailové adresy a máte souhlas s marketingem, předáme Googlu otisk e-mailu (SHA-256), čas odeslání a značku kliknutí, pokud ji máme. To platí i tehdy, když jste na web nepřišli z reklamy. Značku kliknutí a vaši volbu cookies uložíme také k poptávce. Google z těchto údajů zjistí, která reklama poptávku přinesla. Čitelný e-mail Googlu nepředáváme. Bez souhlasu s marketingem nepředáme nic.',
+  en: 'When you come from our Google Ads ad and consent to marketing, we store the click ID in the cookie rp_click for 90 days. When you send an inquiry from a company email address and you consent to marketing, we give Google a hash of the email (SHA-256), the time you sent it and the click ID, if we have it. This also applies when you did not come from an ad. We also store the click ID and your cookie choice with the inquiry. Google uses this data to find out which ad brought the inquiry. We never give Google the readable email. Without consent to marketing, we give Google nothing.',
 }
 
 /** Replaces the old "Analytics" paragraph, which said the site sets no cookies. */
@@ -77,6 +77,11 @@ const MARKETING_LABEL: Record<Locale, string> = {
   cs: 'S vaším souhlasem s marketingem',
   en: 'With your consent to marketing',
 }
+/** First words of the ad conversion paragraph. A page with an older version gets the new text. */
+const AD_CONVERSION_LABEL: Record<Locale, string> = {
+  cs: 'Když přijdete z naší reklamy Google Ads',
+  en: 'When you come from our Google Ads ad',
+}
 /** First words of the last cookie paragraph. The YouTube paragraph goes before it. */
 const SETTINGS_LABEL: Record<Locale, string> = {
   cs: 'Volbu kdykoli změníte',
@@ -129,6 +134,7 @@ export const applyCookiePolicyToContent = (
   }
 
   // A page from #21 or #22 gets the ad conversion paragraph (issue #26) after the marketing one.
+  // A page with an older version of it gets the current text in the same place.
   // A page that got the full cookie text above already has it.
   if (
     children.some((node) => plainText(node).startsWith(NEW_LABEL[locale])) &&
@@ -137,8 +143,15 @@ export const applyCookiePolicyToContent = (
     const adConversion = cookieNodes.find(
       (node) => plainText(node) === AD_CONVERSION_PARAGRAPH[locale],
     )
+    const older = children.findIndex((node) =>
+      plainText(node).startsWith(AD_CONVERSION_LABEL[locale]),
+    )
     const index = children.findIndex((node) => plainText(node).startsWith(MARKETING_LABEL[locale]))
-    if (!adConversion || index === -1) missing.push(`paragraph "${MARKETING_LABEL[locale]}"`)
+    if (!adConversion) missing.push('ad conversion paragraph in the cookie text')
+    else if (older !== -1) {
+      children.splice(older, 1, adConversion)
+      changes.push('ad conversion paragraph replaced with the current text')
+    } else if (index === -1) missing.push(`paragraph "${MARKETING_LABEL[locale]}"`)
     else {
       children.splice(index + 1, 0, adConversion)
       changes.push(`ad conversion paragraph after "${MARKETING_LABEL[locale]}"`)
