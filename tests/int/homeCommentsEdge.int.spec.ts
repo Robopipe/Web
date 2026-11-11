@@ -6,6 +6,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest'
 
 import config from '@/payload.config'
 import type { FeatureGridBlock, Page } from '@/payload-types'
+import { getPageBySlug } from '@/lib/queries'
 import { applySeoGeo } from '@/seed/seoGeo'
 
 /**
@@ -18,6 +19,7 @@ import { applySeoGeo } from '@/seed/seoGeo'
 const COPY = path.resolve(process.cwd(), 'seed-assets/copy/seo-geo')
 const home = JSON.parse(fs.readFileSync(path.join(COPY, 'home.json'), 'utf8')) as {
   memberships: { blockName: string; heading: { cs: string; en: string } }
+  solutions: { blockName: string }
   removeBlocks: string[]
   featureLinks: { block: string; feature: string; cs: string; en: string }[]
 }
@@ -110,7 +112,20 @@ describe('home page comments (#9), edge cases', () => {
     expect(idOf(cs.page)).toBe(pricing)
   }, 120_000)
 
-  it('adds a missing memberships block right after the testimonial, in both locales', async () => {
+  it('keeps the English card link empty when only the Czech label is set (C2)', async () => {
+    const pricing = await pageId('cenik')
+    await save('cs', withCardLink(saved.cs!, { label: 'Ceník od Filipa', page: pricing }))
+    await save('en', withCardLink(saved.en!, { label: null, page: pricing }))
+
+    const cs = await getPageBySlug('home', 'cs')
+    const en = await getPageBySlug('home', 'en')
+    expect(cardOf(cs!.layout).link?.label).toBe('Ceník od Filipa')
+    expect(cardOf(en!.layout).link?.label ?? null).toBeNull()
+    // The other English texts still fall back as before.
+    expect(cardOf(en!.layout).title).toBeTruthy()
+  }, 60_000)
+
+  it('adds a missing memberships block right after the solutions, in both locales', async () => {
     for (const locale of LOCALES) {
       await save(
         locale,
@@ -121,11 +136,26 @@ describe('home page comments (#9), edge cases', () => {
     expect(report.skipped).not.toContain('home page')
     for (const locale of LOCALES) {
       const layout = (await latest(locale)).layout ?? []
-      const at = layout.findIndex((b) => b.blockType === 'testimonialBar')
+      const at = layout.findIndex((b) => b.blockName === home.solutions.blockName)
       expect(names(layout)[at + 1]).toBe(MEMBERSHIPS)
       expect((layout[at + 1] as { heading?: string }).heading).toBe(
         home.memberships.heading[locale],
       )
+    }
+  }, 120_000)
+
+  it('adds a missing memberships block after the testimonial when the order was changed by hand', async () => {
+    for (const locale of LOCALES) {
+      const layout = saved[locale]!.filter((b) => b.blockName !== MEMBERSHIPS)
+      await save(locale, [...layout.slice(-1), ...layout.slice(0, -1)])
+    }
+    const report = await run()
+    expect(report.skipped).toContain('home page (order changed by hand)')
+    for (const locale of LOCALES) {
+      const layout = (await latest(locale)).layout ?? []
+      expect(layout[0]!.blockType).toBe('ctaBanner')
+      const at = layout.findIndex((b) => b.blockType === 'testimonialBar')
+      expect(names(layout)[at + 1]).toBe(MEMBERSHIPS)
     }
   }, 120_000)
 

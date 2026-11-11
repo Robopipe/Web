@@ -81,8 +81,8 @@ type HomeCopy = {
     replaceIf: { title?: string; description?: string }
   }>
   /**
-   * logoCloud block with source "memberships", after the first testimonialBar block.
-   * The stage 1 position (right after the customer logos) moves there, any other stays.
+   * logoCloud block with source "memberships", after the solutions block (homeOrders).
+   * A new block in a layout changed by hand goes after the first testimonialBar block.
    */
   memberships: {
     blockName: string
@@ -95,6 +95,55 @@ type HomeCopy = {
   featureLinks: ({ block: string; feature: string; page: string } & Localized<string>)[]
   /** industryCards block with source "solutions", after the first industryCards block. */
   solutions: { blockName: string } & Localized<{ heading: string; text: string }>
+}
+
+type HomeBlock = NonNullable<Page['layout']>[number]
+
+/** A home page block by its blockName (blocks the script adds), else by its blockType. */
+const homeKey = (block: HomeBlock) => block.blockName ?? block.blockType
+const sameKeys = (a: string[], b: string[]) =>
+  a.length === b.length && a.every((key, i) => key === b[i])
+
+/**
+ * Home page order (#9 round 2): the three card grids (featureGrid and both industryCards)
+ * do not follow each other. `known` are the states the script reorders: production
+ * after #6 (memberships after the customer logos), after #9 round 1 (memberships after
+ * the testimonial) and the target itself.
+ */
+const homeOrders = (home: Pick<HomeCopy, 'memberships' | 'solutions'>) => {
+  const memberships = home.memberships.blockName
+  const solutions = home.solutions.blockName
+  const before = [
+    'hero',
+    'logoCloud',
+    'featureGrid',
+    'industryCards',
+    solutions,
+    'processSteps',
+    'testimonialBar',
+    'splitSection',
+    'ctaBanner',
+  ]
+  const withMembershipsAfter = (key: string) => {
+    const at = before.indexOf(key) + 1
+    return [...before.slice(0, at), memberships, ...before.slice(at)]
+  }
+  const target = [
+    'hero',
+    'logoCloud',
+    'featureGrid',
+    'processSteps',
+    'industryCards',
+    'testimonialBar',
+    solutions,
+    memberships,
+    'splitSection',
+    'ctaBanner',
+  ]
+  return {
+    known: [withMembershipsAfter('logoCloud'), withMembershipsAfter('testimonialBar'), target],
+    target,
+  }
 }
 
 type NavigationCopy = {
@@ -669,45 +718,6 @@ export const applySeoGeo = async (
     }
     for (const block of removed) report.updated.push(`home page (removed block ${block.blockName})`)
 
-    const membershipsAt = blocks.findIndex(
-      (block) => block.blockName === home.memberships.blockName,
-    )
-    if (membershipsAt === -1) {
-      const id = home.memberships.blockName
-      blocks.splice(afterTestimonial(), 0, {
-        id,
-        blockType: 'logoCloud',
-        blockName: id,
-        source: 'memberships',
-        heading: home.memberships.heading.cs,
-      })
-      addedBlocks.push({
-        id,
-        locale: {
-          cs: { heading: home.memberships.heading.cs },
-          en: { heading: home.memberships.heading.en },
-        },
-      })
-    }
-    // Stage 1 put the memberships right after the customer logos. Only that position
-    // moves: a block somewhere else was moved by hand and stays.
-    const customerLogosAt = blocks.findIndex(
-      (block) => block.blockType === 'logoCloud' && block.source !== 'memberships',
-    )
-    const hasTestimonial = blocks.some((block) => block.blockType === 'testimonialBar')
-    const moveMemberships =
-      membershipsAt !== -1 &&
-      customerLogosAt !== -1 &&
-      membershipsAt === customerLogosAt + 1 &&
-      hasTestimonial
-    if (moveMemberships) {
-      const [block] = blocks.splice(membershipsAt, 1)
-      blocks.splice(afterTestimonial(), 0, block)
-      report.updated.push('home page (memberships moved after testimonialBar)')
-    } else if (membershipsAt !== -1) {
-      report.skipped.push('home page (memberships position)')
-    }
-
     if (!has(home.solutions.blockName)) {
       const id = home.solutions.blockName
       const at = blocks.findIndex((block) => block.blockType === 'industryCards')
@@ -726,6 +736,48 @@ export const applySeoGeo = async (
           en: { heading: home.solutions.en.heading, text: home.solutions.en.text },
         },
       })
+    }
+
+    const hasMemberships = has(home.memberships.blockName)
+    if (!hasMemberships) {
+      const id = home.memberships.blockName
+      blocks.push({
+        id,
+        blockType: 'logoCloud',
+        blockName: id,
+        source: 'memberships',
+        heading: home.memberships.heading.cs,
+      })
+      addedBlocks.push({
+        id,
+        locale: {
+          cs: { heading: home.memberships.heading.cs },
+          en: { heading: home.memberships.heading.en },
+        },
+      })
+    }
+
+    // The order changes only from a known state (homeOrders). Any other order was
+    // changed by hand and stays. A new memberships block then goes after the testimonial.
+    const orders = homeOrders(home)
+    const keys = blocks.map(homeKey)
+    const known = orders.known.some(
+      (order) =>
+        sameKeys(order, keys) ||
+        (!hasMemberships &&
+          sameKeys(
+            order.filter((key) => key !== home.memberships.blockName),
+            keys.slice(0, -1),
+          )),
+    )
+    const reordered = known && !sameKeys(keys, orders.target)
+    if (known) {
+      const byKey = new Map(blocks.map((block) => [homeKey(block), block]))
+      blocks.splice(0, blocks.length, ...orders.target.map((key) => byKey.get(key)!))
+      report[reordered ? 'updated' : 'skipped'].push('home page (order)')
+    } else {
+      if (!hasMemberships) blocks.splice(afterTestimonial(), 0, blocks.pop()!)
+      report.skipped.push('home page (order changed by hand)')
     }
 
     managed.push({ collection: 'pages', id: homePage.id, label: 'home page' })
@@ -766,7 +818,16 @@ export const applySeoGeo = async (
       return true
     })
     const linked = new Set<string>()
-    const orderChanged = removed.length > 0 || moveMemberships
+    // link.page is not localized. When a card has a label in some locale, its page stays
+    // (Filip may have chosen it) and the other locales only get their label.
+    const labelled = new Set<string>()
+    for (const locale of LOCALES) {
+      const { layout } = await latest('pages', homePage.id, locale)
+      for (const link of featureLinks) {
+        if (cardOf(layout, link)?.link?.label) labelled.add(link.feature)
+      }
+    }
+    const orderChanged = removed.length > 0 || reordered
 
     // The hero heading, title and seo.title stay as they are: Filip may have edited them.
     const heroId = blocks.find((block) => block.blockType === 'hero')?.id
@@ -801,11 +862,13 @@ export const applySeoGeo = async (
                 return link
                   ? {
                       ...feature,
-                      link: {
-                        label: link[locale],
-                        type: 'internal' as const,
-                        page: pageIds.get(link.page) ?? null,
-                      },
+                      link: labelled.has(link.feature)
+                        ? { ...feature.link, label: link[locale] }
+                        : {
+                            label: link[locale],
+                            type: 'internal' as const,
+                            page: pageIds.get(link.page) ?? null,
+                          },
                     }
                   : feature
               }),

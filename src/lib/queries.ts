@@ -2,7 +2,7 @@ import config from '@payload-config'
 import { getPayload } from 'payload'
 import { cache } from 'react'
 
-import type { Locale } from '@/i18n/routing'
+import { routing, type Locale } from '@/i18n/routing'
 import type { Media, Page } from '@/payload-types'
 
 import { pathFor } from './paths'
@@ -29,8 +29,42 @@ export const getPageBySlug = async (slug: string, locale: Locale, draft = false)
     depth: 2,
     overrideAccess: draft,
   })
-  return result.docs[0] ?? null
+  const page = result.docs[0] ?? null
+  if (!page || locale === routing.defaultLocale) return page
+  const own = await payload.findByID({
+    collection: 'pages',
+    id: page.id,
+    locale,
+    fallbackLocale: false,
+    draft,
+    depth: 0,
+    select: { layout: true },
+    overrideAccess: draft,
+  })
+  return withoutFallbackCardLinks(page, own.layout)
 }
+
+/**
+ * A card link label is localized, but the fallback locale fills an empty one with the
+ * Czech text. A card link without its own label in this locale is not shown.
+ * `own` is the same layout read without the fallback locale.
+ */
+export const withoutFallbackCardLinks = (page: Page, own: Page['layout']): Page => ({
+  ...page,
+  layout: page.layout?.map((block) => {
+    if (block.blockType !== 'featureGrid') return block
+    const ownBlock = own?.find((b) => b.id === block.id)
+    const ownFeatures = ownBlock?.blockType === 'featureGrid' ? ownBlock.features : []
+    return {
+      ...block,
+      features: block.features.map((feature) =>
+        feature.link?.label && !ownFeatures.find((f) => f.id === feature.id)?.link?.label
+          ? { ...feature, link: { ...feature.link, label: null } }
+          : feature,
+      ),
+    }
+  }),
+})
 
 /**
  * Posts/case studies are only visible in locales where they are translated:

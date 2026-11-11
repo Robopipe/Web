@@ -16,6 +16,16 @@ const HOME = {
     link: 'Snímky vám pomůže označit automatická anotace.',
     linkPath: '/cs/automaticka-anotace',
     labelCard: 'Kontrola etiket',
+    // Section headings in the round 2 order (6.1), the story by its eyebrow.
+    order: [
+      'AI kontrola kvality, kterou zvládne váš vlastní tým.',
+      'AI kontrola v provozu za jediný den.',
+      'Postaveno pro váš obor.',
+      'Příběh zákazníka',
+      'Kontrola kvality ve výrobě podle úlohy',
+      'Jsme součástí',
+      'Z blogu',
+    ],
   },
   en: {
     path: '/en',
@@ -26,6 +36,15 @@ const HOME = {
     link: 'Auto annotation helps you label the images.',
     linkPath: '/en/auto-annotation',
     labelCard: 'Label inspection',
+    order: [
+      'Deep-learning inspection your own team runs.',
+      'AI inspection, live in a day.',
+      'Made to redefine your industry.',
+      'Customer story',
+      'Quality control in production, by task',
+      'Part of',
+      'From the blog',
+    ],
   },
 } as const
 
@@ -49,6 +68,26 @@ for (const [locale, copy] of Object.entries(HOME)) {
       const memberships = await topOf(page, copy.memberships)
       expect(memberships).toBeGreaterThan(await topOf(page, copy.story))
       expect(memberships).toBeLessThan(await topOf(page, copy.blog))
+    })
+
+    test('spreads the card grids over the page (6.1, 6.2)', async ({ page }) => {
+      const tops: number[] = []
+      for (const text of copy.order) tops.push(await topOf(page, text))
+      expect(tops).toEqual([...tops].sort((a, b) => a - b))
+      // No two card grids are neighbour sections.
+      const at = await page.locator('main').evaluate((main, grids) => {
+        const sections = [...main.querySelectorAll('section')].filter(
+          (section) => !section.parentElement?.closest('section'),
+        )
+        return grids.map((text) =>
+          sections.findIndex((section) =>
+            [...section.querySelectorAll('h1, h2, h3')].some((h) => h.textContent?.trim() === text),
+          ),
+        )
+      }, [copy.order[0], copy.order[2], copy.order[4]])
+      expect(at.every((i) => i >= 0), at.join()).toBe(true)
+      expect(at[1]! - at[0]!).toBeGreaterThan(1)
+      expect(at[2]! - at[1]!).toBeGreaterThan(1)
     })
 
     test('has no auto annotation section (3.1)', async ({ page }) => {

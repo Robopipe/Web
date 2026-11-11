@@ -114,3 +114,99 @@ E2E_BASE_URL=http://localhost:<port> PLAYWRIGHT_CHROMIUM_PATH=<chrome-headless-s
 - Karta „Kontrola etiket“: ostrý snímek, štítek `PART 256355-80` odpovídá číslu na etiketě, jména firem nejsou čitelná.
 - Patička: větší mezera nad „Jsme součástí“ na všech stránkách.
 - Ruční úpravy zůstanou: přesunutý pruh, vlastní text odkazu, jiný `seo.image` (pokrývá `homeComments.int.spec.ts`).
+
+## Kolo 2
+
+Zadání: [`product.md`](./product.md), část „Kolo 2“ (kritéria 6.1 až 6.6). Chyby: [`test-report.md`](./test-report.md), C1 až C3.
+Nic není v produkci. Produkci jsem jen četl (pořadí bloků přes veřejné API).
+
+### K2.1 Co je hotové
+
+| Kritérium | Změna | Kde |
+|---|---|---|
+| 6.1, 6.2 | Skript obsahu nastaví nové pořadí úvodní stránky. Mřížky karet (`featureGrid`, oba `industryCards`) už nejdou za sebou. | `src/seed/seoGeo.ts` (`homeOrders`, home page) |
+| 6.3 | Přechody sekcí jsem prohlédl na 375 px a 1440 px. Styl se nemění (K2.3). | |
+| 6.4 | Pořadí se mění jen ze známého stavu. Druhý běh nic nezapíše. Ruční pořadí zůstane. | `seoGeo.ts`, testy |
+| 6.5 | Texty a obsah bloků se nemění. Skript jen přeskládá existující bloky. | |
+| C1 | Když má karta text odkazu v některém jazyce, skript nemění `link.page`. V ostatních jazycích zapíše jen text. | `seoGeo.ts` (`labelled`) |
+| C2 | Na `/en` se odkaz v kartě bez vlastního anglického textu nezobrazí. `getPageBySlug` čte rozložení ještě jednou bez záložního jazyka a prázdným odkazům smaže text. Ostatní texty dál používají záložní jazyk. | `src/lib/queries.ts` (`withoutFallbackCardLinks`) |
+| C3 | Odkaz v kartě má `wrap-anywhere`. Dlouhé slovo se zalomí uvnitř karty. | `src/blocks/FeatureGrid/Component.tsx` |
+
+README: tabulka obsahu (`home.json`) popisuje nové pravidlo pořadí, C1 a C2.
+
+### K2.2 Pravidlo pořadí
+
+Blok má klíč: `blockName` (bloky ze skriptu, `seo-geo-solutions`, `seo-geo-memberships`), jinak `blockType`. Bloky z #6 mají `blockName` prázdný a typy na stránce jsou kromě těchto dvou jedinečné.
+
+Skript nejdřív odebere bloky z `removeBlocks` a doplní chybějící blok řešení. Pak porovná celý seznam klíčů se známými stavy:
+
+1. produkce po #6: hero, loga, **Jsme součástí**, featureGrid, industryCards, řešení, processSteps, testimonialBar, splitSection, ctaBanner,
+2. po kole 1: stejné, ale **Jsme součástí** za testimonialBar (také čerstvý `pnpm seed`),
+3. cíl: hero, loga, featureGrid, processSteps, industryCards, testimonialBar, řešení, **Jsme součástí**, splitSection, ctaBanner.
+
+Když chybí blok „Jsme součástí“, porovnává se seznam bez něj. Výsledek:
+
+- Známý stav: skript bloky přeskládá do cíle (chybějící pruh vloží za řešení). Report `updated: home page (order)`, v cíli `skipped: home page (order)`.
+- Jiný stav: pořadí zůstane. Filip ho změnil v administraci. Report `skipped: home page (order changed by hand)`. Chybějící pruh jde za první `testimonialBar` jako v kole 1.
+
+Důvody:
+
+- Porovnání celého seznamu je nejpřísnější „známý stav“. Jakákoli ruční změna (i jinde na stránce) přesun zastaví. Stejný princip jako u pruhu v kole 1, jen pro celou stránku.
+- Jeden běh převede produkci po #6 i stav po kole 1. Mezistav kola 1 tak nemusí v produkci nikdy být.
+- Pravidlo nahrazuje pravidlo pruhu z kola 1 (`memberships moved after testimonialBar`). Dvě pravidla pro jedno pořadí by si odporovala.
+- Seznamy jsou v kódu, ne v `home.json`. Architektura (kap. 5.3 a 2) drží pravidla pozice v kódu.
+
+### K2.3 Přechody sekcí (6.3)
+
+Nové sousedství: světlá mřížka karet, tmavá sekce s čísly, světlé obory, příběh zákazníka (bílé pozadí), světlá řešení, pruh „Jsme součástí“ (čára nahoře), blog a otázky, tmavá výzva. Tmavé sekce spolu nesousedí. Dvojitá čára nevzniká: čáru má jen pruh „Jsme součástí“ a nad ním jsou karty bez spodní čáry. Mezery mezi světlými sekcemi (`py-16`/`py-24`, příběh `py-20`) jsou stejné jako dřív mezi mřížkami. Styl jsem neměnil.
+
+### K2.4 Ověření
+
+Lokální databáze `robopipe_h9`, server `next start` na portu 3830 (ukončen podle PID).
+
+| Kontrola | Výsledek |
+|---|---|
+| `tsc --noEmit` | 0 chyb |
+| `eslint .` | 0 chyb, 2 stávající varování |
+| `next build` | OK (57 stránek) |
+| `test:int` | 120/120 (21 souborů). Test C1 testera prochází. |
+| `test:e2e` | 86 prošlo, 2 selhaly (88). Obě selhání jsou známá i na `master` (kap. 6 body 2 a 3). |
+
+Nové a upravené testy:
+
+- `homeComments.int.spec.ts`: stav po #6 se staví explicitně v pořadí produkce. Nové testy: stav po kole 1 jedním během do cíle a druhý běh beze změny (počet verzí stejný), ruční pořadí v cílovém stavu zůstane, ruční pruh v produkčním stavu zastaví celé přeskládání.
+- `homeCommentsEdge.int.spec.ts`: C2 (`getPageBySlug` na `/en` bez českého textu odkazu), chybějící pruh jde za řešení, chybějící pruh v ručním pořadí jde za příběh zákazníka.
+- `homeComments.e2e.spec.ts`: pořadí nadpisů podle 6.1 a žádné dvě mřížky karet vedle sebe (cs, en).
+- `homeCommentsEdge.e2e.spec.ts`: C3, slovo o 100 znacích v odkazu zůstane v kartě na 320 px.
+
+Dry run na cílovém stavu: `created (0)`, `updated (0)`.
+
+Screenshoty (celá stránka): `screens/round2/home-{cs,en}-{1440,375}.jpg`.
+
+Poznámka k e2e: testy SEO berou adresu z `NEXT_PUBLIC_SERVER_URL`. Na jiném portu než v `.env` je nastav i při běhu testů:
+
+```bash
+NEXT_PUBLIC_SERVER_URL=http://localhost:<port> E2E_BASE_URL=http://localhost:<port> \
+  PLAYWRIGHT_CHROMIUM_PATH=<chrome-headless-shell> pnpm test:e2e
+```
+
+### K2.5 Odchylky
+
+- Report `home page (memberships moved after testimonialBar)` a `home page (memberships position)` jsou pryč. Nahrazuje je `home page (order)` a `home page (order changed by hand)`.
+- C2 řeším v kódu, ne pravidlem v README. Cena: jeden dotaz navíc na anglickou stránku (`select: layout`, `depth: 0`).
+- Kap. 7 architektury uvádí výsledné pořadí kola 1. Platí K2.2.
+
+### K2.6 Známá omezení
+
+1. Když v produkci někdo změnil pořadí jiných bloků, skript pořadí nezmění. Report to řekne (`order changed by hand`). Pořadí pak nastaví Filip v administraci.
+2. Druhý blok stejného typu (například další `featureGrid`) dělá stav neznámým. Skript pak pořadí nemění.
+3. Odkaz s textem jen v en se na `/cs` ukáže. Opačný případ (C2) řeší jen jazyky mimo výchozí `cs`.
+
+### K2.7 Co má ověřit tester
+
+- `/cs` a `/en` na 375 px a 1440 px: pořadí podle 6.1, přechody sekcí podle 6.3.
+- Skript z produkčního stavu po #6 i ze stavu po kole 1: jeden běh dá cíl, druhý nic nezapíše.
+- Ručně změněné pořadí v administraci: skript ho nechá a hlásí `order changed by hand`.
+- C1: text odkazu jen v cs se stránkou „Ceník“, po běhu skriptu odkaz vede na `/cs/cenik`, en dostane jen text.
+- C2: prázdný en text odkazu, `/en` odkaz nemá, `/cs` ho má.
+- C3: dlouhé slovo v textu odkazu se na 320 px zalomí v kartě.
