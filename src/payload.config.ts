@@ -87,6 +87,8 @@ export default buildConfig({
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
   db: postgresAdapter({
+    // Only `pnpm pull:prod` sets this, so the local copy keeps the production IDs.
+    allowIDOnCreate: process.env.PAYLOAD_ALLOW_ID_ON_CREATE === '1',
     pool: {
       connectionString: process.env.DATABASE_URL || '',
     },
