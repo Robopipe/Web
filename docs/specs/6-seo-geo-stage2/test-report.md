@@ -168,3 +168,107 @@ Odkaz EN na `/cs/kontrola-etiket` má v HTML ze serveru `href="/en/kontrola-etik
 - Úplnou sadu e2e na databázi podobné produkci (`prodlike`). Build čte data z databáze `fresh`. Na `prodlike` jsem ověřil jen běh skriptu a výsledná data.
 - Rich Results Test od Googlu. JSON-LD jsem ověřil parsováním a e2e.
 - Zobrazení v administraci Payload pro roli editor.
+
+## 9. Retest oprav
+
+Tester: Arthur (subagent), 11. 11. 2026. Commit `240e13b` (opravy `787caff` a `240e13b`).
+
+### Verdikt
+
+**Prošlo.** Opravy T1 až T7 a T9 fungují. T8 je mimo tuto opravu. Nová chyba v kódu není. Seed v produkci nevrátí žádnou ruční změnu a nezveřejní žádný rozpracovaný koncept. Platí to pro stav produkce z 11. 11. 2026 kolem 01:30. Zbylá rizika jsou v kapitole 9.5.
+
+### 9.1 Prostředí
+
+- Vlastní worktree z `240e13b` a z `origin/master` (`3cf0640`). Vlastní Postgres 17 v kontejneru `robopipe-retest-pg`, port 55480. Vše jsem po testu smazal.
+- Databáze:
+  - `prodlike`: `SKIP_SEO_GEO=1 pnpm seed` z `master`, migrace z větve. Potom jsem přes REST přidal stav jako v produkci: text stránky ochrany osobních údajů z produkce (adresa Sokolovská, „Robopipe s.r.o.“), adresu kontaktu z produkce, průvodce (posts 10) z produkce, redirect `/en/ai-product-tagging`. Hero nadpis, `title` a `seo.title` úvodu jsem v obou jazycích změnil na značky `RUCNI …` jako ruční úpravu.
+  - `localrun`: `pnpm seed` z `master` (obsah etapy 1 běžel, stránka `strojove-videni` existuje), migrace z větve.
+  - `fresh`: postup z `implementation.md`, kapitola 4, s průvodcem a článkem o trendech z produkce.
+- Server `next dev` na portu 3480 (REST), `next start` na portu 3484 (e2e). Proxy pro výpadek na portu 3482.
+- Produkce: jen čtení přes vlastní proxy, která pustí jen `GET` a `POST /api/users/login`. Ostatní požadavky proxy blokuje. Proxy nezablokovala žádný požadavek. Celkem 142 `GET` a 7 přihlášení, žádný zápis.
+
+### 9.2 Stav chyb T1 až T9
+
+| Chyba | Stav | Ověření (vlastní běh) |
+| --- | --- | --- |
+| T1 | Opraveno | Lokálně i s `--remote` končí kódem 1 se zprávou: `--dryrun`, `--dry_run`, `--status published` (dva argumenty), `--status=foo`, `--status` dvakrát, `--dry-run` dvakrát, `--dry-run=yes`, `--remote` bez hodnoty, `--remote http://…` (mezera), `--remote=localhost:3481`, `--remote=ftp://x`, `-n`, `x`. Počty řádků v databázi se nezměnily. Proxy před serverem nedostala žádný požadavek, tedy ani přihlášení. Správné tvary (`--dry-run`, `--status=draft`, `--status=published` v libovolném pořadí) fungují lokálně i přes REST. |
+| T2 | Opraveno | REST přes proxy, která po prvním `POST /api/pages` přeruší spojení u každého zápisu. 1. běh: kód 1, `PATCH http://127.0.0.1:3482/api/pages/6 failed: UND_ERR_SOCKET (other side closed)`. Stránka 6 má jen `cs` a je koncept. 2. běh: `page kamerova-kontrola-kvality (missing locale en)`, publikace. Stránka má `cs` i `en`, 8 bloků v každém jazyce, anglický hero a `seo`. 3. běh: `created (0)`, `updated (0)`. `/en/camera-quality-inspection` vrací 200 a je v `sitemap.xml`. |
+| T3 | Opraveno | `POST http://127.0.0.1:3399/api/users/login failed: ECONNREFUSED …`, `… failed: ENOTFOUND (getaddrinfo ENOTFOUND robopipe-nonexistent.invalid)`. Server, který neodpoví: kód 1 po 37 s, `failed: no response in 30 s (timeout)`. |
+| T4 | Opraveno | `prodlike`, lokálně: dry run a skutečný běh `--status=published` mají stejných 83 řádků (`created (47)`, `updated (29)`, `skipped (5)`). Porovnal jsem seřazené seznamy, rozdíl není. |
+| T5 | Opraveno | Integrační testy 109/109 na `prodlike` (stránka `strojove-videni` neexistuje, test ji vytvoří a smaže), na `localrun` (stránka existuje a zůstane) a na `fresh`. |
+| T6 | Opraveno | `/cs/kontrola-etiket` a `/en/label-inspection` vykreslí `camera-front`, snímek klasifikace v HTML není. Existující stránka se starým obrázkem (`localrun`, hero nastavený na `product-classification-screen.jpeg`): dry run i běh hlásí `page kontrola-etiket (hero image)`. Hero má potom `camera-front.png` v publikované verzi. Další běh nic nemění. |
+| T7 | Opraveno | Na `fresh` neobsahují `/cs`, `/en`, kontakt, ochrana osobních údajů (cs, en), `/cs/o-nas` ani `llms.txt` text „Robopipe s.r.o.“. Na `prodlike` skript změnil jen název firmy, adresa Sokolovská zůstala. |
+| T8 | Mimo opravu | Vývojář navrhuje nové issue. Issue v `Robopipe/Web` zatím neexistuje. |
+| T9 | Opraveno | `/cs` má nadtitulek „Průmyslové strojové vidění (machine vision)“. `/cs/o-nas` má „machine vision“ jen v jedné větě, jednou. |
+
+### 9.3 Idempotence a regrese
+
+| Kontrola | Výsledek |
+| --- | --- |
+| Druhý běh `--status=published` lokálně (`prodlike`, `fresh`) | `created (0)`, `updated (0)` |
+| Třetí běh přes REST po výpadku (`prodlike`) | `created (0)`, `updated (0)` |
+| Ruční úprava úvodu (`prodlike`) | Hero nadpis, `title` a `seo.title` mají po běhu dál hodnoty `RUCNI …` v obou jazycích, v konceptu i v publikované verzi. |
+| Jiné články a redirect (`prodlike`) | Beze změny. Skript změnil jen průvodce. |
+| Lint | 0 chyb, 2 stávající varování |
+| `tsc --noEmit` | 0 chyb |
+| Integrační testy | 109/109 (19 souborů) na `prodlike`, `localrun` i `fresh` |
+| `pnpm build` | OK |
+| E2e (`fresh`, `next start`, Chromium headless shell 1248) | 67 prošlo, 1 selhal: `Blog featured card › keeps the photo inside the card on mobile …` (známá chyba L1) |
+
+Poznámka k e2e: test čte `NEXT_PUBLIC_SERVER_URL` z `.env`. Když se hodnota liší od hodnoty při buildu, selže 34 testů na adrese v `canonical`. Šlo o chybu mého prostředí, ne aplikace. Po sjednocení adresy výsledek odpovídá tabulce.
+
+### 9.4 Produkce: co přepíše 29 změn
+
+Příkaz: `pnpm seed:seo-geo --remote=<proxy na https://robopipe.io> --dry-run --status=published`, účet `arthur@robopipe.io`, 11. 11. 2026, kód 0. Plán: `created (52)`, `updated (29)`, `skipped (0)`. Shodné s vývojářem.
+
+Každou změnu jsem porovnal s produkčními daty (jen `GET`). Stejné změny jsem provedl na `prodlike` se stavem jako v produkci a porovnal obsah před během a po něm. Všechny dotčené dokumenty mají v produkci poslední verzi publikovanou. Koncept novější než publikovaná verze nemá žádný z nich.
+
+| # | Změna | Co přesně přepíše | Stav v produkci | Vrátí ruční změnu? |
+| --- | --- | --- | --- | --- |
+| 1 | case study crocodille-line-quality | Doplní prázdné sekce `problem`, `solution`, `result`, `technique` (cs, en) a 2 FAQ | Sekce prázdné. Poslední verze 19 publikovaná 5. 10. | Ne |
+| 2 | case study wolfberry-capsule-counting | Totéž | Verze 18 publikovaná 5. 10. | Ne |
+| 3 | case study ai-product-tagging | Totéž | Verze 17 publikovaná 5. 10. | Ne |
+| 4 | case study mg-servis-packaging-checks | Totéž | Verze 16 publikovaná 5. 10. | Ne |
+| 5 | home page | Přidá 3 bloky (členství, řešení, automatická anotace). Změní `seo.description` cs a en. Změní nadtitulek cs „Průmyslové strojové vidění“ na „Průmyslové strojové vidění (machine vision)“. | `seo.description` a nadtitulek se rovnají hodnotám `replaceIf` (stav z 5. 10.). Ruční změna 10. 11. 18:07 (verze 60) je v hero nadpisu, `title` a `seo.title`. | Ne. Hero nadpis, `title`, `seo.title` a anglický nadtitulek zůstanou (ověřeno na `prodlike`). |
+| 6 | page cenik FAQs (+3) | Přidá 3 FAQ za 5 existujících | Verze 56 publikovaná 5. 10. | Ne |
+| 7 | post průvodce (heading, paragraph, seoTitle) | První H2 cs, nový odstavec cs, `seo.title` cs. Angličtina beze změny. | Hodnoty se rovnají `replaceIf`. Verze 95 publikovaná 10. 9. Starší koncepty (verze 86 z 17. 8. a starší) nejsou poslední verze. | Ne |
+| 8 | page ochrana-osobnich-udaju company name | „Robopipe s.r.o.“ na „robopipe s.r.o.“ na 4 místech: první odstavec cs a en, `seo.description` cs a en. Titulek, adresa a ostatní text zůstanou. | Text z 5. 10. s adresou Sokolovská 81/55. Verze 55 publikovaná. | Ne |
+| 9 až 12 | 4 × case study … published | Publikuje koncepty ze změn 1 až 4 | Poslední verze publikované | Ne |
+| 13 až 19 | 7 × page … published (nové stránky) | Publikuje nové stránky | Stránky s těmito slugy v produkci nejsou | Ne |
+| 20 | home page published | Publikuje koncept ze změny 5 | Verze 60 publikovaná 10. 11. 18:07 | Ne |
+| 21 | page cenik published | Publikuje koncept ze změny 6 | Verze 56 publikovaná | Ne |
+| 22 | post průvodce published | Publikuje koncept ze změny 7 | Verze 95 publikovaná | Ne |
+| 23 | page ochrana-osobnich-udaju published | Publikuje koncept ze změny 8 | Verze 55 publikovaná | Ne |
+| 24 | header navigation label | `hdr_navItems_2`: „Případové studie“ na „Případy užití“, „Case studies“ na „Use cases“ | Poslední úprava 31. 7. | Ne, plánovaná změna |
+| 25 | footer | `ftr_columns_0_links_1`: stejné přejmenování. Do `ftr_columns_2` (Kontakt, Ochrana osobních údajů) přidá „O nás“ / „About“. | Poslední úprava 4. 8. Sloupec „Řešení“ v produkci není. | Ne |
+| 26 | site-settings memberships | Prázdný seznam na 1 položku (Česká inovační platforma, 2 loga) | Prázdné | Ne |
+| 27 | site-settings solutions | Prázdný seznam na 6 nových stránek | Pole v produkci zatím není (schéma etapy 2) | Ne |
+| 28 | site-settings company | `legalName` „Robopipe s.r.o.“ (migrace ho zkopíruje z patičky) na „robopipe s.r.o.“, doplní IČO a text registrace cs a en | Pole v produkci zatím není | Ne |
+| 29 | site-settings contact address | Jen první řádek „Robopipe s.r.o.“ na „robopipe s.r.o.“. Ulice Sokolovská 81/55, telefon, hodiny, mapa a rezervace zůstanou. | `Robopipe s.r.o.\nSokolovská 81/55\n186 00 Praha 8 - Karlín\nCzech Republic` | Ne |
+
+Další dokumenty z ručních změn:
+
+- Článek Manufacturing Forum (posts 15): skript ho nečte ani nemění. Verze 105 publikovaná 10. 11. 18:05.
+- Redirect `/en/ai-product-tagging` (id 1): skript ho nemění. Žádná nová stránka nemá tento slug.
+- Koncepty v produkci, které skript nepublikuje: stránka 6 (prázdný koncept bez titulku a slugu z 26. 10.) a články 11 až 14. Skript s nimi nepracuje.
+
+### 9.5 Nová zjištění a rizika
+
+Nová chyba v kódu není. Zjištění:
+
+- **N1, informace:** V produkci je prázdný koncept stránky (pages 6, bez titulku a slugu, 26. 10.). Seed ho nemění. Doporučuji ho ručně smazat.
+- **N2, informace:** V produkci je koncept článku 14 „3 způsoby, jak automatizovat anotaci obrázků …“. Seed vytvoří další koncept o automatické anotaci (`automaticka-anotace-dat`). Dva koncepty na podobné téma. Rozhodněte, který zveřejnit.
+
+Rizika pro zápis do produkce:
+
+- Krok publikace publikuje poslední koncept každého spravovaného dokumentu. Když někdo před během uloží koncept úvodu, ceníku, studie, průvodce nebo stránky ochrany osobních údajů, seed ho zveřejní. Těsně před během zopakujte dry run a zkontrolujte, že poslední verze dotčených dokumentů je publikovaná.
+- Dry run teď běží proti schématu etapy 1. Plán pro `company` a `solutions` zopakujte po nasazení etapy 2 a před zápisem.
+- Seed nemění `copyright` v patičce. Po migraci ho zastoupí `company.legalName` (změna 28).
+
+### 9.6 Co jsem neověřil
+
+- Zápis do produkce. Zadání ho zakazuje.
+- Úplnou kopii produkční databáze. Stav produkce jsem napodobil jen u dotčených dokumentů (kapitola 9.1).
+- Plán dry run proti produkci se schématem etapy 2 (etapa 2 není nasazená).
+- E2e na `prodlike`. E2e běžely na `fresh`.
+- Zobrazení v administraci Payload a Rich Results Test od Googlu.
