@@ -102,11 +102,11 @@
   "cs-crocodille-checks": {
     "cs": {
       "q": "Kolik kontrol Robopipe dělá na jedné bagetě?",
-      "a": "Na každé bagetě u Crocodille běží 19 různých kontrol, s přesností detekce 95 %."
+      "a": "Na každé bagetě u Crocodille běží 19 různých kontrol."
     },
     "en": {
       "q": "How many checks does Robopipe run on one baguette?",
-      "a": "Every baguette at Crocodille goes through 19 different checks, with 95% detection precision."
+      "a": "Every baguette at Crocodille goes through 19 different checks."
     }
   },
   "cs-crocodille-products": {

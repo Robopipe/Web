@@ -75,8 +75,6 @@ type CaseStudyCopy = { faqs: string[] } & Localized<CaseStudySections>
 type CaseStudyListingCopy = {
   /** Replaces the hero image only while its filename matches `replaceIf`. */
   heroImages: Record<string, { replaceIf: string; image: string; alt: Localized<string> }>
-  /** Results shown only on the detail page. A row matches by its English value and label. */
-  hideInListing: Record<string, { value: string; label: string }[]>
 }
 
 type HomeCopy = {
@@ -204,6 +202,17 @@ const CASE_STUDY_SECTIONS = ['problem', 'solution', 'result', 'technique'] as co
 const readJson = <T>(file: string): T => JSON.parse(fs.readFileSync(path.join(COPY, file), 'utf8'))
 const readText = (file: string): string => fs.readFileSync(path.join(COPY, file), 'utf8')
 
+/**
+ * True when `stored` is the upload of `filename`. Payload renames an upload whose
+ * name is taken (`photo.jpg` becomes `photo-1.jpg`), so the `-<n>` suffix is allowed.
+ */
+export const isUploadOf = (filename: string, stored: string | null | undefined): boolean => {
+  if (!stored) return false
+  const { name, ext } = path.parse(filename)
+  const escape = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  return new RegExp(`^${escape(name)}(-\\d+)?${escape(ext)}$`).test(stored)
+}
+
 /** Copy markers that must never reach a published page. */
 export const COPY_MARKERS = ['[doplnit Filip]', '[ověřit]'] as const
 
@@ -330,13 +339,14 @@ export const applySeoGeo = async (
   const media = async (filename: string, alt: Localized<string>): Promise<number | undefined> => {
     if (mediaIds.has(filename)) return mediaIds.get(filename)
     if (planned.has(`media ${filename}`)) return undefined
+    // `like` also finds the files Payload renamed. isUploadOf keeps only those.
     const found = await payload.find({
       collection: 'media',
-      where: { filename: { equals: filename } },
-      limit: 1,
+      where: { filename: { like: path.parse(filename).name } },
+      limit: 100,
       depth: 0,
     })
-    let id = found.docs[0]?.id
+    let id = found.docs.find((doc) => isUploadOf(filename, doc.filename))?.id
     if (id) {
       report.skipped.push(`media ${filename}`)
     } else {
@@ -451,33 +461,13 @@ export const applySeoGeo = async (
       const currentFile = heroId
         ? (await payload.findByID({ collection: 'media', id: heroId, depth: 0 })).filename
         : undefined
-      if (currentFile === hero.image) {
+      if (isUploadOf(hero.image, currentFile)) {
         report.skipped.push(label)
       } else if (!currentFile || !new RegExp(hero.replaceIf).test(currentFile)) {
         report.skipped.push(`${label} changed by hand`)
       } else {
         const image = await media(hero.image, hero.alt)
         await saveDraft('case-studies', study.id, 'cs', { heroImage: image })
-        report.updated.push(label)
-      }
-    }
-
-    // Round 3: results hidden on the listing card. Rows are matched by their
-    // English text, so a result edited by hand stays as it is.
-    const hide = listingCopy.hideInListing[enSlug]
-    if (hide) {
-      const label = `case study ${enSlug} (listing results)`
-      const rows = (await latest('case-studies', study.id, 'en')).metrics ?? []
-      const matches = (row: (typeof rows)[number]) =>
-        hide.some((h) => h.value === row.value && h.label === row.label)
-      const found = rows.filter(matches)
-      if (found.length < hide.length) {
-        report.skipped.push(`${label} changed by hand`)
-      } else if (found.every((row) => row.hideInListing)) {
-        report.skipped.push(label)
-      } else {
-        const metrics = rows.map((row) => (matches(row) ? { ...row, hideInListing: true } : row))
-        await saveDraft('case-studies', study.id, 'en', { metrics })
         report.updated.push(label)
       }
     }

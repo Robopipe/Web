@@ -6,7 +6,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
 import config from '@/payload.config'
 import type { FeatureGridBlock, Page } from '@/payload-types'
-import { applySeoGeo } from '@/seed/seoGeo'
+import { applySeoGeo, isUploadOf } from '@/seed/seoGeo'
 
 /**
  * Home page comments of 11. 11. 2026 (docs/specs/9-home-comments). Each test starts
@@ -53,15 +53,16 @@ const latest = (id: number, locale: Locale) =>
 const versions = async (id: number) =>
   (await payload.findVersions({ collection: 'pages', where: { parent: { equals: id } }, limit: 1 }))
     .totalDocs
+/** Payload may have renamed the upload (photo-1.jpg), depending on the media/ folder. */
 const mediaId = async (filename: string) =>
   (
     await payload.find({
       collection: 'media',
-      where: { filename: { equals: filename } },
+      where: { filename: { like: path.parse(filename).name } },
       depth: 0,
-      limit: 1,
+      limit: 100,
     })
-  ).docs[0]?.id
+  ).docs.find((doc) => isUploadOf(filename, doc.filename))?.id
 const idOf = (value: unknown): number | undefined =>
   typeof value === 'number' ? value : (value as { id?: number } | null)?.id
 const names = (layout: Page['layout']) => (layout ?? []).map((b) => b.blockName ?? b.id)

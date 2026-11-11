@@ -269,3 +269,56 @@ Screenshoty (celá stránka): `screens/round3/case-studies-{cs,en}-{1440,375}.jp
 - Skript z produkčního stavu: jeden běh dá cíl, druhý nic nezapíše. Ručně změněná fotka nebo údaj zůstane a report hlásí `changed by hand`.
 - Administrace: pole „Show this result only on the detail page“ u údaje funguje oběma směry.
 - Migrace `20261111_121632_case_study_metric_listing` proběhne na kopii produkční databáze bez chyby.
+
+## Úklid po nasazení (11. 11.)
+
+### Co a proč
+
+Filip 11. 11. ve 13:45 zrušil údaj „95 % přesnost detekce“. Arthur ho v produkci smazal ručně přes API. Repo teď ukazuje stejný stav.
+
+| Změna | Proč | Kde |
+|---|---|---|
+| Údaj 95 % je pryč z výchozích dat: řádky `metrics` u Crocodille a MG Servis, text `technique` Crocodille („Automatická detekce vad“ / „Automatic defect detection“), věta v `result` MG Servis a odpověď FAQ „cs-crocodille-checks“. Obecná věta v anglickém článku blogu zůstala. | Čistý `pnpm seed` a skript obsahu nesmí 95 % vrátit. | `src/seed/index.ts`, `seed-assets/copy/case-studies.json`, `seed-assets/copy/seo-geo/{case-studies,faqs}.json` |
+| Pole `metrics.hideInListing` je pryč. Nová migrace `20261111_135405_case_study_metric_drop_listing` odstraní sloupec `hide_in_listing` (`down` ho vrátí). Stará migrace zůstala. | Bez řádků 95 % pole nic neskrývá (KISS). | `CaseStudies.ts`, `CaseStudyMetrics.tsx`, `payload-types.ts`, `case-study-listing.json`, `seoGeo.ts` |
+| D2: skript uzná název souboru s příponou `-<číslo>`, kterou přidá Payload (`isUploadOf`). Platí pro porovnání fotky hlavního případu a pro hledání média v helperu `media()`. | Druhý běh hlásil „changed by hand“ a hledal soubor znovu. | `seoGeo.ts` |
+| D3: popis údaje má `break-words hyphens-auto`. Dlouhé slovo se zalomí ve sloupci. | Slovo přesahovalo okraj karty. | `CaseStudyMetrics.tsx` |
+| D1: test smazán, pravidlo „listing results“ už neexistuje. | Bez pole není co přepsat. | `tests/int/caseStudiesListingEdge.int.spec.ts` |
+
+Výměna fotky hlavního případu ve skriptu zůstala.
+
+Metriky v seedu dostávají id podle pořadí (`_m0`, `_m1`). V produkci mají zbylé řádky id `_m0`, `_m2` (Crocodille) a `_m1` (MG Servis). Id je jen technický klíč řádku. Skript ho nečte.
+
+### Ověření
+
+Lokální databáze `robopipe_h9c` (čistá: migrace, `pnpm seed`), server `next start` na portu 3830 (ukončen podle PID).
+
+| Kontrola | Výsledek |
+|---|---|
+| Skript obsahu po čistém seedu, dva běhy | `created (0)`, `updated (0)`, `case study crocodille-line-quality (hero image)` bez „changed by hand“. Fotka má v databázi název `crocodille-camera-line-2.jpg`. |
+| Výpis databáze | Žádný text „95 %“ ani „95%“. |
+| `tsc --noEmit` | 0 chyb |
+| `eslint .` | 0 chyb, 2 stávající varování |
+| `next build` | OK |
+| `test:int` | 125/125 (23 souborů) |
+| `test:e2e` | 95 prošlo, 2 selhaly (97). Obě selhání jsou známá (K2.4): blog dlouhý titulek, článek jen v produkci. |
+| Dry run proti produkci (11. 11. 15:15, produkce ještě s polem `hideInListing`) | `created (0)`, `updated (0)`. Fotka hlavního případu: `skipped`, bez „changed by hand“. |
+
+Int testy hledají média stejně jako skript (`isUploadOf`). Nezávisí na obsahu složky `media/`.
+
+Nové a změněné testy:
+
+- `caseStudiesListing.int.spec.ts`: případ Crocodille ani MG Servis nemá 95 % (cs, en, včetně FAQ). Testy pro skrývání údaje jsou pryč.
+- `caseStudiesListingEdge.int.spec.ts` (tester): zůstal test D2.
+- `caseStudiesListing.e2e.spec.ts`: detail MG Servis nemá 95 %.
+- `caseStudiesListingEdge.e2e.spec.ts` (tester, D3): tři údaje s dlouhým slovem zůstanou v kartě na 1440, 1024 a 768 px.
+
+Screenshoty: `screens/cleanup/case-studies-cs-{1440,375}.jpg`, `screens/cleanup/detail-crocodille-cs-1440.jpg`.
+
+### Nasazení
+
+Stará verze kódu sloupec `hide_in_listing` čte. Po migraci a před restartem na novou verzi proto stránky případů užití vrátí chybu.
+
+1. Sestav novou verzi.
+2. Spusť migraci (`payload migrate`).
+3. Hned restartuj server na novou verzi.
+4. Spusť skript obsahu s `--dry-run`. Očekávání: `created (0)`, `updated (0)`.
