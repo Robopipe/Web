@@ -84,7 +84,7 @@ Screenshoty (`screens/`): `cs-1440-before.png`, `cs-390-before.png`, `en-1440-be
 ## Známá omezení
 
 - Bez JavaScriptu tlačítko nic neudělá. Náhled, nadpis, text a `VideoObject` jsou v HTML ze serveru.
-- Po kliknutí může youtube-nocookie.com při přehrávání uložit data do prohlížeče (localStorage, případně cookies). Návštěvník to spustí sám kliknutím. Zásady cookies z #21 YouTube zatím nezmiňují. Doporučuji doplnit větu o přehrávači YouTube (rozhodnutí pro Filipa, mimo rozsah #22).
+- Po kliknutí může youtube-nocookie.com při přehrávání uložit data do prohlížeče (localStorage, případně cookies). Návštěvník to spustí sám kliknutím. Zásady cookies to zmiňují v odstavci o YouTube. `pnpm seed:cookie-policy` ho přidá na stránku, která už má odstavce z #21.
 - Přehrávač nezávisí na souhlasu z cookie lišty (#21). Ochranu dává to, že se bez kliknutí nic nenačte a používá se youtube-nocookie. Tak to určuje zadání.
 - `embedUrl` ve `VideoObject` je `www.youtube.com/embed`, standardní adresa přehrávače pro roboty. Návštěvník dostane nocookie.
 - Blok `videoEmbed` jde vložit na kteroukoli stránku. `VideoObject` ale přidává jen šablona stránek `[slug]`. Úvodní stránka ho nepřidá.

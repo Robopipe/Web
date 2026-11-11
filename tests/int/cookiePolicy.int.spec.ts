@@ -4,6 +4,7 @@ import type { ContentBlock } from '@/payload-types'
 import {
   COOKIE_POLICY,
   HOSTING_SENTENCE,
+  YOUTUBE_PARAGRAPH,
   applyCookiePolicyToContent,
   parseCookiePolicyArgs,
 } from '@/seed/cookiePolicy'
@@ -48,7 +49,8 @@ describe('applyCookiePolicyToContent', () => {
     // The cookie text sits where the old paragraph was: after the newsletter, before the heading.
     const start = after.findIndex((p) => p.startsWith('Cookies a měření.'))
     expect(after[start - 1]).toMatch(/^Newsletter\./)
-    expect(after[start + 6]).toBe('Kdo údaje zpracovává')
+    expect(after[start + 7]).toBe('Kdo údaje zpracovává')
+    expect(after[start + 5]).toBe(YOUTUBE_PARAGRAPH.cs)
     expect(after).toContain(`${HOSTING_SENTENCE.cs} E-maily odesíláme přes službu Resend.`)
     expect(after.join('\n')).toContain('_ga a _ga_* až na 2 roky')
   })
@@ -70,6 +72,29 @@ describe('applyCookiePolicyToContent', () => {
     expect(twice.changes).toEqual([])
     expect(twice.missing).toEqual([])
     expect(twice.content).toEqual(once.content)
+  })
+
+  it('adds only the YouTube paragraph to the cookie text from #21 (en)', () => {
+    const issue21 = COOKIE_POLICY.en.replace(`${YOUTUBE_PARAGRAPH.en}\n\n`, '')
+    const before = mdToLexical(
+      `${issue21}\n\n${HOSTING_SENTENCE.en} Emails are delivered via Resend.`,
+    ) as RichText
+    const { content, changes, missing } = applyCookiePolicyToContent(
+      before,
+      'en',
+      cookieNodes('en'),
+    )
+    expect(missing).toEqual([])
+    expect(changes).toEqual(['YouTube paragraph before "You can change your choice"'])
+    const after = paragraphs(content)
+    expect(after).toHaveLength(paragraphs(before).length + 1)
+    const index = after.indexOf(YOUTUBE_PARAGRAPH.en)
+    expect(after[index + 1]).toMatch(/^You can change your choice/)
+    // Plain text: no italic or bold node in the new paragraph.
+    const node = (content.root.children as { children?: { format?: number }[] }[])[index]
+    expect(node.children?.every((child) => !child.format)).toBe(true)
+    const twice = applyCookiePolicyToContent(content, 'en', cookieNodes('en'))
+    expect(twice.changes).toEqual([])
   })
 
   it('reports what it cannot find and changes nothing else', () => {
