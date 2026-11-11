@@ -184,3 +184,91 @@ Oba soubory selhávají, dokud chyby nebudou opravené.
 5. Lighthouse mobil na produkci (kritérium 14).
 6. Skript obsahu přes `--remote` proti produkci.
 7. Skutečnou čtečku obrazovky (VoiceOver). Ověřil jsem jen strom přístupnosti.
+
+## Kolo 2
+
+Datum: 11. 11. 2026. Commit `c5770f8`. Stejné prostředí jako v kole 1: vlastní server `next start` na portu 3921
+(nové sestavení z commitu `c5770f8`), databáze `robopipe_21`, skutečný Chrome přes Playwright.
+
+### Verdikt kola 2
+
+**Lze sloučit.** Chyby B1 až B5 jsou opravené. Opravy nerozbily žádné kritérium 1 až 16. Nová chyba,
+která by bránila sloučení, není. Dvě selhání v `test:e2e` jsou staré známé chyby mimo tuto změnu.
+
+### Chyby z kola 1
+
+| Chyba | Opraveno | Jak ověřeno |
+| --- | --- | --- |
+| B1 lišta zakrývá konec stránky | ano | `/cs`, `/en`, `/cs/kontakt` a stránka 404 na 1440 × 900, 390 × 844 a 320 × 568. Po posunu na konec žádný odkaz ani tlačítko patičky není pod lištou. `elementFromPoint` na `EN` vrací `EN`, klik přepne na `/en`. Po volbě je `padding-bottom` i `scroll-padding-bottom` prázdné a patička končí přesně u spodního okraje okna. Výška lišty: 140 px (16 %), 224 px (27 %), 224 px (39 %). Přijmout a Odmítnout mají na všech šířkách stejnou šířku, výšku, barvu a tučnost (160, 175 a 140 px × 40 px, `600`, stejné pozadí). Dialog Nastavení na 320 × 568 se vejde (530 px) a jde posunout, všechna tlačítka jsou dostupná. Tab s otevřenou lištou na 390 a 1440 px: žádný prvek s fokusem neskončí pod lištou. Přechod mezi stránkami s otevřenou lištou (`/cs` → `/en` → `/en/contact` → zpět) drží odsazení rovné výšce lišty. |
+| B2 poškozená `rp_consent` | ano | Hodnoty `%`, `%E0%A4%A`, prázdná, `nesmysl`, `{"v":1`, `%7B%22v%22%3A99%7D`, `a%ZZb`. Stránky `/cs`, `/en`, `/cs/kontakt`, `/en/contact` vrátí 200, lišta se ukáže, `pageerror` žádný. |
+| B3 `_gac_*` | ano | Po vypnutí marketingu zmizí `_gcl_au`, `_gcl_aw`, `_gac_UA-123`, `_gac_gb_G-TEST`. `_ga*`, `_gid`, `_gat*` zůstanou. Po vypnutí analytiky zmizí `_ga`, `_ga_ABC123`, `_gid`, `_gat_gtag_X`. Cizí cookie `other` zůstane vždy. |
+| B4 fokus po volbě | ano | Klávesnicí: Přijmout, Odmítnout a Uložit v dialogu z lišty. Fokus je na `<main>`, stránka se neposune, další Tab jde na první odkaz obsahu (`Domluvit demo`), Shift+Tab do hlavičky. Escape v dialogu z lišty vrátí fokus na tlačítko Nastavení. Dialog z patičky vrátí fokus na „Nastavení cookies“, další Tab jde na `EN`. |
+| B5 dvě záložky | ano | Volba v záložce A (Přijmout i Odmítnout): v záložce B lišta zmizí, odsazení zmizí, poslední `consent update` odpovídá volbě. Odvolání v záložce B přes patičku: záložka A dostane `update` s `denied` a cookies Google zmizí. Bez `BroadcastChannel` (smazaný v okně) lišta funguje a chyba nevznikne. |
+
+### Regrese
+
+| Kontrola | Výsledek |
+| --- | --- |
+| Před volbou cookie Google | žádná (`/cs`, `/cs/kontakt`, 390 px, skutečný `gtag.js`) |
+| Před volbou požadavky na Google | `gtag.js`, `g/collect` a `ccm/collect` odejdou. Je to rozšířený consent mode podle rozhodnutí Filipa (bod 9 v `product.md`). Stejné jako v kole 1, žádná změna. |
+| Nabídka jazyka (LocaleSuggestion) | S otevřenou lištou se neukáže (390, 320, 1440 px s `geo-country=US` na `/cs`). Po volbě se ukáže. Lišta ani odsazení už nejsou na stránce. |
+| `generate_lead` | jednou po odeslání formuláře (test 10 v `consent.e2e.spec.ts` prošel) |
+| Kritéria 1 až 16 | `consent.e2e.spec.ts`, `consentTesterFindings.e2e.spec.ts` a `seo.e2e.spec.ts` prošly celé |
+| CLS na `/cs/kontakt` 390 px | 0,064 s lištou i bez ní. Posun způsobí obsah stránky, ne lišta. |
+
+### Nové chyby
+
+Žádná nová chyba, která by bránila sloučení. Nové testy proto nepřidávám. Poznámky k rozhodnutí:
+
+1. **Telefon na šířku.** Na 844 × 390 zabírá lišta 49 %, na 568 × 320 50 % (vnitřní posun). Stránka jde dál
+   posunout a patička i `EN` jsou dostupné. Rozložení od `sm` výše se v kole 2 nezměnilo. Důkaz:
+   `screens/r2-landscape-844x390.png`.
+2. **Dialog otevřený v druhé záložce.** Záložka A má otevřený dialog Nastavení. Záložka B přijme vše. Dialog
+   v A zůstane otevřený se starými přepínači (vypnuto). Uložení v A pak přepíše volbu na odmítnutí a obě
+   záložky ho použijí. Návštěvník to ale uloží sám, takže to považuji za správné chování.
+3. **Prohlížeč bez `ResizeObserver`.** Efekt lišty vyhodí výjimku a stránka zůstane prázdná. Next 16 cílí na
+   Chrome 111 a Safari 16.4. Oba `ResizeObserver` i `BroadcastChannel` mají, takže to žádného podporovaného
+   návštěvníka nezasáhne.
+4. **Nabídka jazyka zakryje konec patičky** (`EN`, „Nastavení cookies“) na 390 a 1440 px. Nabídka sama
+   přepínač jazyka obsahuje a jde zavřít. Toto chování existovalo před touto změnou.
+5. **`<main tabIndex={-1}>`.** Klik myší do textu obsahu dá fokus na `<main>`. Obrys je vypnutý
+   (`outline-none`), takže to není vidět. Čtečka obrazovky po volbě ohlásí oblast „hlavní“. Skutečnou čtečkou
+   (VoiceOver) jsem to neověřil.
+
+### Automatické kontroly kola 2
+
+| Kontrola | Výsledek |
+| --- | --- |
+| `tsc --noEmit` | prošlo |
+| `lint` | 0 chyb, 2 stará varování |
+| `test:int` | 27 souborů, 162 testů, vše prošlo (potvrzuji) |
+| `build` | prošlo |
+| `test:e2e` (celá sada, chromium i webkit-iphone) | 120 testů: 116 prošlo, 4 selhaly. Po opakování dvou testů se správnou adresou: **118 prošlo, 2 selhaly** |
+
+Testovací ID v `site_settings` (`G-TEST000000`, `AW-000000000`) byla před během i po něm. HTML `/cs` obě ID
+obsahovalo.
+
+Selhání v `test:e2e`:
+
+1. `blogFeaturedCard.e2e.spec.ts` › dlouhý titulek na mobilu (749 px místo nejvýš 359 px). Stará známá chyba.
+2. `seo-stage2.e2e.spec.ts` › odkaz na článek jen v produkci (404). Stará známá chyba.
+3. a 4. `testerFindings.e2e.spec.ts` (2 testy) bez proměnné `E2E_BASE_URL` volají port 3000. Se
+   `E2E_BASE_URL=http://localhost:3921` oba prošly.
+
+Tvrzení vývojáře „118 prošlo, 0 selhalo“ vyvracím jen zčásti. Počet 118 sedí, ale sada má 120 testů a dvě
+staré chyby v mém běhu selhaly. Žádné selhání nezpůsobila tato změna.
+
+### Screenshoty kola 2
+
+`screens/r2-footer-1440.png`, `screens/r2-footer-320.png`, `screens/r2-kontakt-390-end.png` (konec stránky
+s otevřenou lištou), `screens/r2-short-page-320-after-choice.png` (konec stránky 404 po volbě, bez mezery),
+`screens/r2-settings-320.png`, `screens/r2-landscape-844x390.png`.
+
+### Co zbývá ověřit na produkci
+
+1. Vznik `_ga` a příjem dat v GA4 s `G-F89GSGDB8T`.
+2. Konverze v Google Ads po importu `generate_lead`.
+3. Vznik a mazání `_gac_*` po příchodu z reklamy s `gclid` na doméně `.robopipe.io`.
+4. Lighthouse mobil na produkci (kritérium 14).
+5. Synchronizace záložek a fokus v Safari na iPhonu (místně jen Chrome).
+6. VoiceOver po volbě v liště (fokus na `<main>`).
