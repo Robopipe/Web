@@ -4,7 +4,13 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
 import config from '@/payload.config'
-import { isShortCell, RichText } from '@/components/RichText'
+import {
+  isShortCell,
+  keepDigitGroups,
+  RichText,
+  tableColumnCount,
+  WIDE_TABLE_COLUMNS,
+} from '@/components/RichText'
 import { countWords, lexicalPlainText, readingTimeMinutes } from '@/lib/readingTime'
 
 // --- Lexical JSON builders (the same shape the admin editor saves) ---------
@@ -159,6 +165,93 @@ describe('table rendering', () => {
     )
     // No inline grey borders from the library default converter.
     expect(html).not.toContain('#ccc')
+    // A table with few columns keeps the narrowest frame and the normal padding.
+    expect(html).not.toContain('data-wide=""')
+    expect(html).not.toContain('--table-frame-width')
+  })
+
+  it('lets header cells wrap, also short ones, and keeps body numbers on one line', () => {
+    const html = render(
+      doc(
+        table([
+          ['Model', 'Cost per 1,000 checks', 'Cost per month (220 000)'],
+          ['Gemini 4 Argon', '$9.99', '$2 197'],
+        ]),
+      ),
+    )
+    for (const th of html.match(/<th[^>]*>/g) ?? []) {
+      expect(th).not.toContain('whitespace-nowrap')
+      expect(th).not.toContain('min-w-[14rem]')
+      expect(th).toContain('text-balance')
+    }
+    // On small screens a long header keeps a width for two lines.
+    expect(html).toMatch(/<th[^>]*max-lg:min-w-\[7\.5rem\][^>]*><p>Cost per 1,000 checks/)
+    expect(html).toMatch(/<th[^>]*class="(?![^"]*max-lg:min-w)[^"]*"[^>]*><p>Model<\/p>/)
+    // A number in a header never breaks between its digit groups.
+    expect(html).toContain('(220\u00a0000)')
+    expect(html).toMatch(/<td[^>]*whitespace-nowrap[^>]*><p>\$2\u00a0197<\/p>/)
+    expect(html).toMatch(/<td[^>]*whitespace-nowrap[^>]*><p>Gemini 4 Argon<\/p>/)
+  })
+
+  it('gives a table with many columns a wider frame and tighter padding', () => {
+    const header = [
+      'Model',
+      'Where it runs',
+      'Reasoning',
+      'Detects',
+      'Names',
+      'Time',
+      'Cost',
+      'Month',
+    ]
+    expect(header.length).toBeGreaterThanOrEqual(WIDE_TABLE_COLUMNS)
+    const html = render(
+      doc(
+        table([
+          header,
+          [
+            'Gemini 4 Argon',
+            'self-hosted, 1 GPU, detector',
+            'low',
+            '100%',
+            '100%',
+            '4.3 s',
+            '$9.99',
+            '$2,197',
+          ],
+        ]),
+      ),
+    )
+    expect(html).toMatch(
+      /<div[^>]*class="[^"]*lg:table-breakout[^"]*\[--table-frame-width:max-content\][^"]*"[^>]*data-wide=""/,
+    )
+    expect(html).toMatch(/<td[^>]*in-data-wide:px-3/)
+    expect(html).toMatch(
+      /<td[^>]*in-data-wide:min-w-\[11rem\][^>]*><p>self-hosted, 1 GPU, detector/,
+    )
+  })
+
+  it('counts table columns with colSpan', () => {
+    const t = table([
+      ['A', 'B', 'C'],
+      ['1', '2', '3'],
+    ])
+    expect(tableColumnCount(t as never)).toBe(3)
+    t.children[0].children[1].colSpan = 3
+    expect(tableColumnCount(t as never)).toBe(5)
+    expect(tableColumnCount({ type: 'table', children: [] } as never)).toBe(0)
+  })
+
+  it('joins digit groups with a no-break space, nothing else', () => {
+    const cells = keepDigitGroups([
+      paragraph('Cena za 1 000 ověření (220 000)'),
+      paragraph('4 096 × 3 000, 3 GPU, 12 345 678'),
+    ])
+    expect(cells.map((p) => p.children[0].text)).toEqual([
+      'Cena za 1\u00a0000 ověření (220\u00a0000)',
+      '4\u00a0096 × 3\u00a0000, 3 GPU, 12\u00a0345\u00a0678',
+    ])
+    expect(keepDigitGroups(paragraph('3 GPU 2026'))).toEqual(paragraph('3 GPU 2026'))
   })
 
   it('leaves content without tables as before', () => {
