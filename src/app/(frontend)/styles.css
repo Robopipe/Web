@@ -124,3 +124,18 @@
 @utility container-article-wide {
   @apply mx-auto w-full max-w-[1000px] px-4 sm:px-6;
 }
+
+/*
+ * Table frame in the article column on wide screens. The frame grows to the
+ * table's narrowest width, symmetric on both sides of the column, and stops
+ * at the content width of container-site (72rem minus 2 x 2rem). A table that
+ * fits the column keeps the column width. A wider table scrolls in the frame.
+ */
+@utility table-breakout {
+  position: relative;
+  left: 50%;
+  width: min-content;
+  min-width: 100%;
+  max-width: min(68rem, 100vw - 4rem);
+  translate: -50% 0;
+}

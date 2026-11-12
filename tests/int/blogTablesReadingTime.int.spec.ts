@@ -145,6 +145,9 @@ describe('table rendering', () => {
     )
     expect(html).toContain('data-rich-table')
     expect(html).toMatch(/<div[^>]*class="[^"]*overflow-x-auto[^"]*"/)
+    // From lg up, a wide table may grow past the text column, never on phones.
+    expect(html).toMatch(/<div[^>]*class="[^"]*max-w-full[^"]*\blg:table-breakout\b[^"]*"/)
+    expect(html).not.toMatch(/class="[^"]*(?<![:\w-])table-breakout/)
     expect(html).toMatch(/<th[^>]*scope="col"[^>]*>.*Model/)
     expect(html.match(/<th/g)).toHaveLength(2)
     expect(html.match(/<td/g)).toHaveLength(4)
