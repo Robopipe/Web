@@ -47,13 +47,14 @@ export function isShortCell(text: string): boolean {
 /**
  * Tables from the post editor (EXPERIMENTAL_TableFeature). The frame scrolls
  * sideways on its own, so a wide table never widens the page on phones.
+ * From lg up, a wide table breaks out of the text column (table-breakout).
  */
 export const tableConverters: JSXConverters<
   SerializedTableNode | SerializedTableRowNode | SerializedTableCellNode
 > = {
   table: ({ node, nodesToJSX }) => (
     <div
-      className="not-prose my-8 max-w-full overflow-x-auto rounded-md border border-border-12"
+      className="not-prose my-8 max-w-full overflow-x-auto rounded-md border border-border-12 lg:table-breakout"
       role="region"
       tabIndex={0}
       aria-label="Table"
