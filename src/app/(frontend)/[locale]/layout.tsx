@@ -38,9 +38,14 @@ const barlow = Barlow({
   variable: '--font-barlow',
 })
 
-/** Figures only (`font-numbers`: stats, prices, steps), all below the fold. */
+/**
+ * Figures only (`font-numbers`: stats, prices, steps), below the fold. Not preloaded, so it
+ * does not compete with the CSS. Every `font-numbers` element is `font-semibold`, and one
+ * static weight is a quarter of the size of the variable font.
+ */
 const inter = Inter({
   subsets: ['latin', 'latin-ext'],
+  weight: '600',
   variable: '--font-inter',
   preload: false,
 })
