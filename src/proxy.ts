@@ -4,6 +4,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 
 import { LOCALE_COOKIE, routing } from './i18n/routing'
 import { localeFromAcceptLanguage } from './lib/acceptLanguage'
+import { blogPageRedirect } from './lib/blogPageRedirect'
 
 // Locale detection order: an explicit path prefix always wins. On the root `/`,
 // a stored choice (NEXT_LOCALE, written only when the visitor picks a language
@@ -35,7 +36,7 @@ const rootRedirect = (request: NextRequest): NextResponse | undefined => {
 }
 
 export default function proxy(request: NextRequest) {
-  const response = rootRedirect(request) ?? intlMiddleware(request)
+  const response = rootRedirect(request) ?? blogPageRedirect(request) ?? intlMiddleware(request)
 
   const country = request.headers.get(GEO_HEADER)
   const isNewCountry = country && request.cookies.get(GEO_COOKIE)?.value !== country

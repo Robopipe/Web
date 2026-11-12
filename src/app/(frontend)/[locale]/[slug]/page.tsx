@@ -13,6 +13,10 @@ import {
   breadcrumbLd,
   faqPageLd,
   faqsFromLayout,
+  isSolutionPage,
+  ownPricingTable,
+  productLd,
+  serviceLd,
   videoObjectLd,
   videosFromLayout,
 } from '@/lib/jsonLd'
@@ -80,7 +84,10 @@ export default async function CMSPage({ params }: Props) {
   // locale prefix the middleware guessed (e.g. /old-page → /cs/old-page).
   if (!page) return redirectOrNotFound([`/${locale}/${slug}`, `/${slug}`])
 
-  const t = await getTranslations('common')
+  const [t, { settings }] = await Promise.all([getTranslations('common'), getGlobals(locale)])
+  const path = pathFor('pages', slug, locale)
+  const fallbackImage = settings.defaultSeo?.image
+  const pricingTable = ownPricingTable(page.layout)
 
   return (
     <>
@@ -89,8 +96,18 @@ export default async function CMSPage({ params }: Props) {
         data={[
           breadcrumbLd([
             { name: t('home'), path: `/${locale}` },
-            { name: page.title, path: pathFor('pages', slug, locale) },
+            { name: page.title, path },
           ]),
+          pricingTable
+            ? productLd({
+                name: settings.siteName,
+                page,
+                path,
+                pricing: { path, tiers: pricingTable.tiers },
+                fallbackImage,
+              })
+            : null,
+          isSolutionPage(page, settings) ? serviceLd(page, path, fallbackImage) : null,
           faqPageLd(faqsFromLayout(page.layout)),
           ...videosFromLayout(page.layout).map(videoObjectLd),
         ]}

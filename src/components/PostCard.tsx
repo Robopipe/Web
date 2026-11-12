@@ -16,9 +16,15 @@ type Props = {
    * featured — large two-column card (newest post on the listing)
    */
   variant?: 'default' | 'horizontal' | 'featured'
+  /**
+   * Title level of the default and horizontal cards, one below the heading
+   * above the cards. The featured card is always h2 (blog listing).
+   */
+  headingLevel?: 'h2' | 'h3' | 'h4'
 }
 
-export const PostCard: React.FC<Props> = ({ post, variant = 'default' }) => {
+export const PostCard: React.FC<Props> = ({ post, variant = 'default', headingLevel = 'h4' }) => {
+  const Heading = headingLevel
   const locale = useLocale() as Locale
   const format = useFormatter()
   const t = useTranslations('common')
@@ -70,7 +76,7 @@ export const PostCard: React.FC<Props> = ({ post, variant = 'default' }) => {
                 {post.excerpt}
               </p>
             )}
-            <p className="mt-auto pt-3 text-[13px] text-text-38">
+            <p className="mt-auto pt-3 text-[13px] text-text-55">
               {date}
               {post.readingTime ? ` · ${t('minRead', { minutes: post.readingTime })}` : ''}
             </p>
@@ -95,10 +101,10 @@ export const PostCard: React.FC<Props> = ({ post, variant = 'default' }) => {
                 <Chip>{category.title}</Chip>
               </div>
             )}
-            <h4 className="text-base leading-snug font-bold tracking-normal break-words">
+            <Heading className="text-base leading-snug font-bold tracking-normal break-words">
               {post.title}
-            </h4>
-            <p className="mt-auto text-xs text-text-38">{date}</p>
+            </Heading>
+            <p className="mt-auto text-xs text-text-55">{date}</p>
           </div>
         </Link>
       </article>
@@ -119,11 +125,13 @@ export const PostCard: React.FC<Props> = ({ post, variant = 'default' }) => {
               <Chip>{category.title}</Chip>
             </div>
           )}
-          <h4 className="text-xl leading-[26px] tracking-[-0.01em] break-words">{post.title}</h4>
+          <Heading className="text-xl leading-[26px] tracking-[-0.01em] break-words">
+            {post.title}
+          </Heading>
           {post.excerpt && (
             <p className="line-clamp-3 text-sm leading-5 text-text-60">{post.excerpt}</p>
           )}
-          <p className="mt-auto pt-2 text-xs text-text-38">{date}</p>
+          <p className="mt-auto pt-2 text-xs text-text-55">{date}</p>
         </div>
       </Link>
     </article>

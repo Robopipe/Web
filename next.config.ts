@@ -61,9 +61,33 @@ const shopRedirects = [
     destination: 'https://robopipe.io/en/case-studies/ai-product-tagging',
     permanent: true,
   },
-  { source: '/cart', has: shopHost, destination: 'https://robopipe.io/en/pricing', permanent: true },
+  {
+    source: '/cart',
+    has: shopHost,
+    destination: 'https://robopipe.io/en/pricing',
+    permanent: true,
+  },
   { source: '/:path*', has: shopHost, destination: 'https://robopipe.io/en', permanent: true },
 ]
+
+// Logos and icons keep their names across deploys, so a day in the browser
+// cache is the limit (issue #40). Next.js gives them max-age=0 by default.
+const iconPaths = [
+  '/logo.svg',
+  '/logo-white.svg',
+  '/logo.png',
+  '/favicon.ico',
+  '/icon.svg',
+  '/apple-icon.png',
+  '/apple-touch-icon.png',
+  '/apple-touch-icon-precomposed.png',
+]
+const iconHeaders = iconPaths.map((source) => ({
+  source,
+  headers: [
+    { key: 'Cache-Control', value: 'public, max-age=86400, stale-while-revalidate=604800' },
+  ],
+}))
 
 const nextConfig: NextConfig = {
   // Self-contained server bundle for the Docker image (see Dockerfile).
@@ -91,6 +115,13 @@ const nextConfig: NextConfig = {
   // Shop rules first so the shop host is fully owned by them (incl. the catch-all)
   // and never falls through into the host-agnostic legacy rules.
   redirects: async () => [...shopRedirects, ...legacyRedirects],
+  // iOS and many crawlers ask for /apple-touch-icon.png without reading the
+  // <link rel="apple-touch-icon"> that points to src/app/apple-icon.png (issue #40).
+  rewrites: async () => [
+    { source: '/apple-touch-icon.png', destination: '/apple-icon.png' },
+    { source: '/apple-touch-icon-precomposed.png', destination: '/apple-icon.png' },
+  ],
+  headers: async () => iconHeaders,
   webpack: (webpackConfig) => {
     webpackConfig.resolve.extensionAlias = {
       '.cjs': ['.cts', '.cjs'],

@@ -13,7 +13,7 @@ import { RichText } from '@/components/RichText'
 import { buttonClasses, Chip } from '@/components/ui'
 import { locales, type Locale } from '@/i18n/routing'
 import { checkedParams } from '@/lib/checkedParams'
-import { breadcrumbLd, faqPageLd } from '@/lib/jsonLd'
+import { breadcrumbLd, caseStudyArticleLd, faqPageLd } from '@/lib/jsonLd'
 import { buildMeta } from '@/lib/meta'
 import { localizedPaths, pathFor } from '@/lib/paths'
 import { getCaseStudies, getCaseStudyBySlug, getGlobals, getLocalizedSlugs } from '@/lib/queries'
@@ -73,6 +73,8 @@ export default async function CaseStudyPage({ params }: Props) {
   const t = await getTranslations('caseStudies')
   const tCommon = await getTranslations('common')
   const tIndustries = await getTranslations('industries')
+  const { settings } = await getGlobals(locale)
+  const path = pathFor('case-studies', slug, locale)
 
   const faqs = populatedFaqs(caseStudy.faqs)
   const sections = SECTIONS.filter((key) => !!caseStudy[key])
@@ -88,8 +90,9 @@ export default async function CaseStudyPage({ params }: Props) {
             breadcrumbLd([
               { name: tCommon('home'), path: `/${locale}` },
               { name: t('title'), path: `/${locale}/case-studies` },
-              { name: caseStudy.title, path: pathFor('case-studies', slug, locale) },
+              { name: caseStudy.title, path },
             ]),
+            caseStudyArticleLd(caseStudy, locale, path, settings.siteName),
             faqPageLd(faqs),
           ]}
         />

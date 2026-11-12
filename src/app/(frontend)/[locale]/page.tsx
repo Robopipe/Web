@@ -47,12 +47,19 @@ export default async function HomePage({ params }: Props) {
   const { isEnabled: draft } = await draftMode()
   const page = await getPageBySlug('home', locale, draft)
   if (!page) notFound()
-  const pricing = await getPricing(locale)
+  const [pricing, { settings }] = await Promise.all([getPricing(locale), getGlobals(locale)])
+  const product = productLd({
+    name: settings.siteName,
+    page,
+    path: `/${locale}`,
+    pricing,
+    fallbackImage: settings.defaultSeo?.image,
+  })
 
   return (
     <>
       {draft && <LivePreviewListener />}
-      <JsonLd data={[productLd(page, locale, pricing), faqPageLd(faqsFromLayout(page.layout))]} />
+      <JsonLd data={[product, faqPageLd(faqsFromLayout(page.layout))]} />
       <RenderBlocks blocks={page.layout} />
     </>
   )

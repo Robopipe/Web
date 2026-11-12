@@ -28,102 +28,112 @@ export const PricingTableComponent: React.FC<PricingTableBlock> = async (block) 
 
 const PricingTiers: React.FC<
   Pick<PricingTableBlock, 'heading' | 'text' | 'tiers' | 'footnote'>
-> = ({ heading, text, tiers, footnote }) => (
-  <section className="container-site py-16 lg:py-24">
-    {(heading || text) && (
-      <div className="mx-auto mb-12 max-w-2xl text-center">
-        {heading && <h2>{heading}</h2>}
-        {text && <p className="mt-4 text-lg text-text-60">{text}</p>}
-      </div>
-    )}
-    <div
-      className={`grid items-start gap-6 ${
-        (tiers ?? []).length >= 4 ? 'lg:grid-cols-2 xl:grid-cols-4' : 'lg:grid-cols-3'
-      }`}
-    >
-      {(tiers ?? []).map((tier, i) => {
-        const dark = Boolean(tier.highlighted)
-        return (
-          <div
-            key={i}
-            className={
-              dark
-                ? 'relative @container min-w-0 rounded-lg bg-surface-dark p-8 text-text-invert shadow-lift'
-                : '@container min-w-0 rounded-lg border border-border-12 bg-white p-8'
-            }
-          >
-            <div className="flex items-center justify-between gap-3">
-              <h3 className={`text-xl leading-7 ${dark ? 'text-text-invert' : ''}`}>{tier.name}</h3>
-              {dark && tier.badge && (
-                <span className="rounded-full bg-brand px-3 py-1 text-xs font-semibold text-brand-ink">
-                  {tier.badge}
-                </span>
-              )}
-            </div>
-            {tier.tagline && (
-              <p className={`mt-2 text-sm ${dark ? 'text-text-invert-60' : 'text-text-60'}`}>
-                {tier.tagline}
-              </p>
-            )}
-            <div className="mt-5">
-              <span
-                className={`font-numbers text-[28px] leading-9 font-semibold break-words hyphens-auto @xs:text-[34px] @xs:leading-10 @sm:text-[40px] @sm:leading-12 ${
-                  dark ? 'text-text-invert' : 'text-text-heading'
-                }`}
-              >
-                {tier.price}
-              </span>
-              {tier.period && (
-                <span className={`block text-sm ${dark ? 'text-text-invert-60' : 'text-text-60'}`}>
-                  {tier.period}
-                </span>
-              )}
-            </div>
-            {tier.subNote && (
-              <p className={`mt-1 text-[13px] ${dark ? 'text-text-invert-60' : 'text-text-38'}`}>
-                {tier.subNote}
-              </p>
-            )}
-            {tier.cta?.label && (
-              <CMSLink
-                link={tier.cta}
-                className={buttonClasses({
-                  variant:
-                    tier.ctaVariant === 'filled' ? 'filled' : dark ? 'outlined-dark' : 'outlined',
-                  className: 'mt-6 w-full',
-                })}
-              />
-            )}
-            {(tier.featuresLeadIn || !!tier.features?.length) && (
-              <ul className="mt-7 space-y-2.5">
-                {tier.featuresLeadIn && (
-                  <li
-                    className={`text-sm font-semibold ${
-                      dark ? 'text-text-invert' : 'text-text-heading'
-                    }`}
-                  >
-                    {tier.featuresLeadIn}
-                  </li>
+> = ({ heading, text, tiers, footnote }) => {
+  // Tier names sit one level below the section heading, or below the page h1 without one.
+  const TierHeading = heading ? 'h3' : 'h2'
+  return (
+    <section className="container-site py-16 lg:py-24">
+      {(heading || text) && (
+        <div className="mx-auto mb-12 max-w-2xl text-center">
+          {heading && <h2>{heading}</h2>}
+          {text && <p className="mt-4 text-lg text-text-60">{text}</p>}
+        </div>
+      )}
+      <div
+        className={`grid items-start gap-6 ${
+          (tiers ?? []).length >= 4 ? 'lg:grid-cols-2 xl:grid-cols-4' : 'lg:grid-cols-3'
+        }`}
+      >
+        {(tiers ?? []).map((tier, i) => {
+          const dark = Boolean(tier.highlighted)
+          return (
+            <div
+              key={i}
+              className={
+                dark
+                  ? 'relative @container min-w-0 rounded-lg bg-surface-dark p-8 text-text-invert shadow-lift'
+                  : '@container min-w-0 rounded-lg border border-border-12 bg-white p-8'
+              }
+            >
+              <div className="flex items-center justify-between gap-3">
+                <TierHeading
+                  className={`text-xl leading-7 tracking-[-0.01em] ${dark ? 'text-text-invert' : ''}`}
+                >
+                  {tier.name}
+                </TierHeading>
+                {dark && tier.badge && (
+                  <span className="rounded-full bg-brand px-3 py-1 text-xs font-semibold text-brand-ink">
+                    {tier.badge}
+                  </span>
                 )}
-                {(tier.features ?? []).map((feature, j) => (
-                  <li
-                    key={j}
-                    className={`flex items-start gap-2.5 text-sm ${
-                      dark ? 'text-text-invert-60' : 'text-text-90'
-                    }`}
+              </div>
+              {tier.tagline && (
+                <p className={`mt-2 text-sm ${dark ? 'text-text-invert-60' : 'text-text-60'}`}>
+                  {tier.tagline}
+                </p>
+              )}
+              <div className="mt-5">
+                <span
+                  className={`font-numbers text-[28px] leading-9 font-semibold break-words hyphens-auto @xs:text-[34px] @xs:leading-10 @sm:text-[40px] @sm:leading-12 ${
+                    dark ? 'text-text-invert' : 'text-text-heading'
+                  }`}
+                >
+                  {tier.price}
+                </span>
+                {tier.period && (
+                  <span
+                    className={`block text-sm ${dark ? 'text-text-invert-60' : 'text-text-60'}`}
                   >
-                    <CheckIcon
-                      className={`mt-0.5 h-4 w-4 shrink-0 ${dark ? 'text-brand' : 'text-brand-fg'}`}
-                    />
-                    {feature.text}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        )
-      })}
-    </div>
-    {footnote && <p className="mt-8 text-center text-[13px] text-text-38">{footnote}</p>}
-  </section>
-)
+                    {tier.period}
+                  </span>
+                )}
+              </div>
+              {tier.subNote && (
+                <p className={`mt-1 text-[13px] ${dark ? 'text-text-invert-60' : 'text-text-55'}`}>
+                  {tier.subNote}
+                </p>
+              )}
+              {tier.cta?.label && (
+                <CMSLink
+                  link={tier.cta}
+                  className={buttonClasses({
+                    variant:
+                      tier.ctaVariant === 'filled' ? 'filled' : dark ? 'outlined-dark' : 'outlined',
+                    className: 'mt-6 w-full',
+                  })}
+                />
+              )}
+              {(tier.featuresLeadIn || !!tier.features?.length) && (
+                <ul className="mt-7 space-y-2.5">
+                  {tier.featuresLeadIn && (
+                    <li
+                      className={`text-sm font-semibold ${
+                        dark ? 'text-text-invert' : 'text-text-heading'
+                      }`}
+                    >
+                      {tier.featuresLeadIn}
+                    </li>
+                  )}
+                  {(tier.features ?? []).map((feature, j) => (
+                    <li
+                      key={j}
+                      className={`flex items-start gap-2.5 text-sm ${
+                        dark ? 'text-text-invert-60' : 'text-text-90'
+                      }`}
+                    >
+                      <CheckIcon
+                        className={`mt-0.5 h-4 w-4 shrink-0 ${dark ? 'text-brand' : 'text-brand-fg'}`}
+                      />
+                      {feature.text}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )
+        })}
+      </div>
+      {footnote && <p className="mt-8 text-center text-[13px] text-text-55">{footnote}</p>}
+    </section>
+  )
+}

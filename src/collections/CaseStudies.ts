@@ -3,6 +3,7 @@ import type { CollectionConfig } from 'payload'
 import { authenticated, publishedOrLoggedIn } from '@/access'
 import { seoField } from '@/fields/seo'
 import { slugField } from '@/fields/slug'
+import { indexNowAfterChange } from '@/hooks/indexNow'
 import { revalidateAfterChange, revalidateAfterDelete } from '@/hooks/revalidate'
 import { generatePreviewPath } from '@/lib/preview'
 
@@ -33,7 +34,7 @@ export const CaseStudies: CollectionConfig = {
     maxPerDoc: 25,
   },
   hooks: {
-    afterChange: [revalidateAfterChange],
+    afterChange: [revalidateAfterChange, indexNowAfterChange('case-studies')],
     afterDelete: [revalidateAfterDelete],
   },
   fields: [

@@ -158,6 +158,7 @@ describe('Product offers from the pricing table', () => {
         name: 'Standard',
         price: '9900',
         priceCurrency: 'CZK',
+        availability: 'https://schema.org/InStock',
         url: `${SERVER_URL}/cs/cenik`,
         priceSpecification: {
           '@type': 'UnitPriceSpecification',

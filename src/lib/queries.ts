@@ -5,6 +5,7 @@ import { cache } from 'react'
 import { routing, type Locale } from '@/i18n/routing'
 import type { Media, Page } from '@/payload-types'
 
+import { ownPricingTable } from './jsonLd'
 import { localeSwitchPaths, pathFor, type LocaleSwitchPaths } from './paths'
 
 /** Payload caches the instance internally — safe to call per request. */
@@ -173,11 +174,8 @@ export const getPricing = async (locale: Locale, { depth = 0 }: { depth?: 0 | 1 
     ...PUBLIC_ONLY,
   })
   for (const page of pages.docs) {
-    // A table with source "pricingPage" (solution pages) only shows these tiers. It has none of its own.
-    const table = page.layout?.find(
-      (block) => block.blockType === 'pricingTable' && block.source !== 'pricingPage',
-    )
-    if (page.slug && table?.blockType === 'pricingTable') {
+    const table = ownPricingTable(page.layout)
+    if (page.slug && table) {
       return { path: pathFor('pages', page.slug, locale), tiers: table.tiers ?? [] }
     }
   }

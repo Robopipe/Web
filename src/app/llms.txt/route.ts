@@ -21,6 +21,8 @@ export async function GET(): Promise<Response> {
     phone: settings.contact?.phone,
     legalName: settings.company?.legalName,
     companyId: settings.company?.companyId,
+    address: settings.contact?.address,
+    socials: (settings.socials ?? []).map((social) => social.url),
   })
   return new Response(body, { headers: { 'Content-Type': 'text/plain; charset=utf-8' } })
 }

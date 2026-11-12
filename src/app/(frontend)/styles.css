@@ -37,7 +37,8 @@
   /* Text */
   --color-text-90: rgba(0, 0, 0, 0.9);
   --color-text-60: rgba(0, 0, 0, 0.6);
-  --color-text-38: rgba(0, 0, 0, 0.38);
+  /* 4.7:1 on white, above the WCAG AA 4.5:1 for small text (issue #40). */
+  --color-text-55: rgba(0, 0, 0, 0.55);
   --color-text-heading: rgb(19, 16, 30);
   --color-text-invert: rgba(255, 255, 255, 0.9);
   --color-text-invert-60: rgba(255, 255, 255, 0.6);

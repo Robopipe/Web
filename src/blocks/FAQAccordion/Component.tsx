@@ -34,7 +34,7 @@ export const FAQList: React.FC<FAQListProps> = ({ items }) => (
         <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-6 py-4 text-left font-semibold text-text-heading hover:bg-surface-3 group-open:hover:bg-transparent [&::-webkit-details-marker]:hidden">
           {faq.question}
           <svg
-            className="h-5 w-5 shrink-0 text-text-38 transition-transform duration-150 group-open:rotate-45"
+            className="h-5 w-5 shrink-0 text-text-55 transition-transform duration-150 group-open:rotate-45"
             viewBox="0 0 20 20"
             fill="none"
             aria-hidden="true"

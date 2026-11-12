@@ -25,7 +25,7 @@ export const ContactFormComponent: React.FC<ContactFormBlock> = async ({
     <section className="container-site py-12 lg:py-16" id="contact">
       <div className={sidebar ? 'grid gap-8 lg:grid-cols-[1.2fr_1fr]' : 'mx-auto max-w-2xl'}>
         <div className="rounded-lg border border-border-12 bg-white p-6 sm:p-8">
-          {heading && <h3 className="mb-6 text-2xl leading-8">{heading}</h3>}
+          {heading && <h2 className="mb-6 text-2xl leading-8 tracking-[-0.01em]">{heading}</h2>}
           <Suspense>
             <LeadForm microcopy={microcopy} />
           </Suspense>
@@ -88,7 +88,7 @@ export const ContactFormComponent: React.FC<ContactFormBlock> = async ({
                       {contact.phone}
                     </a>
                     {contact.phoneHours && (
-                      <p className="mt-0.5 text-[13px] text-text-38">{contact.phoneHours}</p>
+                      <p className="mt-0.5 text-[13px] text-text-55">{contact.phoneHours}</p>
                     )}
                   </div>
                 </div>

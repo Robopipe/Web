@@ -135,6 +135,7 @@ The app ships as a Docker image (`Dockerfile`, Next.js `standalone` output) depl
    | `PAYLOAD_SECRET` | | ✓ | the build uses a placeholder when it's not available |
    | `GCS_CREDENTIALS` | | ✓ | service-account key JSON, on one line |
    | `PREVIEW_SECRET`, `CRON_SECRET`, `RESEND_API_KEY`, `ANTHROPIC_API_KEY`, `PEXELS_API_KEY` | | ✓ | |
+   | `INDEXNOW_KEY` | | ✓ | IndexNow key (8–128 letters, digits, dashes), served at `/indexnow-key.txt`. Publishing a page, post or case study then notifies Bing and Seznam. Unset: nothing is sent |
 
    Changing a build-time value needs a redeploy; runtime-only values just a restart.
 5. **Scheduled task** (nightly blog generation) — on the application, *Scheduled Tasks* → add: frequency `0 3 * * *`, timeout `900` s (one article takes ~3–5 min), command:
