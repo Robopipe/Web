@@ -4,6 +4,7 @@ import React from 'react'
 import { Media } from '@/components/Media'
 import { Eyebrow } from '@/components/ui'
 import type { Locale } from '@/i18n/routing'
+import { fixedHeightSizes } from '@/lib/imageSizes'
 import { getGlobals } from '@/lib/queries'
 import type { LogoCloudBlock } from '@/payload-types'
 
@@ -34,6 +35,7 @@ export const LogoCloudComponent: React.FC<LogoCloudBlock> = async (block) => {
               <Media
                 media={entry.logo}
                 size="thumbnail"
+                sizes={fixedHeightSizes(48, typeof entry.logo === 'number' ? null : entry.logo)}
                 className="h-12 w-auto object-contain opacity-80 grayscale transition hover:opacity-100 hover:grayscale-0"
               />
             )

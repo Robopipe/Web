@@ -2,6 +2,7 @@ import React from 'react'
 
 import { Media } from '@/components/Media'
 import { Chip } from '@/components/ui'
+import { HALF_SIZES } from '@/lib/imageSizes'
 import type { IndustrySectionBlock } from '@/payload-types'
 
 export const IndustrySectionComponent: React.FC<IndustrySectionBlock> = ({
@@ -29,7 +30,12 @@ export const IndustrySectionComponent: React.FC<IndustrySectionBlock> = ({
               imageRight ? 'lg:order-2' : ''
             }`}
           >
-            <Media media={image} size="card" className="h-full w-full object-cover" />
+            <Media
+              media={image}
+              size="card"
+              sizes={HALF_SIZES}
+              className="h-full w-full object-cover"
+            />
           </div>
         )}
         <div className={imageRight ? 'lg:order-1' : ''}>

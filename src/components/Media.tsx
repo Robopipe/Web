@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import React from 'react'
 
+import { DEFAULT_SIZES } from '@/lib/imageSizes'
 import { SERVER_URL } from '@/lib/paths'
 import type { Media as MediaType } from '@/payload-types'
 
@@ -14,11 +15,19 @@ type Props = {
   className?: string
   priority?: boolean
   fill?: boolean
+  /** Rendered width for the browser's choice from `srcset`. Defaults to the container width. */
   sizes?: string
 }
 
 /** Renders a Payload media doc via next/image; no-op when the relation isn't populated. */
-export const Media: React.FC<Props> = ({ media, size, className, priority, fill, sizes }) => {
+export const Media: React.FC<Props> = ({
+  media,
+  size,
+  className,
+  priority,
+  fill,
+  sizes = DEFAULT_SIZES,
+}) => {
   if (!media || typeof media === 'number') return null
 
   const sized = size ? media.sizes?.[size] : undefined
