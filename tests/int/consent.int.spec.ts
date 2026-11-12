@@ -1,6 +1,13 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { clearGoogleCookies, initGoogleTag, trackEvent, updateGoogleConsent } from '@/lib/analytics'
+import {
+  IDLE_FALLBACK_MS,
+  IDLE_TIMEOUT_MS,
+  clearGoogleCookies,
+  initGoogleTag,
+  trackEvent,
+  updateGoogleConsent,
+} from '@/lib/analytics'
 import { cookieNames, readCookie, writeCookie } from '@/lib/clientCookies'
 import {
   GOOGLE_COOKIES,
@@ -131,12 +138,19 @@ describe('Google tag', () => {
     delete window.dataLayer
     document.head.querySelectorAll('script').forEach((script) => script.remove())
     clearAllCookies()
+    // jsdom has no requestIdleCallback, so the tag takes the Safari path (a timer).
+    vi.useFakeTimers()
   })
 
   afterEach(() => {
     delete window.gtag
     delete window.dataLayer
+    vi.useRealTimers()
+    vi.unstubAllGlobals()
   })
+
+  const gtagScripts = () =>
+    document.head.querySelectorAll('script[src*="googletagmanager.com/gtag/js"]')
 
   it('queues default denied before config and loads the script once', () => {
     initGoogleTag({ analyticsId: 'G-TEST000000', adsId: 'AW-000000000' }, null)
@@ -151,8 +165,9 @@ describe('Google tag', () => {
       ['config', 'AW-000000000'],
     ])
     expect(queued[0][2]).toEqual(DENIED)
-    // jsdom finishes loading before the tests run, so the script goes in at once.
-    const scripts = document.head.querySelectorAll('script[src*="googletagmanager.com/gtag/js"]')
+    // jsdom finishes loading before the tests run, so only the idle wait is left.
+    vi.advanceTimersByTime(IDLE_FALLBACK_MS)
+    const scripts = gtagScripts()
     expect(scripts).toHaveLength(1)
     expect(scripts[0].getAttribute('src')).toBe(
       'https://www.googletagmanager.com/gtag/js?id=G-TEST000000',
@@ -167,7 +182,55 @@ describe('Google tag', () => {
     expect(update).toBeGreaterThan(0)
     expect(update).toBeLessThan(config)
     expect(queued[update][2]).toEqual({ ...DENIED, analytics_storage: 'granted' })
+    vi.advanceTimersByTime(IDLE_FALLBACK_MS)
     expect(document.head.querySelector('script')?.getAttribute('src')).toContain('id=AW-000000000')
+  })
+
+  // Issue #30: the script waits for an idle moment, the queue does not.
+  it('loads the script only when the browser is idle, without the Safari timer', () => {
+    const idle: Array<() => void> = []
+    const requestIdleCallback = vi.fn((callback: () => void) => idle.push(callback))
+    vi.stubGlobal('requestIdleCallback', requestIdleCallback)
+
+    initGoogleTag({ analyticsId: 'G-TEST000000' }, null)
+    vi.advanceTimersByTime(IDLE_FALLBACK_MS * 10)
+    expect(gtagScripts()).toHaveLength(0)
+    expect(requestIdleCallback).toHaveBeenCalledWith(expect.any(Function), {
+      timeout: IDLE_TIMEOUT_MS,
+    })
+
+    idle.forEach((callback) => callback())
+    expect(gtagScripts()).toHaveLength(1)
+  })
+
+  it('keeps consent updates and events sent before the script loads, in order', () => {
+    initGoogleTag({ analyticsId: 'G-TEST000000' }, null)
+    updateGoogleConsent(createConsent(true, false))
+    trackEvent('contact_click', { method: 'email' })
+    expect(gtagScripts()).toHaveLength(0)
+
+    vi.advanceTimersByTime(IDLE_FALLBACK_MS)
+    expect(gtagScripts()).toHaveLength(1)
+    const queued = commands()
+    expect(queued[0].slice(0, 2)).toEqual(['consent', 'default'])
+    expect(queued.slice(-2)).toEqual([
+      ['consent', 'update', { ...DENIED, analytics_storage: 'granted' }],
+      ['event', 'contact_click', { method: 'email' }],
+    ])
+  })
+
+  it('waits for the load event before the idle wait', () => {
+    const readyState = vi.spyOn(document, 'readyState', 'get').mockReturnValue('interactive')
+    initGoogleTag({ analyticsId: 'G-TEST000000' }, null)
+    vi.advanceTimersByTime(IDLE_FALLBACK_MS * 10)
+    expect(gtagScripts()).toHaveLength(0)
+
+    readyState.mockReturnValue('complete')
+    window.dispatchEvent(new Event('load'))
+    expect(gtagScripts()).toHaveLength(0)
+    vi.advanceTimersByTime(IDLE_FALLBACK_MS)
+    expect(gtagScripts()).toHaveLength(1)
+    readyState.mockRestore()
   })
 
   it('does nothing without an ID', () => {

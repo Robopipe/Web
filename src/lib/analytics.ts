@@ -29,13 +29,32 @@ export type GoogleTagIds = {
 
 const GTAG_SRC = 'https://www.googletagmanager.com/gtag/js'
 
+/** The longest wait for an idle moment after `load` before the script loads anyway. */
+export const IDLE_TIMEOUT_MS = 2000
+/** Delay after `load` in browsers without `requestIdleCallback` (Safari). */
+export const IDLE_FALLBACK_MS = 500
+
+/**
+ * Runs `callback` when the browser has nothing else to do, at the latest after
+ * `IDLE_TIMEOUT_MS`. Safari has no `requestIdleCallback` and waits a fixed time.
+ */
+export function whenIdle(callback: () => void): void {
+  if (typeof window.requestIdleCallback === 'function') {
+    window.requestIdleCallback(() => callback(), { timeout: IDLE_TIMEOUT_MS })
+  } else {
+    window.setTimeout(callback, IDLE_FALLBACK_MS)
+  }
+}
+
 /** The Google Ads tag ID (`AW-…`) from initGoogleTag. Target of the hashed email (issue #26). */
 let adsTagId: string | null = null
 
 /**
  * Starts the Google tag once per page load. The `dataLayer` queue keeps the order of
  * the commands, so the default `denied` is always before `config`, even when the
- * script loads early. The script itself loads only after the window `load` event.
+ * script loads early. The queue starts at once, so consent updates and events sent
+ * before the script loads wait in it. The script itself loads after the window `load`
+ * event, when the browser is idle (issue #30).
  */
 export function initGoogleTag(
   { analyticsId, adsId }: GoogleTagIds,
@@ -68,8 +87,9 @@ export function initGoogleTag(
     script.src = `${GTAG_SRC}?id=${encodeURIComponent(ids[0])}`
     document.head.appendChild(script)
   }
-  if (document.readyState === 'complete') loadScript()
-  else window.addEventListener('load', loadScript, { once: true })
+  const loadWhenIdle = () => whenIdle(loadScript)
+  if (document.readyState === 'complete') loadWhenIdle()
+  else window.addEventListener('load', loadWhenIdle, { once: true })
 }
 
 export function updateGoogleConsent(choice: ConsentChoice): void {
