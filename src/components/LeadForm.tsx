@@ -6,7 +6,7 @@ import React, { useActionState, useEffect, useRef } from 'react'
 
 import { submitLead, type LeadFormState } from '@/actions/submitLead'
 import type { Locale } from '@/i18n/routing'
-import { trackEvent } from '@/lib/analytics'
+import { sendAdsUserData, trackEvent } from '@/lib/analytics'
 
 const initialState: LeadFormState = { status: 'idle' }
 
@@ -39,12 +39,14 @@ export const LeadForm: React.FC<Props> = ({ microcopy }) => {
     message?: boolean
   }>({})
 
-  // The conversion (issue #21). Google Ads imports this GA4 key event.
+  // The conversion (issue #21). Google Ads imports this GA4 key event. After it, the hashed
+  // email for enhanced conversions for leads (issue #26), so GA4 gets generate_lead without it.
   useEffect(() => {
     if (state.status !== 'success' || trackedState.current === state) return
     trackedState.current = state
     const tier = searchParams.get('tier')
     trackEvent('generate_lead', { form_location: pathname, ...(tier ? { tier } : {}) })
+    if (state.adsUserData) sendAdsUserData(state.adsUserData)
   }, [state, pathname, searchParams])
 
   // The form is noValidate — required fields get localized messages instead

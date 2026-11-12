@@ -10,6 +10,7 @@ import * as migration_20261111_151806_hero_video_localized from './20261111_1518
 import * as migration_20261111_164405_industry_card_image_localized from './20261111_164405_industry_card_image_localized'
 import * as migration_20261111_181546_site_settings_measurement from './20261111_181546_site_settings_measurement'
 import * as migration_20261111_213459_service_video from './20261111_213459_service_video'
+import * as migration_20261111_220539_leads_attribution from './20261111_220539_leads_attribution'
 
 export const migrations = [
   {
@@ -71,5 +72,10 @@ export const migrations = [
     up: migration_20261111_213459_service_video.up,
     down: migration_20261111_213459_service_video.down,
     name: '20261111_213459_service_video',
+  },
+  {
+    up: migration_20261111_220539_leads_attribution.up,
+    down: migration_20261111_220539_leads_attribution.down,
+    name: '20261111_220539_leads_attribution',
   },
 ]

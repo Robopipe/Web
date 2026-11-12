@@ -1,6 +1,7 @@
 /**
  * The visitor's cookie choice (issue #21). Pure functions without React or the DOM.
- * The browser cookie `rp_consent` is the only store of the choice. The server never reads it.
+ * The browser cookie `rp_consent` is the only store of the choice. Pages never read it on
+ * the server. Only the lead form action reads it at submission (issue #26).
  */
 
 export const CONSENT_COOKIE = 'rp_consent'
@@ -63,11 +64,12 @@ export const toConsentMode = (choice: ConsentChoice | null): ConsentModeState =>
 /**
  * Cookies that Google tags set for each category: `_ga`, `_ga_*`, `_gid` and `_gat*` for
  * analytics, `_gcl_*` and `_gac_*` for marketing. GA4 linked with Google Ads stores the ad
- * click in `_gac_*`, and `ad_storage` controls it.
+ * click in `_gac_*`, and `ad_storage` controls it. Marketing also covers our own `rp_click`
+ * (issue #26).
  */
 export const GOOGLE_COOKIES: Record<ConsentCategory, RegExp> = {
   analytics: /^(_ga|_ga_.+|_gid|_gat.*)$/,
-  marketing: /^(_gcl_.+|_gac_.+)$/,
+  marketing: /^(_gcl_.+|_gac_.+|rp_click)$/,
 }
 
 /**

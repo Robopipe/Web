@@ -1,8 +1,16 @@
 'use server'
 
-import { headers } from 'next/headers'
+import { cookies, headers } from 'next/headers'
 import { z } from 'zod'
 
+import {
+  attributionFromCookies,
+  hashEmail,
+  isGoogleAdsLead,
+  type LeadAttribution,
+} from '@/lib/googleAds'
+import { createLeadWithAttribution } from '@/lib/leadStore'
+import { safeErrorFields } from '@/lib/logSafe'
 import { getPayloadClient } from '@/lib/queries'
 
 const leadSchema = z.object({
@@ -25,6 +33,8 @@ const leadSchema = z.object({
 export type LeadFormState = {
   status: 'idle' | 'success' | 'error'
   error?: 'validation' | 'rate-limit' | 'server'
+  /** Hashed email for enhanced conversions for leads (issue #26). Only for a Google Ads lead. */
+  adsUserData?: { sha256_email_address: string }
 }
 
 // Per-instance rate limit: fine on Cloud Run with min-instances=1 and low form volume.
@@ -44,10 +54,7 @@ const isRateLimited = (ip: string): boolean => {
   return false
 }
 
-export async function submitLead(
-  _prev: LeadFormState,
-  formData: FormData,
-): Promise<LeadFormState> {
+export async function submitLead(_prev: LeadFormState, formData: FormData): Promise<LeadFormState> {
   const parsed = leadSchema.safeParse(Object.fromEntries(formData))
   if (!parsed.success) {
     // Honeypot hits also land here — pretend success so bots learn nothing.
@@ -67,12 +74,17 @@ export async function submitLead(
 
   try {
     const payload = await getPayloadClient()
-    await payload.create({
-      collection: 'leads',
-      data: lead,
-      overrideAccess: true,
-      context: { skipRevalidate: true },
-    })
+
+    // Consent and ad click at submission (issue #26). Measurement never stops the lead.
+    let attribution: LeadAttribution = { consentAnalytics: false, consentMarketing: false }
+    try {
+      const store = await cookies()
+      attribution = attributionFromCookies((name) => store.get(name)?.value, new Date())
+    } catch (attributionError) {
+      payload.logger.warn({ ...safeErrorFields(attributionError), msg: 'Lead attribution failed' })
+    }
+
+    const stored = await createLeadWithAttribution(payload, lead, attribution)
 
     const settings = await payload.findGlobal({ slug: 'site-settings', depth: 0 })
     const to = settings.leadNotificationEmail
@@ -98,12 +110,25 @@ export async function submitLead(
         })
       } catch (emailError) {
         // Lead is stored — a failed notification must not fail the submission.
-        payload.logger.error({ err: emailError, msg: 'Lead notification email failed' })
+        payload.logger.error({
+          ...safeErrorFields(emailError),
+          msg: 'Lead notification email failed',
+        })
       }
     }
-    return { status: 'success' }
+
+    let adsUserData: LeadFormState['adsUserData']
+    try {
+      // The stored attribution decides, so the tag and the export always agree.
+      if (isGoogleAdsLead(stored)) {
+        adsUserData = { sha256_email_address: hashEmail(lead.email) }
+      }
+    } catch (hashError) {
+      payload.logger.warn({ ...safeErrorFields(hashError), msg: 'Lead email hash failed' })
+    }
+    return { status: 'success', adsUserData }
   } catch (error) {
-    console.error('Lead submission failed', error)
+    console.error('Lead submission failed', safeErrorFields(error))
     return { status: 'error', error: 'server' }
   }
 }

@@ -1268,6 +1268,29 @@ export interface Lead {
    * Path of the page the form was submitted from.
    */
   sourcePage?: string | null;
+  /**
+   * Ad click and cookie consent at the time of submission. Set by the form, read-only.
+   */
+  attribution?: {
+    consentAnalytics?: boolean | null;
+    consentMarketing?: boolean | null;
+    gclid?: string | null;
+    gbraid?: string | null;
+    wbraid?: string | null;
+    clickedAt?: string | null;
+  };
+  /**
+   * Email domain is not a public mail service.
+   */
+  businessEmail?: boolean | null;
+  /**
+   * koala42.com, robopipe.io or a name that starts with TEST.
+   */
+  testLead?: boolean | null;
+  /**
+   * Goes to Google Ads as a company lead (last 90 days only).
+   */
+  googleAdsExport?: boolean | null;
   status?: ('new' | 'contacted' | 'qualified' | 'closed') | null;
   updatedAt: string;
   createdAt: string;
@@ -2143,6 +2166,19 @@ export interface LeadsSelect<T extends boolean = true> {
   tier?: T;
   locale?: T;
   sourcePage?: T;
+  attribution?:
+    | T
+    | {
+        consentAnalytics?: T;
+        consentMarketing?: T;
+        gclid?: T;
+        gbraid?: T;
+        wbraid?: T;
+        clickedAt?: T;
+      };
+  businessEmail?: T;
+  testLead?: T;
+  googleAdsExport?: T;
   status?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -2537,7 +2573,7 @@ export interface SiteSetting {
   /**
    * Google measurement. Empty = no Google tag and no cookie banner. Publish the cookie paragraph on the privacy page before you fill these.
    */
-  measurement?: {
+  measurement: {
     /**
      * GA4 measurement ID, e.g. G-ABC123XYZ9.
      */
@@ -2546,6 +2582,10 @@ export interface SiteSetting {
      * Google Ads tag ID, e.g. AW-123456789. Used for remarketing.
      */
     googleAdsId?: string | null;
+    /**
+     * Exact name of the Google Ads conversion action for company leads. Goes to the "Conversion Name" column of /api/google-ads/company-leads.csv.
+     */
+    leadConversionName: string;
   };
   defaultSeo?: {
     /**
@@ -2727,6 +2767,7 @@ export interface SiteSettingsSelect<T extends boolean = true> {
     | {
         googleAnalyticsId?: T;
         googleAdsId?: T;
+        leadConversionName?: T;
       };
   defaultSeo?:
     | T

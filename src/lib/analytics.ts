@@ -29,6 +29,9 @@ export type GoogleTagIds = {
 
 const GTAG_SRC = 'https://www.googletagmanager.com/gtag/js'
 
+/** The Google Ads tag ID (`AW-…`) from initGoogleTag. Target of the hashed email (issue #26). */
+let adsTagId: string | null = null
+
 /**
  * Starts the Google tag once per page load. The `dataLayer` queue keeps the order of
  * the commands, so the default `denied` is always before `config`, even when the
@@ -42,6 +45,8 @@ export function initGoogleTag(
   if (window.gtag) return
   const ids = [analyticsId, adsId].filter((id): id is string => Boolean(id))
   if (ids.length === 0) return
+
+  adsTagId = adsId || null
 
   const dataLayer = (window.dataLayer = window.dataLayer || [])
   // gtag.js reads only `arguments` objects from the queue. Arrays are ignored.
@@ -85,4 +90,19 @@ export function clearGoogleCookies(category: ConsentCategory): void {
 /** The only entry point for events. Does nothing without the Google tag. */
 export const trackEvent = (event: string, params?: Record<string, string | number>): void => {
   window.gtag?.('event', event, params)
+}
+
+/**
+ * Enhanced conversions for leads (issue #26). The server sends only the SHA-256 hex of the
+ * email. Consent mode drops the data without `ad_user_data`. `form_submit` goes only to the
+ * Google Ads tag and has no conversion action, so it only carries the hash.
+ */
+export function sendAdsUserData(userData: { sha256_email_address: string }): void {
+  if (!window.gtag || !adsTagId) return
+  try {
+    window.gtag('set', 'user_data', userData)
+    window.gtag('event', 'form_submit', { send_to: adsTagId })
+  } catch {
+    // Measurement never breaks the form.
+  }
 }

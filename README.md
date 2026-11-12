@@ -56,10 +56,20 @@ Integration tests stop when `DATABASE_URL` is not localhost (`vitest.setup.ts`).
 
 ## Cookie policy script
 
-`pnpm seed:cookie-policy` puts the cookie paragraph (issue #21) on the published privacy page in an existing database, cs and en. It replaces the old "Analytics" paragraph and the sentence that names Vercel. The texts are in `src/seed/cookiePolicy.ts`, and `pnpm seed` uses the same texts. The script is idempotent and publishes the page. It takes `--dry-run`, `--production` and `--remote=<URL>` like `seed:seo-geo`. It exits with code 2 when it cannot find a paragraph to replace, so you edit that part in the admin.
+`pnpm seed:cookie-policy` puts the cookie paragraphs (issues #21, #22, #26) on the published privacy page in an existing database, cs and en. It replaces the old "Analytics" paragraph and the sentence that names Vercel. The texts are in `src/seed/cookiePolicy.ts`, and `pnpm seed` uses the same texts. The script is idempotent and publishes the page. It takes `--dry-run`, `--production` and `--remote=<URL>` like `seed:seo-geo`. It exits with code 2 when it cannot find a paragraph to replace, so you edit that part in the admin.
 
 ```sh
 SEED_REMOTE_EMAIL=… SEED_REMOTE_PASSWORD=… pnpm seed:cookie-policy --remote=https://robopipe.io --dry-run
+```
+
+## Google Ads offline conversions
+
+`GET /api/google-ads/company-leads.csv` is the source of the scheduled upload in Google Ads Data Manager (issue #26). It lists leads from the last 90 days with marketing consent and a company email, without test leads. One function decides this: `isGoogleAdsLead` in `src/lib/googleAds.ts`. The list of public mail domains is in `src/lib/leadEmail.ts`. The email goes out only as a SHA-256 hash. The conversion name comes from **Site settings → Measurement → Lead conversion name**.
+
+The route needs HTTP Basic with `GOOGLE_ADS_EXPORT_USER` and `GOOGLE_ADS_EXPORT_PASSWORD` (runtime only). Without both variables, it answers 401 to everybody. Setup steps in Google Ads are in `docs/specs/26-offline-conversions/implementation.md`.
+
+```sh
+curl -u "$GOOGLE_ADS_EXPORT_USER:$GOOGLE_ADS_EXPORT_PASSWORD" http://localhost:3000/api/google-ads/company-leads.csv
 ```
 
 ## SEO and GEO content script
@@ -124,6 +134,7 @@ The app ships as a Docker image (`Dockerfile`, Next.js `standalone` output) depl
    | `PAYLOAD_SECRET` | | ✓ | the build uses a placeholder when it's not available |
    | `GCS_CREDENTIALS` | | ✓ | service-account key JSON, on one line |
    | `PREVIEW_SECRET`, `CRON_SECRET`, `RESEND_API_KEY`, `ANTHROPIC_API_KEY`, `PEXELS_API_KEY` | | ✓ | |
+   | `GOOGLE_ADS_EXPORT_USER`, `GOOGLE_ADS_EXPORT_PASSWORD` | | ✓ | login of the Google Ads export. Without both the export answers 401 |
 
    Changing a build-time value needs a redeploy; runtime-only values just a restart.
 5. **Scheduled task** (nightly blog generation) — on the application, *Scheduled Tasks* → add: frequency `0 3 * * *`, timeout `900` s (one article takes ~3–5 min), command:
