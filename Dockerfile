@@ -55,8 +55,11 @@ ENV NODE_ENV=production \
 RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 nextjs
 
 COPY --from=builder /app/public ./public
-# Writable for the ISR / image-optimization cache.
-RUN mkdir .next && chown nextjs:nodejs .next
+# Writable for the ISR / image-optimization cache. In Coolify, .next/cache is a
+# named persistent volume so optimized images survive redeploys. Creating the
+# directory here, owned by nextjs, makes Docker give a new empty volume the same
+# owner. Without it the volume is owned by root and the app cannot write to it.
+RUN mkdir -p .next/cache && chown -R nextjs:nodejs .next
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
