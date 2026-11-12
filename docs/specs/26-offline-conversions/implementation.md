@@ -35,7 +35,7 @@ Virtuální pole se v seznamu poptávek v administraci zobrazí. `defaultColumns
 
 ## Jak to ověřit
 
-Místně: databáze `robopipe_26` (vlastník `robopipe_local`, TCP), server `next start` na portu 3926. `.env` musí mít `GOOGLE_ADS_EXPORT_USER` a `GOOGLE_ADS_EXPORT_PASSWORD`. E2E testy je čtou pro export.
+Místně: databáze `robopipe_26` (vlastník `robopipe_local`, TCP), server `next start` na portu 3926. Přihlášení exportu je od #28 v globalu `google-ads-export` (kapitola „#28“ níže). E2E testy si ho nastaví samy.
 
 ```
 npx pnpm payload migrate
@@ -97,8 +97,8 @@ Screenshoty (`screens/`, jen vymyšlená data):
 
 Pořadí je důležité. Text v Ochraně osobních údajů musí být zveřejněný dřív, než Arthur nastaví plán v Google Ads.
 
-1. Vygenerujte heslo: `openssl rand -base64 32`. Uložte jméno `google-ads` a heslo do Keychainu jako `robopipe-google-ads-export`.
-2. V Coolify otevřete aplikaci, Environment Variables. Přidejte `GOOGLE_ADS_EXPORT_USER=google-ads` a `GOOGLE_ADS_EXPORT_PASSWORD=<heslo>`. Nezaškrtávejte „Build Variable“. Proměnné stačí za běhu.
+1. Vygenerujte heslo: `openssl rand -base64 30`. Uložte jméno `google-ads` a heslo do Keychainu jako `robopipe-google-ads-export`.
+2. Od #28: v administraci otevřete Site, Google Ads export. Zadejte jméno `google-ads` a heslo. Proměnné prostředí se už nepoužívají.
 3. Nasaďte kód. Migrace `20261111_220539_leads_attribution` se spustí s nasazením jako ostatní migrace.
 4. Spusťte náhled textu: `SEED_REMOTE_EMAIL=… SEED_REMOTE_PASSWORD=… pnpm seed:cookie-policy --remote=https://robopipe.io --dry-run`. Čekejte `changed (2)` s „ad conversion paragraph after …“ pro cs a en.
 5. Spusťte totéž bez `--dry-run`. Druhý náhled musí ukázat `changed (0)`.
@@ -236,3 +236,29 @@ Oprava chyby C1 ze zprávy testera kola 2.
 ### Co nešlo ověřit
 
 E2e jsem nespustil. Změna mění jen zápis do logu a int testy ji pokrývají. Body z kola 2 platí dál.
+
+## #28 Přihlášení exportu v Payloadu
+
+Do Coolify nemáme přístup, proto proměnné `GOOGLE_ADS_EXPORT_USER` a `GOOGLE_ADS_EXPORT_PASSWORD` nešly nastavit. Issue #28 je nahradilo globalem. Kód ani dokumentace proměnné už nečtou. Rozhodnutí D11 v architektuře tím neplatí.
+
+### Co se změnilo
+
+- Global `google-ads-export` (`src/globals/GoogleAdsExport.ts`), skupina Site. Čtení i změna jen pro přihlášeného uživatele. Není v `site-settings`, protože ten čte kdokoli.
+- Pole `username`, virtuální pole `password` a skryté pole `passwordHash`. Hook `beforeChange` heslo zahashuje (scrypt z `node:crypto`, N 32768, r 8, p 1, sůl 16 bajtů). Databáze heslo neukládá.
+- Pole `password` je po čtení vždy prázdné. Prázdné heslo při uložení ponechá starý otisk. Otisk poslaný v požadavku hook zahodí.
+- Heslo musí mít aspoň 24 znaků.
+- Route `/api/google-ads/company-leads.csv` čte global přes Local API (`showHiddenFields`) a volá `checkExportLogin` v `src/lib/exportCredentials.ts`. Jméno porovnává přes SHA-256 a `timingSafeEqual`, heslo přes scrypt a `timingSafeEqual`. Heslo se kontroluje vždy, i se špatným jménem. Bez jména nebo otisku vrací `401` s `WWW-Authenticate: Basic`.
+- `checkBasicAuth` z `src/lib/googleAds.ts` je odstraněná. Přihlašovací údaje se nelogují.
+- Migrace `20261112_071955_ads_export_credentials` vytvoří tabulku `google_ads_export`.
+
+### Odchylky
+
+- `originalDoc` v hooku globalu nemá skrytá pole. Hook proto čte uložený otisk přes `payload.db.findGlobal`.
+- E2E sada si nastaví vlastní jméno a náhodné heslo. Po běhu vrátí jméno, heslo zůstane testovací. Původní otisk přes REST obnovit nejde.
+
+### Jak to ověřit
+
+1. Bez přihlášení: `curl https://robopipe.io/api/globals/google-ads-export` vrátí `403`.
+2. `curl -u "google-ads:<heslo>" https://robopipe.io/api/google-ads/company-leads.csv` vrátí `200` a hlavičku CSV.
+3. Bez `-u` nebo se špatným heslem vrátí `401`.
+4. Int testy: `tests/int/adsExportCredentials.int.spec.ts`.

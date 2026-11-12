@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto'
+import { createHash, randomBytes } from 'node:crypto'
 
 import {
   expect,
@@ -15,7 +15,8 @@ import { cleanupTestUser, seedTestUser, testUser } from '../helpers/seedUser'
 /**
  * Offline conversions for Google Ads, issue #26 (docs/specs/26-offline-conversions/product.md),
  * test plan in architecture.md chapter 13.2. Needs a seeded local database, a server at
- * E2E_BASE_URL and GOOGLE_ADS_EXPORT_USER / GOOGLE_ADS_EXPORT_PASSWORD in `.env`.
+ * E2E_BASE_URL. The suite sets its own export login in the global google-ads-export (issue #28).
+ * After the run it restores the username. The password stays the random test one.
  *
  * Requests to Google are blocked, so the tests read the Google tag commands from
  * `window.dataLayer`, which our own `gtag` fills.
@@ -61,12 +62,12 @@ const leadEmails: string[] = []
 
 const authHeaders = () => ({ Authorization: `JWT ${token}` })
 
-const exportAuth = () => {
-  const user = process.env.GOOGLE_ADS_EXPORT_USER
-  const password = process.env.GOOGLE_ADS_EXPORT_PASSWORD
-  if (!user || !password) throw new Error('Set GOOGLE_ADS_EXPORT_USER and _PASSWORD in .env')
-  return { Authorization: `Basic ${Buffer.from(`${user}:${password}`).toString('base64')}` }
-}
+const EXPORT_LOGIN = { username: 'google-ads-e2e', password: randomBytes(24).toString('base64') }
+let originalExportUsername: string | null = null
+
+const exportAuth = () => ({
+  Authorization: `Basic ${Buffer.from(`${EXPORT_LOGIN.username}:${EXPORT_LOGIN.password}`).toString('base64')}`,
+})
 
 const sha256 = (email: string) => createHash('sha256').update(email).digest('hex')
 
@@ -187,6 +188,15 @@ test.beforeAll(async () => {
     googleAdsId: settings.measurement?.googleAdsId ?? '',
   }
   await setMeasurement(TEST_IDS)
+  const login = await session.get('/api/globals/google-ads-export?depth=0', {
+    headers: authHeaders(),
+  })
+  originalExportUsername = ((await login.json()) as { username?: string | null }).username ?? null
+  const setLogin = await session.post('/api/globals/google-ads-export', {
+    headers: authHeaders(),
+    data: EXPORT_LOGIN,
+  })
+  expect(setLogin.status()).toBe(200)
   const editor = await session.post('/api/users', {
     headers: authHeaders(),
     data: { ...EDITOR, role: 'editor' },
@@ -203,6 +213,10 @@ test.afterAll(async () => {
   }
   if (editorId) await session.delete(`/api/users/${editorId}`, { headers: authHeaders() })
   await setMeasurement(originalIds)
+  await session.post('/api/globals/google-ads-export', {
+    headers: authHeaders(),
+    data: { username: originalExportUsername },
+  })
   await session.dispose()
   await cleanupTestUser()
 })
