@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { NextIntlClientProvider, hasLocale } from 'next-intl'
 import { setRequestLocale } from 'next-intl/server'
-import { Barlow, Inter, Space_Grotesk, Space_Mono } from 'next/font/google'
+import { Barlow, Inter, Space_Grotesk } from 'next/font/google'
 import { notFound } from 'next/navigation'
 import React from 'react'
 
@@ -19,26 +19,30 @@ import { LocaleSwitchProvider } from '@/lib/useLocaleHref'
 
 import '../styles.css'
 
+/*
+ * Fonts (issue #30). next/font preloads every file of a font by default, and the preloads
+ * compete with the CSS before the first paint on a slow phone. Only the text and heading
+ * fonts are preloaded. Where each one is used: docs/specs/30-mobile-speed/implementation.md.
+ */
+
+/** Body text (`font-sans`). */
 const spaceGrotesk = Space_Grotesk({
   subsets: ['latin', 'latin-ext'],
   variable: '--font-space-grotesk',
 })
 
+/** Headings (`font-heading`): 700 for h1 to h4, 600 for h5, h6 and small titles, 500 for quotes. */
 const barlow = Barlow({
   subsets: ['latin', 'latin-ext'],
   weight: ['500', '600', '700'],
   variable: '--font-barlow',
 })
 
-const spaceMono = Space_Mono({
-  subsets: ['latin', 'latin-ext'],
-  weight: ['400', '700'],
-  variable: '--font-space-mono',
-})
-
+/** Figures only (`font-numbers`: stats, prices, steps), all below the fold. */
 const inter = Inter({
   subsets: ['latin', 'latin-ext'],
   variable: '--font-inter',
+  preload: false,
 })
 
 export async function generateMetadata({ params }: Pick<Props, 'params'>): Promise<Metadata> {
@@ -74,7 +78,7 @@ export default async function LocaleLayout({ children, params }: Props) {
   return (
     <html
       lang={locale}
-      className={`${spaceGrotesk.variable} ${barlow.variable} ${spaceMono.variable} ${inter.variable}`}
+      className={`${spaceGrotesk.variable} ${barlow.variable} ${inter.variable}`}
     >
       <body className="flex min-h-screen flex-col">
         <JsonLd data={[organizationLd(settings), websiteLd(settings, locale as Locale)]} />
