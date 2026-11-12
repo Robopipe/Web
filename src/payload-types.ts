@@ -1135,7 +1135,7 @@ export interface Post {
   heroImage?: (number | null) | Media;
   heroStyle?: ('photo' | 'framed') | null;
   /**
-   * Blockquotes render as lime callout boxes on the site.
+   * Blockquotes render as lime callout boxes on the site. Tables: use the + menu or type "/table". Turn on the header row in the cell menu.
    */
   content: {
     root: {
