@@ -15,7 +15,6 @@ import { CONSENT_COOKIE, GOOGLE_COOKIES, createConsent, serializeConsent } from 
 import {
   EXPORT_COLUMNS,
   attributionFromCookies,
-  checkBasicAuth,
   hashEmail,
   isGoogleAdsLead,
   toCsv,
@@ -31,6 +30,8 @@ import {
 import { createLeadWithAttribution } from '@/lib/leadStore'
 import config from '@/payload.config'
 import type { Lead, User } from '@/payload-types'
+
+import { setExportLogin } from '../helpers/exportLogin'
 
 /** Issue #26, docs/specs/26-offline-conversions/architecture.md chapter 13.1. */
 
@@ -256,24 +257,6 @@ describe('export format (criteria 5, 6, 9)', () => {
   })
 })
 
-describe('checkBasicAuth (criterion 7)', () => {
-  const basic = (value: string) => `Basic ${Buffer.from(value).toString('base64')}`
-
-  it('accepts only the right user and password', () => {
-    expect(checkBasicAuth(basic('google-ads:s3cret:x'), 'google-ads', 's3cret:x')).toBe(true)
-    expect(checkBasicAuth(basic('google-ads:wrong'), 'google-ads', 's3cret:x')).toBe(false)
-    expect(checkBasicAuth(basic('other:s3cret:x'), 'google-ads', 's3cret:x')).toBe(false)
-    expect(checkBasicAuth(basic('no-separator'), 'google-ads', 's3cret:x')).toBe(false)
-    expect(checkBasicAuth('Bearer abc', 'google-ads', 's3cret:x')).toBe(false)
-    expect(checkBasicAuth(null, 'google-ads', 's3cret:x')).toBe(false)
-  })
-
-  it('stays closed when a variable is missing', () => {
-    expect(checkBasicAuth(basic(':'), '', '')).toBe(false)
-    expect(checkBasicAuth(basic('google-ads:'), 'google-ads', undefined)).toBe(false)
-  })
-})
-
 describe('export route with the Local API (criteria 5 to 9, 13)', () => {
   const USER = 'google-ads-int'
   const PASSWORD = 'int-test-password-0123456789abcdef'
@@ -285,10 +268,7 @@ describe('export route with the Local API (criteria 5 to 9, 13)', () => {
   let editor: User
   let conversionName: string
   const created: number[] = []
-  const saved = {
-    user: process.env.GOOGLE_ADS_EXPORT_USER,
-    password: process.env.GOOGLE_ADS_EXPORT_PASSWORD,
-  }
+  let restoreLogin: (() => Promise<void>) | undefined
 
   const createLead = async (
     email: string,
@@ -320,9 +300,8 @@ describe('export route with the Local API (criteria 5 to 9, 13)', () => {
   }
 
   beforeAll(async () => {
-    process.env.GOOGLE_ADS_EXPORT_USER = USER
-    process.env.GOOGLE_ADS_EXPORT_PASSWORD = PASSWORD
     payload = await getPayload({ config: await config })
+    restoreLogin = await setExportLogin(payload, USER, PASSWORD)
     const settings = await payload.findGlobal({ slug: 'site-settings', depth: 0 })
     conversionName = settings.measurement.leadConversionName
     editor = await payload.create({
@@ -352,8 +331,7 @@ describe('export route with the Local API (criteria 5 to 9, 13)', () => {
   })
 
   afterAll(async () => {
-    process.env.GOOGLE_ADS_EXPORT_USER = saved.user
-    process.env.GOOGLE_ADS_EXPORT_PASSWORD = saved.password
+    await restoreLogin?.()
     if (!payload) return
     await payload.delete({
       collection: 'leads',
@@ -364,19 +342,12 @@ describe('export route with the Local API (criteria 5 to 9, 13)', () => {
     if (editor) await payload.delete({ collection: 'users', id: editor.id, overrideAccess: true })
   })
 
-  it('401 with WWW-Authenticate without login, with a wrong password, without variables', async () => {
+  it('401 with WWW-Authenticate without login and with a wrong password', async () => {
     const none = await GET(new Request(url))
     expect(none.status).toBe(401)
     expect(none.headers.get('www-authenticate')).toMatch(/^Basic realm="google-ads-export"/)
     const wrong = `Basic ${Buffer.from(`${USER}:wrong`).toString('base64')}`
     expect((await GET(new Request(url, { headers: { authorization: wrong } }))).status).toBe(401)
-
-    delete process.env.GOOGLE_ADS_EXPORT_PASSWORD
-    try {
-      expect((await GET(new Request(url, { headers: auth }))).status).toBe(401)
-    } finally {
-      process.env.GOOGLE_ADS_EXPORT_PASSWORD = PASSWORD
-    }
   })
 
   it('exports exactly the recent company lead with consent', async () => {
@@ -531,7 +502,12 @@ describe('createLeadWithAttribution (criterion 11, B1)', () => {
   const MARK = `int26-store-${Date.now()}`
   let payload: Payload
   const created: number[] = []
-  const data = { name: 'Jan Novák', email: `novak.${MARK}@firma.cz`, message: MARK, locale: 'cs' as const }
+  const data = {
+    name: 'Jan Novák',
+    email: `novak.${MARK}@firma.cz`,
+    message: MARK,
+    locale: 'cs' as const,
+  }
 
   beforeAll(async () => {
     payload = await getPayload({ config: await config })
@@ -567,7 +543,11 @@ describe('createLeadWithAttribution (criterion 11, B1)', () => {
       clickedAt: 'Wed Nov 11 2026 23:41:27 GMT+0100 (Central European Standard Time)',
     })
     created.push(lead.id)
-    const stored = await payload.findByID({ collection: 'leads', id: lead.id, overrideAccess: true })
+    const stored = await payload.findByID({
+      collection: 'leads',
+      id: lead.id,
+      overrideAccess: true,
+    })
     expect(stored.message).toBe(MARK)
     expect(stored.attribution?.gclid ?? null).toBeNull()
     expect(stored.attribution?.consentMarketing ?? false).toBe(false)

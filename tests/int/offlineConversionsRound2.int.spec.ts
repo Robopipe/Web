@@ -14,6 +14,8 @@ import {
 import { createLeadWithAttribution } from '@/lib/leadStore'
 import config from '@/payload.config'
 
+import { setExportLogin } from '../helpers/exportLogin'
+
 /**
  * Tester round 2 for issue #26 (test-report.md, chapter "Kolo 2"). Tries to get around the
  * fixes for B1 to B3 and checks the fallback save in `createLeadWithAttribution`.
@@ -172,10 +174,7 @@ describe('tester round 2: fallback save (criterion 11)', () => {
   const PASSWORD = 'int-test-password-r2-0123456789abcdef'
   const MARK = `int26-r2-store-${Date.now()}`
   const auth = { authorization: `Basic ${Buffer.from(`${USER}:${PASSWORD}`).toString('base64')}` }
-  const saved = {
-    user: process.env.GOOGLE_ADS_EXPORT_USER,
-    password: process.env.GOOGLE_ADS_EXPORT_PASSWORD,
-  }
+  let restoreLogin: (() => Promise<void>) | undefined
   let payload: Payload
   const created: number[] = []
 
@@ -189,14 +188,12 @@ describe('tester round 2: fallback save (criterion 11)', () => {
     ).totalDocs
 
   beforeAll(async () => {
-    process.env.GOOGLE_ADS_EXPORT_USER = USER
-    process.env.GOOGLE_ADS_EXPORT_PASSWORD = PASSWORD
     payload = await getPayload({ config: await config })
+    restoreLogin = await setExportLogin(payload, USER, PASSWORD)
   })
 
   afterAll(async () => {
-    process.env.GOOGLE_ADS_EXPORT_USER = saved.user
-    process.env.GOOGLE_ADS_EXPORT_PASSWORD = saved.password
+    await restoreLogin?.()
     await payload.delete({
       collection: 'leads',
       where: { message: { contains: MARK } },

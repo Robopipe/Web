@@ -25,6 +25,7 @@ import { Footer } from './globals/Footer'
 import { Header } from './globals/Header'
 import { BlogAI } from './globals/BlogAI'
 import { SiteSettings } from './globals/SiteSettings'
+import { GoogleAdsExport } from './globals/GoogleAdsExport'
 import { generateBlogPost } from './jobs/generateBlogPost'
 import { SERVER_URL } from './lib/paths'
 
@@ -70,7 +71,7 @@ export default buildConfig({
     Redirects,
     Users,
   ],
-  globals: [Header, Footer, SiteSettings, BlogAI],
+  globals: [Header, Footer, SiteSettings, GoogleAdsExport, BlogAI],
   editor: lexicalEditor(),
   jobs: {
     workflows: [generateBlogPost],

@@ -2,7 +2,7 @@
  * Offline conversions for Google Ads (issue #26). Server only: the file imports
  * `node:crypto`, so the client build rejects it. Client components must not import it.
  */
-import { createHash, timingSafeEqual } from 'node:crypto'
+import { createHash } from 'node:crypto'
 
 import type { Lead } from '@/payload-types'
 import { parseClickId, CLICK_COOKIE } from '@/lib/clickId'
@@ -93,23 +93,3 @@ export const toCsv = (rows: ExportRow[]): string =>
   [EXPORT_COLUMNS, ...rows.map((row) => EXPORT_COLUMNS.map((column) => row[column]))]
     .map((fields) => fields.map(csvField).join(',') + '\n')
     .join('')
-
-const sha256 = (value: string): Buffer => createHash('sha256').update(value, 'utf8').digest()
-
-/** HTTP Basic. `false` when the user or the password is not set, so the export stays closed. */
-export const checkBasicAuth = (
-  header: string | null | undefined,
-  user: string | undefined,
-  password: string | undefined,
-): boolean => {
-  if (!user || !password || !header) return false
-  const match = /^Basic\s+(\S+)$/i.exec(header.trim())
-  if (!match) return false
-  const decoded = Buffer.from(match[1], 'base64').toString('utf8')
-  const separator = decoded.indexOf(':')
-  if (separator < 0) return false
-  // Hashes have the same length, so timingSafeEqual never throws and leaks no length.
-  const userOk = timingSafeEqual(sha256(decoded.slice(0, separator)), sha256(user))
-  const passwordOk = timingSafeEqual(sha256(decoded.slice(separator + 1)), sha256(password))
-  return userOk && passwordOk
-}

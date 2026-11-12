@@ -73,7 +73,7 @@ Kritérium 2 říká „bez souhlasu ji web nikam neukládá“. Web si značku 
 | D8 | Čas konverze je `createdAt` poptávky v UTC ve tvaru `YYYY-MM-DDTHH:mm:ssZ`. | Podporovaný formát (G7). Bez letního času a bez záložního pásma. |
 | D9 | Order ID je `lead-<id>`. Export vždy obsahuje posledních 90 dní. | Data Manager stahuje 90 dní při každém běhu (G4). Stabilní Order ID a stejný čas brání dvojímu započtení (G9, kritérium 8). |
 | D10 | Název konverzní akce je pole `site-settings.measurement.leadConversionName`. | Kritérium 9. Stejné místo jako ID měření z #21 (R1). |
-| D11 | Přihlášení exportu je HTTP Basic. Jméno a heslo jsou v proměnných prostředí `GOOGLE_ADS_EXPORT_USER` a `GOOGLE_ADS_EXPORT_PASSWORD`. Jen za běhu, ne při sestavení. | Kritérium 7. Stejný vzor jako `CRON_SECRET`. Žádná změna Dockerfile. |
+| D11 | (Nahrazeno v #28: přihlášení je v globalu `google-ads-export`, viz implementation.md.) Přihlášení exportu je HTTP Basic. Jméno a heslo jsou v proměnných prostředí `GOOGLE_ADS_EXPORT_USER` a `GOOGLE_ADS_EXPORT_PASSWORD`. Jen za běhu, ne při sestavení. | Kritérium 7. Stejný vzor jako `CRON_SECRET`. Žádná změna Dockerfile. |
 
 ## 5. Dotčené soubory
 

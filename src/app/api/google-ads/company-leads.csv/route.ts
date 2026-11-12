@@ -1,15 +1,10 @@
-import {
-  checkBasicAuth,
-  EXPORT_WINDOW_DAYS,
-  isGoogleAdsLead,
-  toCsv,
-  toExportRow,
-} from '@/lib/googleAds'
+import { checkExportLogin } from '@/lib/exportCredentials'
+import { EXPORT_WINDOW_DAYS, isGoogleAdsLead, toCsv, toExportRow } from '@/lib/googleAds'
 import { getPayloadClient } from '@/lib/queries'
 
 /**
  * Company leads for the scheduled upload in Google Ads Data Manager (issue #26).
- * HTTP Basic with GOOGLE_ADS_EXPORT_USER and GOOGLE_ADS_EXPORT_PASSWORD (runtime only).
+ * HTTP Basic against the global google-ads-export (issue #28). An empty global gives 401.
  * Every run gets the last 90 days. The stable Order ID stops a second conversion.
  */
 
@@ -25,14 +20,20 @@ const unauthorized = () =>
   })
 
 export const GET = async (request: Request) => {
-  const authorized = checkBasicAuth(
+  const payload = await getPayloadClient()
+  const login = await payload.findGlobal({
+    slug: 'google-ads-export',
+    depth: 0,
+    overrideAccess: true,
+    showHiddenFields: true,
+  })
+  const authorized = checkExportLogin(
     request.headers.get('authorization'),
-    process.env.GOOGLE_ADS_EXPORT_USER,
-    process.env.GOOGLE_ADS_EXPORT_PASSWORD,
+    login.username,
+    login.passwordHash,
   )
   if (!authorized) return unauthorized()
 
-  const payload = await getPayloadClient()
   const settings = await payload.findGlobal({ slug: 'site-settings', depth: 0 })
   const conversionName = settings.measurement?.leadConversionName?.trim()
   if (!conversionName) {
