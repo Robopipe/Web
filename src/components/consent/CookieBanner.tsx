@@ -63,9 +63,12 @@ export const CookieBanner: React.FC<Props> = ({
       aria-labelledby="cookie-banner-title"
       className="fixed inset-x-0 bottom-0 z-50 max-h-[50vh] overflow-y-auto bg-white shadow-popup"
     >
-      {/* DOM order: text, accept, reject, settings, privacy link. Tab reaches "accept" first.
-          Below `sm` the buttons sit in two columns (accept | reject, settings | link) to keep
-          the banner low on phones. Accept and reject still have the same width. */}
+      {/* DOM order: text, reject, accept, settings, privacy link. Tab reaches "reject" first.
+          Below `sm` the buttons sit in two columns (reject | accept, settings | link) to keep
+          the banner low on phones, with "accept" on the right under the thumb. The DOM follows
+          this phone layout, so there the focus order matches the visual order.
+          From `sm` up, `sm:order-first` shows "accept" on the left again. There Tab still goes
+          reject, accept, settings. Accept and reject keep the same width and look. */}
       <div className="container-site grid grid-cols-2 gap-x-2 gap-y-3 py-4 sm:grid-cols-1 sm:gap-x-8 sm:py-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
         <div className="col-span-2 max-w-2xl sm:col-span-1">
           <h2
@@ -77,11 +80,15 @@ export const CookieBanner: React.FC<Props> = ({
           <p className="mt-1 text-sm text-text-60">{t('bannerText')}</p>
         </div>
         <div className="contents sm:flex sm:flex-row sm:items-center sm:gap-3 lg:row-span-2">
-          <button type="button" onClick={onAcceptAll} className={choiceButtonClasses}>
-            {t('acceptAll')}
-          </button>
           <button type="button" onClick={onReject} className={choiceButtonClasses}>
             {t('rejectAll')}
+          </button>
+          <button
+            type="button"
+            onClick={onAcceptAll}
+            className={`${choiceButtonClasses} sm:order-first`}
+          >
+            {t('acceptAll')}
           </button>
           <button
             type="button"
