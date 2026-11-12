@@ -39,12 +39,13 @@ export const PostCard: React.FC<Props> = ({ post, variant = 'default' }) => {
   if (variant === 'featured') {
     return (
       <article className="overflow-hidden rounded-xl border border-border-12 bg-white transition-shadow hover:shadow-lift">
-        <Link href={href} className="grid lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
+        <Link href={href} className="grid grid-cols-1 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
           {post.heroImage && typeof post.heroImage !== 'number' && (
             // The photo fills a 16:9 box (object-cover) and never sets the card
             // height, so a portrait photo cannot stretch the card. On desktop the
-            // box also stretches to the text column when the text is taller;
-            // w-full and the minmax(0, …) columns keep it inside its column then.
+            // box also stretches to the text column when the text is taller.
+            // w-full and the minmax(0, …) columns (grid-cols-1 below lg) keep it
+            // inside its column, even when a long title word does not fit.
             <div className="relative aspect-video w-full overflow-hidden lg:self-stretch">
               <Media
                 media={post.heroImage}
@@ -61,7 +62,7 @@ export const PostCard: React.FC<Props> = ({ post, variant = 'default' }) => {
                 <Chip>{category.title}</Chip>
               </div>
             )}
-            <h2 className="text-[26px] leading-[34px] lg:text-3xl lg:leading-[38px]">
+            <h2 className="text-[26px] leading-[34px] break-words lg:text-3xl lg:leading-[38px]">
               {post.title}
             </h2>
             {post.excerpt && (
@@ -88,13 +89,15 @@ export const PostCard: React.FC<Props> = ({ post, variant = 'default' }) => {
               <Media media={post.heroImage} size="card" className="h-full w-full object-cover" />
             </div>
           )}
-          <div className="flex flex-col gap-2 p-4 sm:p-5">
+          <div className="flex min-w-0 flex-col gap-2 p-4 sm:p-5">
             {category && (
               <div>
                 <Chip>{category.title}</Chip>
               </div>
             )}
-            <h4 className="text-base leading-snug font-bold tracking-normal">{post.title}</h4>
+            <h4 className="text-base leading-snug font-bold tracking-normal break-words">
+              {post.title}
+            </h4>
             <p className="mt-auto text-xs text-text-38">{date}</p>
           </div>
         </Link>
@@ -116,7 +119,7 @@ export const PostCard: React.FC<Props> = ({ post, variant = 'default' }) => {
               <Chip>{category.title}</Chip>
             </div>
           )}
-          <h4 className="text-xl leading-[26px] tracking-[-0.01em]">{post.title}</h4>
+          <h4 className="text-xl leading-[26px] tracking-[-0.01em] break-words">{post.title}</h4>
           {post.excerpt && (
             <p className="line-clamp-3 text-sm leading-5 text-text-60">{post.excerpt}</p>
           )}
