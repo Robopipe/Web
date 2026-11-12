@@ -95,7 +95,7 @@ export const HeroComponent: React.FC<HeroBlock> = ({
 
         {(trust?.label || trustItems.length > 0) && (
           <div className="flex w-full flex-wrap items-center justify-center gap-x-8 gap-y-2 text-sm text-text-60">
-            {trust?.label && <span className="text-text-38">{trust.label}</span>}
+            {trust?.label && <span className="text-text-55">{trust.label}</span>}
             {trustItems.map((item, i) => (
               <span key={i} className="font-medium text-text-90">
                 {item.text}

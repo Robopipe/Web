@@ -1,8 +1,18 @@
 import { convertLexicalToPlaintext } from '@payloadcms/richtext-lexical/plaintext'
 
 import type { Locale } from '@/i18n/routing'
-import type { Faq, Page, Post, PricingTableBlock, SiteSetting, Video } from '@/payload-types'
+import type {
+  CaseStudy,
+  Faq,
+  Media,
+  Page,
+  Post,
+  PricingTableBlock,
+  SiteSetting,
+  Video,
+} from '@/payload-types'
 
+import { COMPANY_FACTS } from './companyFacts'
 import { ogImageUrl } from './meta'
 import { absoluteUrl, SERVER_URL } from './paths'
 import { isoDuration, youTubeId, youTubeWatchUrl } from './youtube'
@@ -21,6 +31,9 @@ const organizationRef = { '@id': ORGANIZATION_ID }
 
 const IN_LANGUAGE: Record<Locale, string> = { cs: 'cs-CZ', en: 'en' }
 
+/** Square PNG of the wordmark in public/, for Organization.logo (issue #40). */
+export const LOGO_PATH = '/logo.png'
+
 /** Drops undefined, null, empty strings and empty arrays so the output stays minimal. */
 const compact = <T extends Record<string, unknown>>(obj: T): T =>
   Object.fromEntries(
@@ -31,20 +44,6 @@ const compact = <T extends Record<string, unknown>>(obj: T): T =>
 
 const isPopulated = <T>(value: T | number | null | undefined): value is T =>
   !!value && typeof value !== 'number'
-
-/**
- * Company facts with a public source; issue #19. Change them here when they change.
- * - foundingDate: ARES, datum vzniku of robopipe s.r.o. (IČO 24111791).
- * - numberOfEmployees, parent: the /o-nas page ("spin-off of KOALA42",
- *   "The team has 5 people today").
- * - LinkedIn: the company page of Robopipe.
- */
-const COMPANY_FACTS = {
-  foundingDate: '2025-12-31',
-  numberOfEmployees: 5,
-  parent: { name: 'KOALA42', sameAs: 'https://www.linkedin.com/company/koala42' },
-  linkedIn: 'https://www.linkedin.com/company/robopipe-io',
-}
 
 const COUNTRY_CODES: [RegExp, string][] = [
   [/^(czech republic|czechia|česká republika|česko)$/i, 'CZ'],
@@ -101,7 +100,8 @@ export const organizationLd = (settings: SiteSetting): JsonLdObject => {
       ? { '@type': 'PropertyValue', propertyID: 'IČO', value: company.companyId }
       : undefined,
     url: SERVER_URL,
-    logo: absoluteUrl('/logo.svg'),
+    // Google reads raster logos only (PNG, JPEG, WebP), at least 112 × 112 px.
+    logo: absoluteUrl(LOGO_PATH),
     email: settings.contactEmail,
     telephone: settings.contact?.phone,
     address: postalAddressLd(settings.contact?.address, company?.legalName),
@@ -156,6 +156,24 @@ export const parsePrice = (text: string | null | undefined) => {
 export type Pricing = { path: string; tiers: PricingTableBlock['tiers'] }
 
 /**
+ * The pricing table with tiers of its own: it marks the pricing page. A table
+ * with source "pricingPage" (solution pages) only shows those tiers.
+ */
+export const ownPricingTable = (
+  layout: Page['layout'] | null | undefined,
+): PricingTableBlock | undefined =>
+  layout?.find(
+    (block): block is PricingTableBlock =>
+      block.blockType === 'pricingTable' && block.source !== 'pricingPage',
+  )
+
+/** Solution pages are the pages chosen in site settings (footer, home and Service data). */
+export const isSolutionPage = (page: Pick<Page, 'id'>, settings: Pick<SiteSetting, 'solutions'>) =>
+  (settings.solutions ?? []).some(
+    (value) => (typeof value === 'number' ? value : value.id) === page.id,
+  )
+
+/**
  * Offers from the pricing table on the pricing page. Tiers without an amount
  * and a currency ("Zdarma", "Individuálně") are left out.
  */
@@ -168,6 +186,7 @@ export const offersFromPricing = (pricing: Pricing | null): JsonLdObject[] =>
         '@type': 'Offer',
         name: tier.name,
         ...price,
+        availability: 'https://schema.org/InStock',
         url: absoluteUrl(pricing!.path),
         priceSpecification: compact({
           '@type': 'UnitPriceSpecification',
@@ -178,22 +197,78 @@ export const offersFromPricing = (pricing: Pricing | null): JsonLdObject[] =>
     ]
   })
 
-/** The product is the home page offer. Prices come only from the pricing page content. */
-export const productLd = (
-  home: Page,
-  locale: Locale,
-  pricing: Pricing | null = null,
-): JsonLdObject =>
+type MediaRef = Media | number | null | undefined
+
+/** Page image for Open Graph and structured data, else the site default image. */
+const pageImage = (page: Pick<Page, 'seo'>, fallbackImage?: MediaRef) =>
+  ogImageUrl(page.seo?.image) ?? ogImageUrl(fallbackImage)
+
+/**
+ * The product, on the home page and on the pricing page (issue #40). `name` is
+ * the product name, not the page headline. Prices come only from the pricing
+ * page content.
+ */
+export const productLd = ({
+  name,
+  page,
+  path,
+  pricing = null,
+  fallbackImage,
+}: {
+  name: string
+  page: Page
+  path: string
+  pricing?: Pricing | null
+  fallbackImage?: MediaRef
+}): JsonLdObject =>
   compact({
     '@context': CONTEXT,
     '@type': 'Product',
-    name: home.title,
-    description: home.seo?.description,
-    image: ogImageUrl(home.seo?.image),
-    url: absoluteUrl(`/${locale}`),
+    name,
+    description: page.seo?.description,
+    image: pageImage(page, fallbackImage),
+    url: absoluteUrl(path),
     brand: organizationRef,
     manufacturer: organizationRef,
     offers: offersFromPricing(pricing),
+  })
+
+/** A solution page (settings.solutions) as the service Robopipe provides (issue #40). */
+export const serviceLd = (page: Page, path: string, fallbackImage?: MediaRef): JsonLdObject =>
+  compact({
+    '@context': CONTEXT,
+    '@type': 'Service',
+    name: page.title,
+    description: page.seo?.description,
+    image: pageImage(page, fallbackImage),
+    url: absoluteUrl(path),
+    provider: organizationRef,
+  })
+
+/**
+ * A case study as an Article (issue #40). It has no author field: Robopipe
+ * writes them, so the organization is the author. Google wants the author's
+ * name in place, so it is not only an `@id` reference. The dates are the CMS dates.
+ */
+export const caseStudyArticleLd = (
+  caseStudy: CaseStudy,
+  locale: Locale,
+  path: string,
+  siteName: string,
+): JsonLdObject =>
+  compact({
+    '@context': CONTEXT,
+    '@type': 'Article',
+    headline: caseStudy.title,
+    description: caseStudy.seo?.description || caseStudy.excerpt,
+    datePublished: caseStudy.createdAt,
+    dateModified: caseStudy.updatedAt,
+    image: ogImageUrl(caseStudy.seo?.image) ?? ogImageUrl(caseStudy.heroImage),
+    author: { '@type': 'Organization', ...organizationRef, name: siteName, url: SERVER_URL },
+    publisher: organizationRef,
+    inLanguage: IN_LANGUAGE[locale],
+    mainEntityOfPage: absoluteUrl(path),
+    url: absoluteUrl(path),
   })
 
 export const blogPostingLd = (post: Post, locale: Locale, path: string): JsonLdObject => {

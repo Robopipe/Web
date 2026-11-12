@@ -27,6 +27,8 @@ export const FeatureGridComponent: React.FC<FeatureGridBlock> = ({
   features,
 }) => {
   const dark = background === 'dark'
+  // Feature titles sit one level below the section heading, or below the page h1 without one.
+  const FeatureHeading = heading ? 'h3' : 'h2'
 
   return (
     <section className={dark ? 'bg-surface-dark' : 'bg-surface-page'}>
@@ -87,7 +89,11 @@ export const FeatureGridComponent: React.FC<FeatureGridBlock> = ({
                       <Icon name={icon} size={22} />
                     </div>
                   )}
-                  <h5 className={dark ? 'text-text-invert' : undefined}>{feature.title}</h5>
+                  <FeatureHeading
+                    className={`text-xl leading-7 font-semibold tracking-normal ${dark ? 'text-text-invert' : ''}`}
+                  >
+                    {feature.title}
+                  </FeatureHeading>
                   {(feature.text || feature.link?.label) && (
                     <p
                       className={`mt-2 text-sm leading-relaxed ${

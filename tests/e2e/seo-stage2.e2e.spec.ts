@@ -278,11 +278,15 @@ test('AC 7: the pricing block shows the tiers and prices of the pricing page', a
     const offers = product.offers as { name: string; price: string }[]
     expect(offers.length, home).toBeGreaterThan(0)
 
-    /** Tier names (h3) of the section that holds all offers. */
+    /**
+     * Tier names of the section that holds all offers: h3 below a section
+     * heading, h2 in a pricing table without one (issue #40, no skipped level).
+     */
     const tierSection = async (url: string) => {
       await page.goto(url)
       for (const section of await page.locator('main section').all()) {
-        const names = await section.locator('h3').allInnerTexts()
+        const tierLevel = (await section.locator('h3').count()) ? 'h3' : 'h2'
+        const names = await section.locator(tierLevel).allInnerTexts()
         if (offers.every((offer) => names.includes(offer.name))) {
           return { names, text: (await section.innerText()).replace(/\s/g, '') }
         }

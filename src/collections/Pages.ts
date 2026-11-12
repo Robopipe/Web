@@ -4,6 +4,7 @@ import { authenticated, publishedOrLoggedIn } from '@/access'
 import { pageBlocks } from '@/blocks'
 import { seoField } from '@/fields/seo'
 import { slugField } from '@/fields/slug'
+import { indexNowAfterChange } from '@/hooks/indexNow'
 import { revalidateAfterChange, revalidateAfterDelete } from '@/hooks/revalidate'
 import { generatePreviewPath } from '@/lib/preview'
 
@@ -34,7 +35,7 @@ export const Pages: CollectionConfig = {
     maxPerDoc: 25,
   },
   hooks: {
-    afterChange: [revalidateAfterChange],
+    afterChange: [revalidateAfterChange, indexNowAfterChange('pages')],
     afterDelete: [revalidateAfterDelete],
   },
   fields: [

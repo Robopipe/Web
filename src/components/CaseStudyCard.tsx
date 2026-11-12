@@ -12,10 +12,12 @@ import type { CaseStudy } from '@/payload-types'
  * Listing card (logo, industry chip, title, excerpt, metrics). The whole card
  * links to the case study detail page.
  */
-export const CaseStudyCard: React.FC<{ caseStudy: CaseStudy; featured?: boolean }> = ({
-  caseStudy,
-  featured,
-}) => {
+export const CaseStudyCard: React.FC<{
+  caseStudy: CaseStudy
+  featured?: boolean
+  /** Title level, one below the heading above the cards (h2 on the listing under its h1). */
+  headingLevel?: 'h2' | 'h3'
+}> = ({ caseStudy, featured, headingLevel: Heading = 'h3' }) => {
   const t = useTranslations('industries')
   const locale = useLocale()
   const href = caseStudy.slug ? pathFor('case-studies', caseStudy.slug, locale) : undefined
@@ -59,16 +61,14 @@ export const CaseStudyCard: React.FC<{ caseStudy: CaseStudy; featured?: boolean 
       <article className="grid h-full overflow-hidden rounded-xl border border-border-12 bg-white lg:grid-cols-[1.1fr_1fr]">
         {caseStudy.heroImage && typeof caseStudy.heroImage !== 'number' && (
           <div className="min-h-[240px] lg:min-h-[340px]">
-            <Media
-              media={caseStudy.heroImage}
-              size="card"
-              className="h-full w-full object-cover"
-            />
+            <Media media={caseStudy.heroImage} size="card" className="h-full w-full object-cover" />
           </div>
         )}
         <div className="flex flex-col gap-4 p-8">
           {meta}
-          <h3 className="text-[26px] leading-[34px] group-hover:text-brand-fg">{caseStudy.title}</h3>
+          <Heading className="text-[26px] leading-[34px] tracking-[-0.01em] group-hover:text-brand-fg">
+            {caseStudy.title}
+          </Heading>
           {caseStudy.excerpt && (
             <p className="text-[15px] leading-relaxed text-text-60">{caseStudy.excerpt}</p>
           )}
@@ -82,16 +82,14 @@ export const CaseStudyCard: React.FC<{ caseStudy: CaseStudy; featured?: boolean 
     <article className="flex h-full flex-col overflow-hidden rounded-lg border border-border-12 bg-white">
       {caseStudy.heroImage && typeof caseStudy.heroImage !== 'number' && (
         <div className="aspect-video overflow-hidden">
-          <Media
-            media={caseStudy.heroImage}
-            size="card"
-            className="h-full w-full object-cover"
-          />
+          <Media media={caseStudy.heroImage} size="card" className="h-full w-full object-cover" />
         </div>
       )}
       <div className="flex flex-1 flex-col gap-3 p-5">
         {meta}
-        <h3 className="text-[19px] leading-[25px] group-hover:text-brand-fg">{caseStudy.title}</h3>
+        <Heading className="text-[19px] leading-[25px] tracking-[-0.01em] group-hover:text-brand-fg">
+          {caseStudy.title}
+        </Heading>
         {caseStudy.excerpt && (
           <p className="text-sm leading-[21px] text-text-60">{caseStudy.excerpt}</p>
         )}

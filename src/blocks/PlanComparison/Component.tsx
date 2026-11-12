@@ -5,7 +5,7 @@ import type { PlanComparisonBlock } from '@/payload-types'
 const Cell: React.FC<{ value: string | null | undefined }> = ({ value }) => {
   const v = value?.trim()
   if (!v || v === '—' || v === '–' || v === '-') {
-    return <span className="text-text-38">–</span>
+    return <span className="text-text-55">–</span>
   }
   if (v === '✓' || v.toLowerCase() === 'yes') {
     return (
@@ -55,7 +55,7 @@ export const PlanComparisonComponent: React.FC<PlanComparisonBlock> = ({
                 <th
                   colSpan={cols.length + 1}
                   scope="rowgroup"
-                  className="pt-8 pb-3 text-left text-xs font-medium tracking-[0.08em] text-text-38 uppercase"
+                  className="pt-8 pb-3 text-left text-xs font-medium tracking-[0.08em] text-text-55 uppercase"
                 >
                   {group.label}
                 </th>

@@ -11,7 +11,7 @@ import { sendAdsUserData, trackEvent } from '@/lib/analytics'
 const initialState: LeadFormState = { status: 'idle' }
 
 const inputClasses =
-  'h-12 w-full rounded-sm border border-border-12 bg-white px-3.5 text-sm text-text-90 placeholder:text-text-38 focus:border-border-focus focus:outline-none focus:ring-2 focus:ring-brand-tint'
+  'h-12 w-full rounded-sm border border-border-12 bg-white px-3.5 text-sm text-text-90 placeholder:text-text-55 focus:border-border-focus focus:outline-none focus:ring-2 focus:ring-brand-tint'
 
 const labelClasses = 'mb-1.5 block text-sm font-medium text-text-heading'
 
@@ -243,7 +243,7 @@ export const LeadForm: React.FC<Props> = ({ microcopy }) => {
         >
           {pending ? t('submitting') : t('submit')}
         </button>
-        {microcopy && <p className="text-[13px] text-text-38">{microcopy}</p>}
+        {microcopy && <p className="text-[13px] text-text-55">{microcopy}</p>}
       </div>
     </form>
   )

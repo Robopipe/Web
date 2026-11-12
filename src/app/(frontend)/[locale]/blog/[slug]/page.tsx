@@ -122,7 +122,7 @@ export default async function PostPage({ params }: Props) {
           <header className="mt-6">
             <div className="mb-5 flex flex-wrap items-center gap-3">
               {categories[0] && <Chip>{categories[0].title}</Chip>}
-              <span className="text-[13px] text-text-38">
+              <span className="text-[13px] text-text-55">
                 {authors.length > 0 &&
                   `${t('by', { name: authors.map((a) => a.name).join(', ') })} · `}
                 {post.publishedAt &&

@@ -53,7 +53,7 @@ export const Chip: React.FC<ChipProps> = ({ children, className }) => (
 export const Eyebrow: React.FC<ChipProps> = ({ children, className }) => (
   <p
     className={[
-      'text-xs font-medium uppercase tracking-[0.08em] text-text-38',
+      'text-xs font-medium uppercase tracking-[0.08em] text-text-55',
       className,
     ]
       .filter(Boolean)

@@ -4,6 +4,7 @@ import sharp from 'sharp'
 
 import config from '../../src/payload.config.js'
 import { markdownToLexical } from '../../src/jobs/markdown'
+import { deleteOnServer, updateOnServer } from '../helpers/serverRevalidate'
 
 /**
  * Regression guard: the featured (newest) card on /blog used to take the height
@@ -50,10 +51,12 @@ test.describe('Blog featured card', () => {
       },
     })
     postId = post.id
+    // The listing is cached (issue #40): let the server under test revalidate it.
+    await updateOnServer('posts', postId, 'en')
   })
 
   test.afterAll(async () => {
-    if (postId) await payload.delete({ collection: 'posts', id: postId })
+    if (postId) await deleteOnServer('posts', postId)
     if (mediaId) await payload.delete({ collection: 'media', id: mediaId })
   })
 
@@ -95,12 +98,7 @@ test.describe('Blog featured card', () => {
       page,
     }) => {
       const longTitle = 'E2E Superkalifragilistikexpialidociozniautomatizacevyrobnichlinek'
-      await payload.update({
-        collection: 'posts',
-        id: postId,
-        locale: 'en',
-        data: { title: longTitle },
-      })
+      await updateOnServer('posts', postId, 'en', { title: longTitle })
       try {
         await page.setViewportSize({ width, height: 844 })
         await page.goto('/en/blog')
@@ -119,12 +117,7 @@ test.describe('Blog featured card', () => {
         const titleOverflow = await title.evaluate((el) => el.scrollWidth - el.clientWidth)
         expect(titleOverflow).toBeLessThanOrEqual(0)
       } finally {
-        await payload.update({
-          collection: 'posts',
-          id: postId,
-          locale: 'en',
-          data: { title: TITLE },
-        })
+        await updateOnServer('posts', postId, 'en', { title: TITLE })
       }
     })
   }

@@ -1,52 +1,10 @@
-import type { Locale } from '@/i18n/routing'
-import { locales } from '@/i18n/routing'
-
-import { pathFor, type PreviewCollection } from './paths'
 import { getPayloadClient } from './queries'
+import { toIndexableDoc, type IndexableDoc, type RawDoc } from './indexableDoc'
 
-export type IndexableLocale = { path: string; title: string; description?: string }
+export { latestUpdate, toIndexableDoc } from './indexableDoc'
+export type { IndexableDoc, IndexableLocale } from './indexableDoc'
 
-export type IndexableDoc = {
-  collection: PreviewCollection
-  updatedAt: string
-  locales: Partial<Record<Locale, IndexableLocale>>
-}
-
-type Localized<T> = Partial<Record<Locale, T | null>> | null | undefined
-
-type RawDoc = {
-  slug?: Localized<string>
-  title?: Localized<string>
-  excerpt?: Localized<string>
-  seo?: {
-    title?: Localized<string>
-    description?: Localized<string>
-    noIndex?: boolean | null
-  } | null
-  updatedAt: string
-}
-
-const COLLECTIONS: PreviewCollection[] = ['pages', 'case-studies', 'posts']
-
-/**
- * Converts one document read with `locale: 'all'` into its public URLs.
- * Locales without a slug are left out, and so is a document with `seo.noIndex`.
- */
-export const toIndexableDoc = (collection: PreviewCollection, doc: RawDoc): IndexableDoc | null => {
-  if (doc.seo?.noIndex) return null
-  const out: IndexableDoc['locales'] = {}
-  for (const locale of locales) {
-    const slug = doc.slug?.[locale]
-    if (!slug) continue
-    const description = doc.seo?.description?.[locale] || doc.excerpt?.[locale] || undefined
-    out[locale] = {
-      path: pathFor(collection, slug, locale),
-      title: doc.title?.[locale] || slug,
-      ...(description ? { description } : {}),
-    }
-  }
-  return Object.keys(out).length ? { collection, updatedAt: doc.updatedAt, locales: out } : null
-}
+const COLLECTIONS = ['pages', 'case-studies', 'posts'] as const
 
 /**
  * Every published, indexable page, case study and post with its public URL per

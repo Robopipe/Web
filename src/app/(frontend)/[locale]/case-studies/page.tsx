@@ -75,11 +75,11 @@ export default async function CaseStudiesPage({ params }: Props) {
         </header>
 
         <div className="flex flex-col gap-5">
-          {featured && <CaseStudyCard caseStudy={featured} featured />}
+          {featured && <CaseStudyCard caseStudy={featured} featured headingLevel="h2" />}
           {rest.length > 0 && (
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {rest.map((caseStudy) => (
-                <CaseStudyCard key={caseStudy.id} caseStudy={caseStudy} />
+                <CaseStudyCard key={caseStudy.id} caseStudy={caseStudy} headingLevel="h2" />
               ))}
             </div>
           )}

@@ -40,7 +40,9 @@ export const ProcessStepsComponent: React.FC<ProcessStepsBlock> = ({
                 {i + 1}
               </div>
               <div>
-                <h5 className="text-text-invert">{step.title}</h5>
+                <h3 className="text-xl leading-7 font-semibold tracking-normal text-text-invert">
+                  {step.title}
+                </h3>
                 {step.text && (
                   <p className="mt-1.5 text-sm leading-relaxed text-text-invert-60">{step.text}</p>
                 )}
