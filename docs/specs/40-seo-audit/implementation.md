@@ -9,7 +9,7 @@ Režim B (jeden vývojář). Větev `fix/40-seo-audit` z `origin/master` (`7193b
 | 7: 302 místo 301 | mimo repo, návod pro Coolify níže | Traefik v Coolify |
 | 9: `no-store` a skrytý 11. článek | hotovo | výpis blogu, `src/proxy.ts` |
 | 8: JSON-LD | hotovo kromě dvou bodů (viz níže) | `src/lib/jsonLd.ts`, stránky |
-| 3: IndexNow | hotovo, čeká na `INDEXNOW_KEY` v Coolify | `src/lib/indexNow.ts`, `src/hooks/indexNow.ts` |
+| 3: IndexNow | hotovo, klíč se vloží v administraci (nastavení webu) | `src/lib/indexNow.ts`, `src/hooks/indexNow.ts`, `src/globals/SiteSettings.ts` |
 | 11: llms.txt, sitemap | hotovo kromě `/llms-full.txt` | `src/lib/llmsTxt.ts`, `src/app/sitemap.ts` |
 | 12: og:image, apple-touch-icon | ikona a mezipaměť hotové, obrázky jsou obsah | `next.config.ts` |
 | 13: nadpisy, 404, kontrast | nadpisy a kontrast hotové, 404 ne (viz níže), popis je obsah | bloky, `styles.css` |
@@ -78,7 +78,7 @@ Záměrně beze změny:
 
 1. Po zveřejnění nebo úpravě zveřejněné stránky, článku nebo případové studie odešle hook `indexNowAfterChange` adresy dokumentu v obou jazycích. U článku a studie přidá i výpis (`/cs/blog`, `/en/blog` a podobně).
 2. Cíl je `https://www.bing.com/indexnow` a `https://search.seznam.cz/indexnow`, metoda POST, JSON s `host`, `key`, `keyLocation` a `urlList`.
-3. Klíč je v proměnné `INDEXNOW_KEY`. Vyhledávače ho čtou na `https://robopipe.io/indexnow-key.txt`. Bez klíče adresa vrací 404.
+3. Klíč je v Payloadu: Site settings → Verification → IndexNow key (`site-settings`, pole `verification.indexNowKey`). Proměnná `INDEXNOW_KEY` platí jen tehdy, když je pole prázdné. Vyhledávače klíč čtou na `https://robopipe.io/indexnow-key.txt`. Bez klíče adresa vrací 404. Viz „Doplněk: klíč v Payloadu“.
 4. Odesílá se jen tehdy, když platí všechno: platný klíč (8 až 128 znaků a-z, A-Z, 0-9, pomlčka), `NODE_ENV=production` a `NEXT_PUBLIC_SERVER_URL` je `https` mimo `localhost`. Testy, `next dev` a místní `next start` na localhostu neodešlou nic.
 5. Koncepty, automatické ukládání a dokumenty s `seo.noIndex` se neodesílají.
 6. Požadavek běží na pozadí s limitem 5 s. Chyba vyhledávače ani chyba čtení dokumentu uložení v administraci nezastaví. Výsledek jde do logu Payloadu (`IndexNow https://www.bing.com/indexnow: 202 for 4 URLs`).
@@ -117,14 +117,24 @@ Nehotovo:
 1. Prázdné HTML na 404. Next.js 16 pošle při `notFound()` na stránce s ISR dokument `<html id="__next_error__">` a stránku 404 vykreslí až skript v prohlížeči. Text hlášky je v datech RSC, ale ne v HTML. Kód 404 a `noindex` jsou správné. Oprava v aplikaci by znamenala `force-dynamic` pro všechny stránky obsahu, tedy ztrátu mezipaměti. To je horší než nález s nízkým dopadem. Je to chování frameworku.
 2. Popis článku `automated-product-tagging` (168 znaků) je obsah v administraci.
 
+## Doplněk: klíč v Payloadu
+
+Větev `fix/40-indexnow-payload`. Do Coolify nemáme přístup, proto je klíč v nastavení webu.
+
+1. Pole `verification.indexNowKey` v globálu `site-settings`. Text bez lokalizace. Validace: prázdné, nebo 8 až 128 znaků a-z, A-Z, 0-9, pomlčka.
+2. Jedna funkce `indexNowKey(stored, env)` vybere klíč z pole, při prázdném poli z `INDEXNOW_KEY`. `readIndexNowKey(payload)` ho čte z databáze.
+3. `/indexnow-key.txt` má `force-dynamic` a čte globál při každém požadavku. Změna klíče v administraci platí hned, bez nového nasazení. Odpověď má `Cache-Control: no-store`.
+4. Hook čte klíč (`loadIndexNowConfig`) jen v produkci na veřejné adrese. Jinde databázi nečte. Chyba čtení nastavení uložení nezastaví.
+5. Migrace `20261112_194530_indexnow_key` přidá sloupec `site_settings.verification_index_now_key`. Produkce ji spustí při nasazení: `Dockerfile` volá `pnpm payload migrate` před `pnpm build`.
+6. Testy: `pnpm test:int` 36 souborů, 343 testů prošlo (`seoAudit40.int.spec.ts` čte a mění pole v místní databázi). `tsc`, `pnpm lint` (0 chyb) a `pnpm build` prošly. Na místní instanci: prázdné pole 404, vyplněné pole vrací klíč, změna přes REST API platí hned, neplatný klíč vrací 400.
+
 ## Co musí udělat člověk
 
 1. Coolify, přesměrování 301: kroky v kapitole „Nález 7“.
-2. Coolify, proměnná `INDEXNOW_KEY` (jen runtime, nová sestava není potřeba, stačí restart):
+2. Klíč IndexNow v administraci (krok v Coolify pro `INDEXNOW_KEY` odpadá):
    1. Vytvořit klíč: `openssl rand -hex 16`.
-   2. Vložit ho do Environment Variables aplikace jako `INDEXNOW_KEY`.
-   3. Restartovat aplikaci.
-   4. Ověřit: `curl -s https://robopipe.io/indexnow-key.txt` vrátí klíč.
+   2. Vložit ho do Site settings → Verification → IndexNow key a uložit.
+   3. Ověřit: `curl -s https://robopipe.io/indexnow-key.txt` vrátí klíč.
 3. Bing Webmaster Tools: jednorázově odeslat 14 nových adres (`SubmitUrlBatch`), nebo je v administraci jednou znovu zveřejnit. Hook pak odešle i do Seznamu.
 4. Administrace (mimo tuto úlohu): dva PNG náhledy jako JPEG do 200 KB, popis článku `automated-product-tagging` pod 160 znaků, lokalizované názvy členství.
 

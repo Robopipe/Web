@@ -2565,7 +2565,7 @@ export interface SiteSetting {
     registration?: string | null;
   };
   /**
-   * Search engine site verification. Empty value = no tag.
+   * Search engine site verification. Empty value = no tag or file.
    */
   verification?: {
     /**
@@ -2576,6 +2576,10 @@ export interface SiteSetting {
      * content of <meta name="seznam-wmt">
      */
     seznam?: string | null;
+    /**
+     * Served at /indexnow-key.txt. Publishing a page, post or case study then notifies Bing and Seznam (production only). Empty = the INDEXNOW_KEY variable, or no file. Create one with "openssl rand -hex 16".
+     */
+    indexNowKey?: string | null;
   };
   /**
    * Google measurement. Empty = no Google tag and no cookie banner. Publish the cookie paragraph on the privacy page before you fill these.
@@ -2788,6 +2792,7 @@ export interface SiteSettingsSelect<T extends boolean = true> {
     | {
         bing?: T;
         seznam?: T;
+        indexNowKey?: T;
       };
   measurement?:
     | T

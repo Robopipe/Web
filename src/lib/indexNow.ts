@@ -1,3 +1,5 @@
+import type { Payload } from 'payload'
+
 import { SERVER_URL } from './paths'
 
 /**
@@ -5,8 +7,9 @@ import { SERVER_URL } from './paths'
  * changed, so they crawl it without waiting for the sitemap (issue #40).
  *
  * The key is public by design: search engines read it from KEY_PATH on this
- * site to check that the request comes from the site owner. It still comes
- * from the environment, so only the production deployment has one.
+ * site to check that the request comes from the site owner. An editor sets it
+ * in site settings (`verification.indexNowKey`). The INDEXNOW_KEY environment
+ * variable is the fallback while that field is empty.
  */
 
 export const KEY_PATH = '/indexnow-key.txt'
@@ -15,16 +18,35 @@ export const KEY_PATH = '/indexnow-key.txt'
 export const ENDPOINTS = ['https://www.bing.com/indexnow', 'https://search.seznam.cz/indexnow']
 
 /** The protocol allows 8 to 128 characters: a-z, A-Z, 0-9 and dashes. */
-const KEY_PATTERN = /^[a-zA-Z0-9-]{8,128}$/
+export const KEY_PATTERN = /^[a-zA-Z0-9-]{8,128}$/
 
 const TIMEOUT_MS = 5000
 
 type Env = Partial<Record<'INDEXNOW_KEY' | 'NODE_ENV', string>>
 
-/** The configured key, or null when it is missing or not a valid IndexNow key. */
-export const indexNowKey = (env: Env = process.env): string | null => {
-  const key = env.INDEXNOW_KEY?.trim()
+/**
+ * The key to use: the one from site settings, or INDEXNOW_KEY when that field
+ * is empty. Null when there is none or it is not a valid IndexNow key.
+ */
+export const indexNowKey = (
+  stored: string | null | undefined,
+  env: Env = process.env,
+): string | null => {
+  const key = stored?.trim() || env.INDEXNOW_KEY?.trim()
   return key && KEY_PATTERN.test(key) ? key : null
+}
+
+/** Reads the key from site settings at call time, so a change in the admin applies at once. */
+export const readIndexNowKey = async (
+  payload: Pick<Payload, 'findGlobal'>,
+  env: Env = process.env,
+): Promise<string | null> => {
+  const settings = await payload.findGlobal({
+    slug: 'site-settings',
+    depth: 0,
+    select: { verification: { indexNowKey: true } },
+  })
+  return indexNowKey(settings.verification?.indexNowKey, env)
 }
 
 const isPublicSite = (siteUrl: string): boolean => {
@@ -37,19 +59,33 @@ const isPublicSite = (siteUrl: string): boolean => {
 }
 
 /**
- * The key when this process may notify search engines: a production build of
- * a public https site with a valid key. Tests, `next dev` and local
- * `next start` on localhost never send anything.
+ * True when this process may notify search engines: a production build of a
+ * public https site. Tests, `next dev` and local `next start` on localhost
+ * never send anything.
  */
+export const mayNotify = (env: Env = process.env, siteUrl: string = SERVER_URL): boolean =>
+  env.NODE_ENV === 'production' && isPublicSite(siteUrl)
+
 export type IndexNowConfig = { key: string; siteUrl: string }
 
+/** The config for submitToIndexNow, or null when this process may not notify or has no key. */
 export const indexNowConfig = (
+  key: string | null,
   env: Env = process.env,
   siteUrl: string = SERVER_URL,
-): IndexNowConfig | null => {
-  const key = indexNowKey(env)
-  if (!key || env.NODE_ENV !== 'production' || !isPublicSite(siteUrl)) return null
-  return { key, siteUrl }
+): IndexNowConfig | null => (key && mayNotify(env, siteUrl) ? { key, siteUrl } : null)
+
+/**
+ * The config with the key from site settings. Outside production it returns
+ * null without a database read.
+ */
+export const loadIndexNowConfig = async (
+  payload: Pick<Payload, 'findGlobal'>,
+  env: Env = process.env,
+  siteUrl: string = SERVER_URL,
+): Promise<IndexNowConfig | null> => {
+  if (!mayNotify(env, siteUrl)) return null
+  return indexNowConfig(await readIndexNowKey(payload, env), env, siteUrl)
 }
 
 export type IndexNowBody = { host: string; key: string; keyLocation: string; urlList: string[] }
@@ -73,14 +109,11 @@ export type IndexNowResult = { endpoint: string; status: number | null; error?: 
 /**
  * Sends the URLs to every endpoint. It never throws: a failed request only
  * shows in the result, because a publish in the admin must not fail on it.
- * Without a config (see indexNowConfig) it sends nothing and returns [].
+ * Without a config (see loadIndexNowConfig) it sends nothing and returns [].
  */
 export const submitToIndexNow = async (
   urls: string[],
-  {
-    config = indexNowConfig(),
-    fetchImpl = fetch,
-  }: { config?: IndexNowConfig | null; fetchImpl?: typeof fetch } = {},
+  { config, fetchImpl = fetch }: { config: IndexNowConfig | null; fetchImpl?: typeof fetch },
 ): Promise<IndexNowResult[]> => {
   if (!config) return []
   const body = indexNowBody(config.key, config.siteUrl, urls)
