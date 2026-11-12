@@ -133,7 +133,10 @@ test('1, 2: a new visitor sees the banner, accept and reject look the same, defa
   const [acceptBox, rejectBox] = [await accept.boundingBox(), await reject.boundingBox()]
   expect(acceptBox?.width).toBe(rejectBox?.width)
   expect(acceptBox?.height).toBe(rejectBox?.height)
-  expect(await accept.getAttribute('class')).toBe(await reject.getAttribute('class'))
+  // Only the order utility differs: it moves "accept" to the left from `sm` up.
+  expect((await accept.getAttribute('class'))?.replace(' sm:order-first', '')).toBe(
+    await reject.getAttribute('class'),
+  )
 
   const entries = await dataLayer(page)
   const firstConsent = entries.findIndex((entry) => entry[0] === 'consent')
@@ -336,6 +339,9 @@ test('13: the banner is first in the Tab order and Escape closes the dialog', as
   await page.goto(HOME.cs)
   await expect(banner(page)).toBeVisible()
   await page.keyboard.press('Tab')
+  // The DOM follows the phone layout, so "reject" comes first (see CookieBanner).
+  await expect(banner(page).getByRole('button', { name: 'Odmítnout' })).toBeFocused()
+  await page.keyboard.press('Tab')
   await expect(banner(page).getByRole('button', { name: 'Přijmout vše' })).toBeFocused()
 
   const settings = banner(page).getByRole('button', { name: 'Nastavení' })
@@ -356,7 +362,7 @@ test('13: after a choice with the keyboard, focus goes to the content, not to th
   await page.goto(HOME.cs)
   await expect(banner(page)).toBeVisible()
   await page.keyboard.press('Tab')
-  await expect(banner(page).getByRole('button', { name: 'Přijmout vše' })).toBeFocused()
+  await expect(banner(page).getByRole('button', { name: 'Odmítnout' })).toBeFocused()
   await page.keyboard.press('Enter')
   await expect(banner(page)).toBeHidden()
   await expect(page.locator('main')).toBeFocused()
@@ -431,6 +437,53 @@ test.describe('phone', () => {
     expect(accept?.width).toBe(reject?.width)
     expect(accept?.height).toBe(reject?.height)
     expect(reject!.y).toBe(accept!.y)
+  })
+
+  test('at 390 px reject is on the left and accept on the right, the second row is unchanged', async ({
+    page,
+  }) => {
+    await page.goto(HOME.cs)
+    await expect(banner(page)).toBeVisible()
+    const box = async (name: string) =>
+      (await banner(page).getByRole('button', { name }).boundingBox())!
+    const [reject, accept, settings] = [
+      await box('Odmítnout'),
+      await box('Přijmout vše'),
+      await box('Nastavení'),
+    ]
+    const link = (await banner(page).getByRole('link').boundingBox())!
+    expect(reject.x + reject.width).toBeLessThanOrEqual(accept.x)
+    expect(settings.y).toBeGreaterThan(accept.y)
+    expect(settings.x).toBe(reject.x)
+    expect(link.x).toBeGreaterThanOrEqual(accept.x)
+    // Tab follows the visual order: reject, accept, settings.
+    await page.keyboard.press('Tab')
+    await expect(banner(page).getByRole('button', { name: 'Odmítnout' })).toBeFocused()
+    await page.keyboard.press('Tab')
+    await expect(banner(page).getByRole('button', { name: 'Přijmout vše' })).toBeFocused()
+    await page.keyboard.press('Tab')
+    await expect(banner(page).getByRole('button', { name: 'Nastavení' })).toBeFocused()
+  })
+})
+
+test.describe('desktop', () => {
+  test.use({ viewport: { width: 1440, height: 900 } })
+
+  test('at 1440 px the order stays accept, reject, settings in one row', async ({ page }) => {
+    await page.goto(HOME.cs)
+    await expect(banner(page)).toBeVisible()
+    const box = async (name: string) =>
+      (await banner(page).getByRole('button', { name }).boundingBox())!
+    const [accept, reject, settings] = [
+      await box('Přijmout vše'),
+      await box('Odmítnout'),
+      await box('Nastavení'),
+    ]
+    expect(accept.x + accept.width).toBeLessThanOrEqual(reject.x)
+    expect(reject.x + reject.width).toBeLessThanOrEqual(settings.x)
+    expect(reject.y).toBe(accept.y)
+    expect(settings.y).toBe(accept.y)
+    expect(accept.width).toBe(reject.width)
   })
 })
 
