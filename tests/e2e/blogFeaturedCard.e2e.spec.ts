@@ -90,23 +90,42 @@ test.describe('Blog featured card', () => {
 
   // Tester (#3): one long unbroken word in the title widens the stacked grid
   // column below lg, so the photo box grows past the card (979 px on a 358 px card).
-  test('keeps the photo inside the card on mobile with a long unbroken title', async ({ page }) => {
-    const longTitle = 'E2E Superkalifragilistikexpialidociozniautomatizacevyrobnichlinek'
-    await payload.update({ collection: 'posts', id: postId, locale: 'en', data: { title: longTitle } })
-    try {
-      await page.setViewportSize({ width: 390, height: 844 })
-      await page.goto('/en/blog')
+  for (const width of [390, 320]) {
+    test(`keeps the photo and title inside the card at ${width} px with a long unbroken title`, async ({
+      page,
+    }) => {
+      const longTitle = 'E2E Superkalifragilistikexpialidociozniautomatizacevyrobnichlinek'
+      await payload.update({
+        collection: 'posts',
+        id: postId,
+        locale: 'en',
+        data: { title: longTitle },
+      })
+      try {
+        await page.setViewportSize({ width, height: 844 })
+        await page.goto('/en/blog')
 
-      const card = page.locator('article').first()
-      await expect(card.locator('h2')).toHaveText(longTitle)
-      const cardBox = await card.boundingBox()
-      const photo = await card.locator('img').first().boundingBox()
-      if (!cardBox || !photo) throw new Error('featured card is not rendered')
+        const card = page.locator('article').first()
+        const title = card.locator('h2')
+        await expect(title).toHaveText(longTitle)
+        const cardBox = await card.boundingBox()
+        const photo = await card.locator('img').first().boundingBox()
+        if (!cardBox || !photo) throw new Error('featured card is not rendered')
 
-      expect(photo.width).toBeLessThanOrEqual(cardBox.width + 1)
-      expect(Math.abs(photo.height - (photo.width * 9) / 16)).toBeLessThan(2)
-    } finally {
-      await payload.update({ collection: 'posts', id: postId, locale: 'en', data: { title: TITLE } })
-    }
-  })
+        expect(cardBox.width).toBeLessThanOrEqual(width)
+        expect(photo.width).toBeLessThanOrEqual(cardBox.width + 1)
+        expect(Math.abs(photo.height - (photo.width * 9) / 16)).toBeLessThan(2)
+        // The long word wraps inside the title instead of running past the card.
+        const titleOverflow = await title.evaluate((el) => el.scrollWidth - el.clientWidth)
+        expect(titleOverflow).toBeLessThanOrEqual(0)
+      } finally {
+        await payload.update({
+          collection: 'posts',
+          id: postId,
+          locale: 'en',
+          data: { title: TITLE },
+        })
+      }
+    })
+  }
 })
