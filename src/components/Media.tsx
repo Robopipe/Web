@@ -14,6 +14,8 @@ type Props = {
   size?: 'thumbnail' | 'card' | 'hero' | 'og'
   className?: string
   priority?: boolean
+  /** `eager` loads at once without the high priority of `priority`. */
+  loading?: 'eager' | 'lazy'
   fill?: boolean
   /** Rendered width for the browser's choice from `srcset`. Defaults to the container width. */
   sizes?: string
@@ -25,6 +27,7 @@ export const Media: React.FC<Props> = ({
   size,
   className,
   priority,
+  loading,
   fill,
   sizes = DEFAULT_SIZES,
 }) => {
@@ -51,6 +54,7 @@ export const Media: React.FC<Props> = ({
         className={className}
         style={style}
         priority={priority}
+        loading={loading}
         fetchPriority={priority ? 'high' : undefined}
         sizes={sizes}
       />
@@ -67,6 +71,7 @@ export const Media: React.FC<Props> = ({
       className={className}
       style={style}
       priority={priority}
+      loading={loading}
       fetchPriority={priority ? 'high' : undefined}
       sizes={sizes}
     />

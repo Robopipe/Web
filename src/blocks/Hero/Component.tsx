@@ -1,10 +1,9 @@
-import { getImageProps } from 'next/image'
 import React from 'react'
 
 import { CMSLink } from '@/components/CMSLink'
-import { Media, relativize } from '@/components/Media'
+import { Media } from '@/components/Media'
 import { buttonClasses, Chip } from '@/components/ui'
-import type { HeroBlock, Media as MediaType } from '@/payload-types'
+import type { HeroBlock } from '@/payload-types'
 
 import { HeroVideo } from './HeroVideo'
 
@@ -14,25 +13,8 @@ const SIZES = {
   split: '(min-width: 1152px) 520px, (min-width: 1024px) 50vw, 100vw',
 }
 
-/**
- * Optimised poster URL from the block's image, if set. A video has no frame of
- * its own in the media library, so the image is the only poster source.
- */
-const posterUrl = (image: HeroBlock['image']): string | undefined => {
-  const media = image && typeof image !== 'number' ? (image as MediaType) : null
-  const sized = media?.sizes?.hero
-  const url = sized?.url ?? media?.url
-  const width = sized?.width ?? media?.width
-  const height = sized?.height ?? media?.height
-  if (!url || !width || !height) return undefined
-  // 540 CSS px at 2x gives the 1080 px variant: sharp on phones, light enough for desktop.
-  return getImageProps({
-    src: relativize(url),
-    alt: '',
-    width: 540,
-    height: Math.round((540 * height) / width),
-  }).props.src
-}
+/** Fixed box of the hero media, so a video or a late image never moves the layout. */
+const MEDIA_BOX = 'h-[280px] w-full sm:h-[360px] lg:h-[420px]'
 
 const linkStyles = [
   buttonClasses({ variant: 'filled', size: 'lg' }),
@@ -45,12 +27,15 @@ export const HeroComponent: React.FC<HeroBlock> = ({
   text,
   links,
   video,
+  mobileVideo,
   image,
   trust,
   variant,
 }) => {
   const centered = variant !== 'split'
   const videoDoc = video && typeof video !== 'number' ? video : null
+  const mobileVideoDoc = mobileVideo && typeof mobileVideo !== 'number' ? mobileVideo : null
+  const sizes = centered ? SIZES.centered : SIZES.split
   const trustItems = trust?.items ?? []
 
   return (
@@ -78,18 +63,31 @@ export const HeroComponent: React.FC<HeroBlock> = ({
         {(videoDoc?.url || (image && typeof image !== 'number')) && (
           <div className={centered ? 'mt-4 w-full' : ''}>
             {videoDoc?.url ? (
-              <HeroVideo
-                src={videoDoc.url}
-                poster={posterUrl(image)}
-                className="h-[280px] w-full rounded-xl bg-brand-tint object-cover sm:h-[360px] lg:h-[420px]"
-              />
+              // The image is the poster: a responsive next/image under the video, without
+              // high priority (the hero text is the LCP element on phones). The video is
+              // transparent until its first frame and then covers the image (issue #30).
+              <div className={`relative overflow-hidden rounded-xl bg-brand-tint ${MEDIA_BOX}`}>
+                <Media
+                  media={image}
+                  size="hero"
+                  fill
+                  loading="eager"
+                  sizes={sizes}
+                  className="object-cover"
+                />
+                <HeroVideo
+                  src={videoDoc.url}
+                  mobileSrc={mobileVideoDoc?.url}
+                  className="absolute inset-0 h-full w-full object-cover"
+                />
+              </div>
             ) : (
               <Media
                 media={image}
                 size="hero"
-                className="h-[280px] w-full rounded-xl object-cover sm:h-[360px] lg:h-[420px]"
+                className={`${MEDIA_BOX} rounded-xl object-cover`}
                 priority
-                sizes={centered ? SIZES.centered : SIZES.split}
+                sizes={sizes}
               />
             )}
           </div>

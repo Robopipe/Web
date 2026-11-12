@@ -35,7 +35,20 @@ export const Hero: Block = {
       type: 'upload',
       relationTo: 'media',
       localized: true,
-      admin: { description: 'Looping full-width video below the copy (takes precedence over image).' },
+      admin: {
+        description: 'Looping full-width video below the copy (takes precedence over image).',
+      },
+    },
+    {
+      name: 'mobileVideo',
+      type: 'upload',
+      relationTo: 'media',
+      localized: true,
+      admin: {
+        description:
+          'Optional smaller copy of the video for screens up to 767 px (640 px wide, no sound, under 1 MB). Empty: phones get the video above.',
+        condition: (_, siblingData) => Boolean(siblingData?.video),
+      },
     },
     {
       name: 'image',
@@ -49,7 +62,9 @@ export const Hero: Block = {
     {
       name: 'trust',
       type: 'group',
-      admin: { description: 'Trust strip under the media (e.g. "Trusted in operations running …").' },
+      admin: {
+        description: 'Trust strip under the media (e.g. "Trusted in operations running …").',
+      },
       fields: [
         {
           name: 'label',
