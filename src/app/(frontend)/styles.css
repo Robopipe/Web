@@ -69,7 +69,8 @@
   /* Fonts */
   --font-sans: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
   --font-heading: var(--font-barlow), var(--font-space-grotesk), ui-sans-serif, sans-serif;
-  --font-mono: var(--font-space-mono), ui-monospace, monospace;
+  /* No page uses a monospace font (issue #30), so Space Mono is not loaded. */
+  --font-mono: ui-monospace, monospace;
   --font-numbers: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 }
 

@@ -239,6 +239,10 @@ export interface HeroBlock {
    */
   video?: (number | null) | Media;
   /**
+   * Optional smaller copy of the video for screens up to 767 px (640 px wide, no sound, under 1 MB). Empty: phones get the video above.
+   */
+  mobileVideo?: (number | null) | Media;
+  /**
    * Shown when there is no video. With a video, it is the poster shown until the video plays.
    */
   image?: (number | null) | Media;
@@ -1638,6 +1642,7 @@ export interface HeroBlockSelect<T extends boolean = true> {
         id?: T;
       };
   video?: T;
+  mobileVideo?: T;
   image?: T;
   trust?:
     | T

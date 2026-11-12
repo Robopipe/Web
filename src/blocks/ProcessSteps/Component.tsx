@@ -3,6 +3,7 @@ import React from 'react'
 import { CMSLink } from '@/components/CMSLink'
 import { Media } from '@/components/Media'
 import { buttonClasses } from '@/components/ui'
+import { HALF_SIZES } from '@/lib/imageSizes'
 import type { ProcessStepsBlock } from '@/payload-types'
 
 export const ProcessStepsComponent: React.FC<ProcessStepsBlock> = ({
@@ -23,7 +24,13 @@ export const ProcessStepsComponent: React.FC<ProcessStepsBlock> = ({
       <div className="grid items-center gap-10 lg:grid-cols-2">
         {image && typeof image !== 'number' && (
           <div className="min-h-[320px] overflow-hidden rounded-lg">
-            <Media media={image} size="card" className="h-full w-full object-cover" fill={false} />
+            <Media
+              media={image}
+              size="card"
+              sizes={HALF_SIZES}
+              className="h-full w-full object-cover"
+              fill={false}
+            />
           </div>
         )}
         <div className="flex flex-col gap-8">

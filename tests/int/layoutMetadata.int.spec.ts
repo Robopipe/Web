@@ -6,7 +6,7 @@ import config from '@/payload.config'
 // The layout loads Google fonts at build time. The metadata does not need them.
 vi.mock('next/font/google', () => {
   const font = () => ({ variable: '', className: '' })
-  return { Barlow: font, Inter: font, Space_Grotesk: font, Space_Mono: font }
+  return { Barlow: font, Inter: font, Space_Grotesk: font }
 })
 
 /**

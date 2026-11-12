@@ -69,6 +69,9 @@ const nextConfig: NextConfig = {
   // Self-contained server bundle for the Docker image (see Dockerfile).
   output: 'standalone',
   images: {
+    // Keep optimised images for 30 days, not only for the source's max-age (issue #30).
+    // A file replaced under the same name can show the old variant until then.
+    minimumCacheTTL: 60 * 60 * 24 * 30,
     localPatterns: [
       {
         pathname: '/api/media/file/**',

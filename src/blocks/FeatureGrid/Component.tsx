@@ -3,12 +3,20 @@ import React from 'react'
 import { CMSLink } from '@/components/CMSLink'
 import { Icon, iconData, type IconName } from '@/components/icons'
 import { Media } from '@/components/Media'
+import { gridSizes } from '@/lib/imageSizes'
 import type { FeatureGridBlock } from '@/payload-types'
 
 const columnClasses: Record<string, string> = {
   '2': 'sm:grid-cols-2',
   '3': 'sm:grid-cols-2 lg:grid-cols-3',
   '4': 'sm:grid-cols-2 lg:grid-cols-4',
+}
+
+/** Card image widths for the same grids (`gap-6` is 24 px). */
+const columnSizes: Record<string, string> = {
+  '2': gridSizes(2, 24),
+  '3': gridSizes(3, 24),
+  '4': gridSizes(4, 24),
 }
 
 export const FeatureGridComponent: React.FC<FeatureGridBlock> = ({
@@ -60,6 +68,7 @@ export const FeatureGridComponent: React.FC<FeatureGridBlock> = ({
                     <Media
                       media={feature.image}
                       size="card"
+                      sizes={columnSizes[columns ?? '3']}
                       className={
                         framed
                           ? 'max-h-full w-auto max-w-[85%] rounded-[6px] shadow-lift'

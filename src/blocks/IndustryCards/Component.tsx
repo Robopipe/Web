@@ -5,6 +5,7 @@ import React from 'react'
 import { hrefFor } from '@/components/CMSLink'
 import { Media } from '@/components/Media'
 import type { Locale } from '@/i18n/routing'
+import { gridSizes } from '@/lib/imageSizes'
 import { getSolutionPages } from '@/lib/queries'
 import type { IndustryCardsBlock, Media as MediaType } from '@/payload-types'
 
@@ -45,6 +46,8 @@ export const IndustryCardsComponent: React.FC<IndustryCardsBlock> = async (block
   const locale = (await getLocale()) as Locale
   const cards = await cardsFor(block, locale)
   if (!cards.length) return null
+  // Six solution pages fill two rows of three. Otherwise four per row, as before.
+  const lgColumns = cards.length % 3 === 0 && cards.length % 4 !== 0 ? 3 : 4
 
   return (
     <section className="container-site py-16 lg:py-24">
@@ -54,9 +57,8 @@ export const IndustryCardsComponent: React.FC<IndustryCardsBlock> = async (block
           {text && <p className="mt-4 text-lg text-text-60">{text}</p>}
         </div>
       )}
-      {/* Six solution pages fill two rows of three. Otherwise four per row, as before. */}
       <div
-        className={`grid sm:grid-cols-2 ${cards.length % 3 === 0 && cards.length % 4 !== 0 ? 'lg:grid-cols-3' : 'lg:grid-cols-4'} ${cards.every(isIllustration) ? 'mx-auto max-w-80 gap-x-7 gap-y-14 sm:max-w-none' : 'gap-5'}`}
+        className={`grid sm:grid-cols-2 ${lgColumns === 3 ? 'lg:grid-cols-3' : 'lg:grid-cols-4'} ${cards.every(isIllustration) ? 'mx-auto max-w-80 gap-x-7 gap-y-14 sm:max-w-none' : 'gap-5'}`}
       >
         {cards.map((card, i) => {
           if (isIllustration(card)) {
@@ -91,7 +93,12 @@ export const IndustryCardsComponent: React.FC<IndustryCardsBlock> = async (block
             <>
               {card.image && (
                 <div className="aspect-4/3 overflow-hidden">
-                  <Media media={card.image} size="card" className="h-full w-full object-cover" />
+                  <Media
+                    media={card.image}
+                    size="card"
+                    sizes={gridSizes(lgColumns, 20)}
+                    className="h-full w-full object-cover"
+                  />
                 </div>
               )}
               <div className="flex flex-1 flex-col gap-2 p-5">
