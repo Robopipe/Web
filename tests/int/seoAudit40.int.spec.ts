@@ -1,8 +1,8 @@
 import fs from 'fs'
 import { NextRequest } from 'next/server'
 import path from 'path'
-import type { PayloadRequest } from 'payload'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { getPayload, type Payload, type PayloadRequest } from 'payload'
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 
 import { GET as indexNowKeyFile } from '@/app/indexnow-key.txt/route'
 import { indexNowAfterChange, indexNowUrls } from '@/hooks/indexNow'
@@ -14,6 +14,8 @@ import {
   indexNowBody,
   indexNowConfig,
   indexNowKey,
+  loadIndexNowConfig,
+  readIndexNowKey,
   KEY_PATH,
   submitToIndexNow,
 } from '@/lib/indexNow'
@@ -29,6 +31,7 @@ import {
 } from '@/lib/jsonLd'
 import { buildLlmsTxt } from '@/lib/llmsTxt'
 import { SERVER_URL } from '@/lib/paths'
+import config from '@/payload.config'
 import type { CaseStudy, Media, Page, SiteSetting } from '@/payload-types'
 
 /** Issue #40: findings 3, 8, 9, 11, 12 and 13 of the SEO audit of 12. 11. 2026. */
@@ -152,7 +155,7 @@ describe('Organization logo (finding 8)', () => {
 
 describe('IndexNow (finding 3)', () => {
   const key = 'a1b2c3d4e5f6a7b8'
-  const prod = { INDEXNOW_KEY: key, NODE_ENV: 'production' }
+  const prod = { NODE_ENV: 'production' }
 
   afterEach(() => {
     vi.unstubAllEnvs()
@@ -160,29 +163,51 @@ describe('IndexNow (finding 3)', () => {
   })
 
   it('accepts only keys of 8 to 128 letters, digits and dashes', () => {
-    expect(indexNowKey({ INDEXNOW_KEY: key })).toBe(key)
-    expect(indexNowKey({ INDEXNOW_KEY: ` ${key} ` })).toBe(key)
-    expect(indexNowKey({})).toBeNull()
-    expect(indexNowKey({ INDEXNOW_KEY: 'short' })).toBeNull()
-    expect(indexNowKey({ INDEXNOW_KEY: 'has/slash/12345' })).toBeNull()
+    expect(indexNowKey(key, {})).toBe(key)
+    expect(indexNowKey(` ${key} `, {})).toBe(key)
+    expect(indexNowKey(null, {})).toBeNull()
+    expect(indexNowKey('short', {})).toBeNull()
+    expect(indexNowKey('has/slash/12345', {})).toBeNull()
+  })
+
+  it('prefers the key from site settings and falls back to INDEXNOW_KEY when it is empty', () => {
+    const envKey = 'env-key-12345678'
+    expect(indexNowKey(key, { INDEXNOW_KEY: envKey })).toBe(key)
+    expect(indexNowKey('', { INDEXNOW_KEY: envKey })).toBe(envKey)
+    expect(indexNowKey('  ', { INDEXNOW_KEY: ` ${envKey} ` })).toBe(envKey)
+    expect(indexNowKey(undefined, { INDEXNOW_KEY: envKey })).toBe(envKey)
+    expect(indexNowKey(undefined, { INDEXNOW_KEY: 'short' })).toBeNull()
   })
 
   it('is on only for a production build of a public https site with a key', () => {
-    expect(indexNowConfig(prod, 'https://robopipe.io')).toEqual({
+    expect(indexNowConfig(key, prod, 'https://robopipe.io')).toEqual({
       key,
       siteUrl: 'https://robopipe.io',
     })
-    expect(indexNowConfig({ NODE_ENV: 'production' }, 'https://robopipe.io')).toBeNull()
-    expect(indexNowConfig({ ...prod, NODE_ENV: 'test' }, 'https://robopipe.io')).toBeNull()
-    expect(indexNowConfig({ ...prod, NODE_ENV: 'development' }, 'https://robopipe.io')).toBeNull()
-    expect(indexNowConfig(prod, 'http://robopipe.io')).toBeNull()
-    expect(indexNowConfig(prod, 'https://localhost:3000')).toBeNull()
-    expect(indexNowConfig(prod, 'not a url')).toBeNull()
+    expect(indexNowConfig(null, prod, 'https://robopipe.io')).toBeNull()
+    expect(indexNowConfig(key, { NODE_ENV: 'test' }, 'https://robopipe.io')).toBeNull()
+    expect(indexNowConfig(key, { NODE_ENV: 'development' }, 'https://robopipe.io')).toBeNull()
+    expect(indexNowConfig(key, prod, 'http://robopipe.io')).toBeNull()
+    expect(indexNowConfig(key, prod, 'https://localhost:3000')).toBeNull()
+    expect(indexNowConfig(key, prod, 'not a url')).toBeNull()
   })
 
   it('is off in this test run even with a key, so tests never reach the network', () => {
-    vi.stubEnv('INDEXNOW_KEY', key)
-    expect(indexNowConfig()).toBeNull()
+    expect(indexNowConfig(key)).toBeNull()
+  })
+
+  it('reads site settings only where it may notify', async () => {
+    const findGlobal = vi.fn(async () => ({ verification: { indexNowKey: key } }))
+    const payload = { findGlobal } as unknown as Payload
+    expect(
+      await loadIndexNowConfig(payload, { NODE_ENV: 'test' }, 'https://robopipe.io'),
+    ).toBeNull()
+    expect(findGlobal).not.toHaveBeenCalled()
+    expect(await loadIndexNowConfig(payload, prod, 'https://robopipe.io')).toEqual({
+      key,
+      siteUrl: 'https://robopipe.io',
+    })
+    expect(findGlobal).toHaveBeenCalledWith(expect.objectContaining({ slug: 'site-settings' }))
   })
 
   it('sends one de-duplicated list of this host only, with the key location', () => {
@@ -232,17 +257,67 @@ describe('IndexNow (finding 3)', () => {
 
   it('sends nothing without a config, also with the global fetch', async () => {
     const globalFetch = vi.spyOn(globalThis, 'fetch')
-    vi.stubEnv('INDEXNOW_KEY', key)
-    expect(await submitToIndexNow(['https://robopipe.io/cs'])).toEqual([])
+    expect(await submitToIndexNow(['https://robopipe.io/cs'], { config: null })).toEqual([])
     expect(globalFetch).not.toHaveBeenCalled()
   })
+})
 
-  it('serves the key file only when the key is set', async () => {
-    expect(indexNowKeyFile().status).toBe(404)
-    vi.stubEnv('INDEXNOW_KEY', key)
-    const response = indexNowKeyFile()
-    expect(response.status).toBe(200)
-    expect(await response.text()).toBe(key)
+describe('IndexNow key in site settings (finding 3)', () => {
+  const key = 'a1b2c3d4e5f6a7b8'
+  let payload: Payload
+  let saved: string | null | undefined
+
+  const setKey = (indexNowKey: string | null) =>
+    payload.updateGlobal({
+      slug: 'site-settings',
+      data: { verification: { indexNowKey } },
+    })
+
+  const keyFile = async () => {
+    const response = await indexNowKeyFile()
+    return { status: response.status, body: await response.text() }
+  }
+
+  beforeAll(async () => {
+    payload = await getPayload({ config: await config })
+    const settings = await payload.findGlobal({ slug: 'site-settings', depth: 0 })
+    saved = settings.verification?.indexNowKey
+  })
+
+  afterEach(() => {
+    vi.unstubAllEnvs()
+  })
+
+  afterAll(async () => {
+    await setKey(saved ?? null)
+  })
+
+  it('serves no key file while the field and INDEXNOW_KEY are empty', async () => {
+    vi.stubEnv('INDEXNOW_KEY', '')
+    await setKey(null)
+    expect(await readIndexNowKey(payload)).toBeNull()
+    expect((await keyFile()).status).toBe(404)
+  })
+
+  it('serves the key from site settings and a changed key on the next request', async () => {
+    await setKey(key)
+    expect(await keyFile()).toEqual({ status: 200, body: key })
+    await setKey('new-key-87654321')
+    expect(await keyFile()).toEqual({ status: 200, body: 'new-key-87654321' })
+  })
+
+  it('falls back to INDEXNOW_KEY only while the field is empty', async () => {
+    vi.stubEnv('INDEXNOW_KEY', 'env-key-12345678')
+    await setKey(key)
+    expect(await readIndexNowKey(payload)).toBe(key)
+    await setKey(null)
+    expect(await keyFile()).toEqual({ status: 200, body: 'env-key-12345678' })
+  })
+
+  it('rejects a key that IndexNow does not accept', async () => {
+    await expect(setKey('short')).rejects.toThrow()
+    await expect(setKey('has/slash/12345')).rejects.toThrow()
+    await expect(setKey('x'.repeat(129))).rejects.toThrow()
   })
 })
 
@@ -286,7 +361,7 @@ describe('IndexNow hook (finding 3)', () => {
   it('submits a published post and leaves the request locale as it was', async () => {
     const submit = vi.fn(async () => [])
     const req = fakeReq(async () => allLocales)
-    const hook = indexNowAfterChange('posts', { config: () => config, submit })
+    const hook = indexNowAfterChange('posts', { config: async () => config, submit })
     const doc = { id: 3, _status: 'published' }
     expect(await run(hook, doc, req)).toBe(doc)
     expect(submit).toHaveBeenCalledWith(
@@ -308,17 +383,17 @@ describe('IndexNow hook (finding 3)', () => {
     const submit = vi.fn(async () => [])
     const published = { id: 3, _status: 'published' }
     await run(
-      indexNowAfterChange('posts', { config: () => config, submit }),
+      indexNowAfterChange('posts', { config: async () => config, submit }),
       { id: 3, _status: 'draft' },
       fakeReq(async () => allLocales),
     )
     await run(
-      indexNowAfterChange('pages', { config: () => config, submit }),
+      indexNowAfterChange('pages', { config: async () => config, submit }),
       published,
       fakeReq(async () => ({ ...allLocales, seo: { noIndex: true } })),
     )
     await run(
-      indexNowAfterChange('pages', { config: () => null, submit }),
+      indexNowAfterChange('pages', { config: async () => null, submit }),
       published,
       fakeReq(async () => allLocales),
     )
@@ -331,10 +406,22 @@ describe('IndexNow hook (finding 3)', () => {
       throw new Error('Not Found')
     })
     const doc = { id: 3, _status: 'published' }
-    const hook = indexNowAfterChange('pages', { config: () => config, submit })
+    const hook = indexNowAfterChange('pages', { config: async () => config, submit })
     await expect(run(hook, doc, req)).resolves.toBe(doc)
     expect(req.payload.logger.warn).toHaveBeenCalled()
     expect(req.locale).toBe('cs')
+  })
+
+  it('never fails the save when site settings cannot be read', async () => {
+    const submit = vi.fn(async () => [])
+    const req = fakeReq(async () => allLocales)
+    const doc = { id: 3, _status: 'published' }
+    const config = async () => {
+      throw new Error('connection refused')
+    }
+    await expect(run(indexNowAfterChange('posts', { config, submit }), doc, req)).resolves.toBe(doc)
+    expect(submit).not.toHaveBeenCalled()
+    expect(req.payload.logger.warn).toHaveBeenCalled()
   })
 })
 

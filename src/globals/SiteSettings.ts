@@ -2,6 +2,7 @@ import type { GlobalConfig } from 'payload'
 
 import { anyone, authenticated } from '@/access'
 import { revalidateGlobal } from '@/hooks/revalidate'
+import { KEY_PATTERN, KEY_PATH } from '@/lib/indexNow'
 
 export const SiteSettings: GlobalConfig = {
   slug: 'site-settings',
@@ -147,7 +148,7 @@ export const SiteSettings: GlobalConfig = {
     {
       name: 'verification',
       type: 'group',
-      admin: { description: 'Search engine site verification. Empty value = no tag.' },
+      admin: { description: 'Search engine site verification. Empty value = no tag or file.' },
       fields: [
         {
           name: 'bing',
@@ -158,6 +159,16 @@ export const SiteSettings: GlobalConfig = {
           name: 'seznam',
           type: 'text',
           admin: { description: 'content of <meta name="seznam-wmt">' },
+        },
+        {
+          name: 'indexNowKey',
+          type: 'text',
+          label: { en: 'IndexNow key', cs: 'Klíč IndexNow' },
+          validate: (value: string | null | undefined) =>
+            !value || KEY_PATTERN.test(value) || 'Format: 8 to 128 letters, digits or dashes',
+          admin: {
+            description: `Served at ${KEY_PATH}. Publishing a page, post or case study then notifies Bing and Seznam (production only). Empty = the INDEXNOW_KEY variable, or no file. Create one with "openssl rand -hex 16".`,
+          },
         },
       ],
     },
