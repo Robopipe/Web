@@ -1,3 +1,4 @@
+import { EXPERIMENTAL_TableFeature, lexicalEditor } from '@payloadcms/richtext-lexical'
 import type { CollectionConfig } from 'payload'
 
 import { authenticated, publishedOrLoggedIn } from '@/access'
@@ -5,6 +6,7 @@ import { seoField } from '@/fields/seo'
 import { slugField } from '@/fields/slug'
 import { revalidateAfterChange, revalidateAfterDelete } from '@/hooks/revalidate'
 import { generatePreviewPath } from '@/lib/preview'
+import { readingTimeMinutes } from '@/lib/readingTime'
 
 export const Posts: CollectionConfig = {
   slug: 'posts',
@@ -74,8 +76,12 @@ export const Posts: CollectionConfig = {
       type: 'richText',
       required: true,
       localized: true,
+      editor: lexicalEditor({
+        features: ({ defaultFeatures }) => [...defaultFeatures, EXPERIMENTAL_TableFeature()],
+      }),
       admin: {
-        description: 'Blockquotes render as lime callout boxes on the site.',
+        description:
+          'Blockquotes render as lime callout boxes on the site. Tables: use the + menu or type "/table". Turn on the header row in the cell menu.',
       },
     },
     {
@@ -97,13 +103,8 @@ export const Posts: CollectionConfig = {
       },
       hooks: {
         beforeChange: [
-          ({ siblingData }) => {
-            const words = JSON.stringify(siblingData?.content ?? '')
-              .replace(/[^\p{L}\p{N}\s]/gu, ' ')
-              .split(/\s+/)
-              .filter(Boolean).length
-            return Math.max(1, Math.round(words / 220))
-          },
+          // Only the visible text counts, not the Lexical JSON around it.
+          ({ siblingData }) => readingTimeMinutes(siblingData?.content),
         ],
       },
     },
