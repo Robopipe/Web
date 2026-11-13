@@ -96,7 +96,7 @@ describe('tester round 2: export cells (B2)', () => {
         wbraid: 'ClkKCQiA_x-1',
       },
     },
-    'Firemni poptavka (import)',
+    { name: 'Firemni poptavka (import)', value: 5000, currency: 'CZK' },
   )
 
   it('real click IDs leave the export unchanged', () => {

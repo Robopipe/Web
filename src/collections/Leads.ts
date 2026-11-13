@@ -1,7 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
 import { authenticated, nobody } from '@/access'
-import { isGoogleAdsLead, type LeadForAds } from '@/lib/googleAds'
+import { closedAtOnChange, isGoogleAdsLead, type LeadForAds } from '@/lib/googleAds'
 import { isBusinessEmail, isTestLead } from '@/lib/leadEmail'
 
 export const Leads: CollectionConfig = {
@@ -15,6 +15,7 @@ export const Leads: CollectionConfig = {
       'businessEmail',
       'googleAdsExport',
       'status',
+      'closedCustomer',
       'createdAt',
     ],
     group: 'Sales',
@@ -157,6 +158,29 @@ export const Leads: CollectionConfig = {
         { label: 'Closed', value: 'closed' },
       ],
       admin: { position: 'sidebar' },
+    },
+    {
+      name: 'closedCustomer',
+      type: 'checkbox',
+      defaultValue: false,
+      label: 'Customer closed',
+      admin: {
+        position: 'sidebar',
+        description:
+          'Tick when the lead becomes a customer. A lead with a gclid then goes to Google Ads as a second conversion (issue #43).',
+      },
+    },
+    {
+      name: 'closedAt',
+      type: 'date',
+      label: 'Closed at',
+      admin: {
+        position: 'sidebar',
+        date: { pickerAppearance: 'dayAndTime' },
+        description:
+          'Set automatically on the first tick. Conversion time of the closed-customer conversion.',
+      },
+      hooks: { beforeChange: [({ value, siblingData }) => closedAtOnChange(value, siblingData)] },
     },
   ],
   timestamps: true,

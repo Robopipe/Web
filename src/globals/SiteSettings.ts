@@ -204,6 +204,42 @@ export const SiteSettings: GlobalConfig = {
               'Exact name of the Google Ads conversion action for company leads. Goes to the "Conversion Name" column of /api/google-ads/company-leads.csv.',
           },
         },
+        {
+          name: 'leadConversionValue',
+          type: 'number',
+          required: true,
+          min: 0,
+          defaultValue: 5000,
+          admin: { description: 'Value of one company lead in the export (issue #43).' },
+        },
+        {
+          name: 'closedCustomerConversionName',
+          type: 'text',
+          required: true,
+          defaultValue: 'Uzavreny zakaznik',
+          admin: {
+            description:
+              'Exact name of the Google Ads conversion action for a closed customer. The export adds this row for a ticked lead with a gclid.',
+          },
+        },
+        {
+          name: 'closedCustomerConversionValue',
+          type: 'number',
+          required: true,
+          min: 0,
+          defaultValue: 25000,
+          admin: {
+            description:
+              'Value of a closed customer, added to the lead value. Lead + closed customer = total value.',
+          },
+        },
+        {
+          name: 'conversionCurrency',
+          type: 'text',
+          required: true,
+          defaultValue: 'CZK',
+          admin: { description: 'ISO 4217 code of both export values, e.g. CZK.' },
+        },
       ],
     },
     {

@@ -1,5 +1,5 @@
 import { checkExportLogin } from '@/lib/exportCredentials'
-import { EXPORT_WINDOW_DAYS, isGoogleAdsLead, toCsv, toExportRow } from '@/lib/googleAds'
+import { conversionActions, EXPORT_WINDOW_DAYS, toCsv, toExportRows } from '@/lib/googleAds'
 import { getPayloadClient } from '@/lib/queries'
 
 /**
@@ -35,10 +35,10 @@ export const GET = async (request: Request) => {
   if (!authorized) return unauthorized()
 
   const settings = await payload.findGlobal({ slug: 'site-settings', depth: 0 })
-  const conversionName = settings.measurement?.leadConversionName?.trim()
-  if (!conversionName) {
-    // Google Ads shows the failed run instead of a quiet import under the wrong name.
-    return new Response('Conversion name missing in site-settings.measurement', {
+  const actions = conversionActions(settings.measurement)
+  if (!actions) {
+    // Google Ads shows the failed run instead of a quiet import under the wrong name or value.
+    return new Response('Conversion name, value or currency missing in site-settings.measurement', {
       status: 500,
       headers: { 'Cache-Control': 'no-store' },
     })
@@ -59,7 +59,7 @@ export const GET = async (request: Request) => {
     overrideAccess: true,
   })
 
-  const rows = docs.filter(isGoogleAdsLead).map((lead) => toExportRow(lead, conversionName))
+  const rows = toExportRows(docs, actions)
   // No emails and no hashes in the log.
   payload.logger.info({ msg: 'Google Ads export', rows: rows.length })
 
