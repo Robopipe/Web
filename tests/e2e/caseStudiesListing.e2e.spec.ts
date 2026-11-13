@@ -13,7 +13,8 @@ const PAGE = {
     precision: 'přesnost detekce',
     listed: 'na zalistovanou položku',
     byTask: 'Řešení podle úlohy',
-    cta: 'Třeba je na řadě právě váš provoz.',
+    cta: 'Vyzkoušejte kameru na své lince',
+    quote: /^„[^„“”]+“$/,
     detail: '/cs/case-studies/mg-servis-kontrola-baleni',
   },
   en: {
@@ -22,7 +23,8 @@ const PAGE = {
     precision: 'detection precision',
     listed: 'per item listed',
     byTask: 'Solutions by task',
-    cta: 'Your operation could be next.',
+    cta: 'Put a camera over your line',
+    quote: /^“[^„“”]+”$/,
     detail: '/en/case-studies/mg-servis-packaging-checks',
   },
 } as const
@@ -43,6 +45,8 @@ for (const [locale, p] of Object.entries(PAGE)) {
 
       // 7.5: the quote sits above the solutions by task.
       const quote = page.locator('main figure blockquote')
+      // #45: quotation marks follow the locale.
+      await expect(quote).toHaveText(p.quote)
       const byTask = page.getByRole('heading', { name: p.byTask })
       const [quoteBox, byTaskBox] = [await quote.boundingBox(), await byTask.boundingBox()]
       expect(quoteBox!.y).toBeLessThan(byTaskBox!.y)

@@ -1,5 +1,6 @@
 {
   "common": {
+    "quote": "„{text}“",
     "readMore": "Číst dál",
     "loadMore": "Načíst další",
     "minRead": "{minutes} min čtení",
@@ -12,7 +13,7 @@
   "nav": {
     "home": "Úvod",
     "blog": "Blog",
-    "caseStudies": "Případy užití",
+    "caseStudies": "Případové studie",
     "menu": "Menu",
     "closeMenu": "Zavřít menu"
   },
@@ -26,8 +27,8 @@
   "blog": {
     "title": "Blog",
     "metaTitle": "Blog o strojovém vidění a kontrole kvality | Robopipe",
-    "headline": "Poznámky ke strojovému vidění přímo z výroby.",
-    "description": "Návody, příběhy a technické poznámky o provozu strojového vidění ve výrobě.",
+    "headline": "Zkušenosti se strojovým viděním z praxe",
+    "description": "Technické postupy, srovnání systémů a poznatky z nasazení kamer u výrobních linek.",
     "allPosts": "Všechny články",
     "relatedPosts": "Mohlo by vás zajímat",
     "noPosts": "Zatím zde nejsou žádné články.",
@@ -37,29 +38,30 @@
     "ctaHref": "/cs/kontakt"
   },
   "newsletter": {
-    "heading": "Nové články rovnou do schránky.",
+    "heading": "Nové články e-mailem",
     "text": "Jeden e-mail měsíčně. Příběhy z výroby, žádný marketingový balast.",
     "emailLabel": "E-mail",
+    "emailPlaceholder": "jan.novak@firma.cz",
     "subscribe": "Odebírat",
     "submitting": "Přihlašuji…",
     "success": "Hotovo! Další článek vám přistane ve schránce.",
     "error": "Přihlášení se nezdařilo. Zkuste to prosím znovu."
   },
   "caseStudies": {
-    "title": "Případy užití",
-    "headline": "Případy užití AI kontroly kvality: reálné provozy, měřitelné výsledky.",
-    "description": "Jak výrobci a sklady po celé Evropě nasazují kamerovou a AI kontrolu kvality na vlastních linkách.",
-    "ctaHeading": "Třeba je na řadě právě váš provoz.",
-    "ctaText": "Domluvte si půlhodinové demo a projdeme si, jak by nasazení vypadalo na lince, jako je ta vaše.",
+    "title": "Případové studie",
+    "headline": "Nasazení AI kontroly kvality ve výrobě a e-shopech",
+    "description": "Konkrétní projekty, kde kamery s AI kontrolují výrobu, plnění a katalog produktů.",
+    "ctaHeading": "Vyzkoušejte kameru na své lince",
+    "ctaText": "Domluvte si půlhodinové demo a probereme, jak kameru nasadit přímo na vaši linku.",
     "ctaButton": "Domluvit demo",
     "ctaHref": "/cs/kontakt",
-    "metaTitle": "Případy užití AI a kamerové kontroly kvality | Robopipe",
+    "metaTitle": "Případové studie AI a kamerové kontroly kvality | Robopipe",
     "problem": "Problém",
     "solution": "Řešení",
     "result": "Výsledek",
     "technique": "Použitá technika",
     "faq": "Časté otázky",
-    "backToList": "Všechny případy užití",
+    "backToList": "Všechny případové studie",
     "byTask": "Řešení podle úlohy"
   },
   "contact": {

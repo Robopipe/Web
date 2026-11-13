@@ -1,5 +1,6 @@
 {
   "common": {
+    "quote": "“{text}”",
     "readMore": "Read more",
     "loadMore": "Load more",
     "minRead": "{minutes} min read",
@@ -12,7 +13,7 @@
   "nav": {
     "home": "Home",
     "blog": "Blog",
-    "caseStudies": "Use cases",
+    "caseStudies": "Case studies",
     "menu": "Menu",
     "closeMenu": "Close menu"
   },
@@ -26,7 +27,7 @@
   "blog": {
     "title": "Blog",
     "metaTitle": "Blog on machine vision and quality control | Robopipe",
-    "headline": "Machine vision notes from the factory floor.",
+    "headline": "Machine vision notes from the factory floor",
     "description": "Guides, stories and engineering notes on running machine vision in production.",
     "allPosts": "All posts",
     "relatedPosts": "Keep reading",
@@ -37,19 +38,20 @@
     "ctaHref": "/en/contact"
   },
   "newsletter": {
-    "heading": "Get new posts in your inbox.",
+    "heading": "Get new posts by email",
     "text": "One email a month. Production stories, no marketing fluff.",
     "emailLabel": "Email",
+    "emailPlaceholder": "you@company.com",
     "subscribe": "Subscribe",
     "submitting": "Subscribing…",
     "success": "You're in. See you in your inbox.",
     "error": "Subscription failed. Please try again."
   },
   "caseStudies": {
-    "title": "Use cases",
-    "headline": "Machine vision use cases: real operations, measured results.",
-    "description": "How producers and operators across Europe run AI quality inspection on their own lines.",
-    "ctaHeading": "Your operation could be next.",
+    "title": "Case studies",
+    "headline": "Camera inspection case studies from production",
+    "description": "How production and e-commerce teams run AI quality inspection on their lines.",
+    "ctaHeading": "Put a camera over your line",
     "ctaText": "Book a 30-minute demo and we'll walk through a deployment on a line like yours.",
     "ctaButton": "Book a demo",
     "ctaHref": "/en/contact",
@@ -59,7 +61,7 @@
     "result": "The result",
     "technique": "Techniques used",
     "faq": "Frequently asked questions",
-    "backToList": "All use cases",
+    "backToList": "All case studies",
     "byTask": "Solutions by task"
   },
   "contact": {

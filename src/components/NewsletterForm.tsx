@@ -43,7 +43,7 @@ export const NewsletterForm: React.FC = () => {
         type="email"
         required
         maxLength={320}
-        placeholder="you@company.com"
+        placeholder={t('emailPlaceholder')}
         className="h-12 flex-1 rounded-sm border border-border-invert-12 bg-white/5 px-3.5 text-sm text-text-invert placeholder:text-text-invert-60 focus:border-brand focus:outline-none"
       />
       <button

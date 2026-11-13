@@ -13,6 +13,9 @@ import { CMSLink } from './CMSLink'
 import { CookieSettingsButton } from './consent/CookieSettingsButton'
 import { LanguageSwitcher } from './LanguageSwitcher'
 
+/** legalName may already end with a full stop ("s.r.o."). */
+const withFinalStop = (name: string) => (name.endsWith('.') ? name : `${name}.`)
+
 const SOCIAL_ICONS: Record<string, IconName> = {
   github: 'IcoSocialsSocialGithub',
   linkedin: 'IcoSocialsSocialLinkedin',
@@ -145,7 +148,8 @@ export const Footer: React.FC<Props> = ({ footer, settings, solutions }) => {
       <div className="border-t border-border-invert-12">
         <div className="container-site flex flex-col items-start justify-between gap-2 py-5 text-xs text-text-invert-60 sm:flex-row sm:items-center">
           <p>
-            © {year} {settings.company?.legalName || settings.siteName || 'Robopipe'}. {t('rights')}
+            © {year} {withFinalStop(settings.company?.legalName || settings.siteName || 'Robopipe')}{' '}
+            {t('rights')}
           </p>
           <div className="flex items-center gap-5">
             {legalLinks.length > 0 && (

@@ -56,7 +56,7 @@ describe('buildLlmsTxt', () => {
 
   it('has use case, blog and contact sections', () => {
     expect(text).toContain(
-      `## Případy užití / Use cases\n- [Případy užití](${SERVER_URL}/cs/case-studies)\n- [Use cases](${SERVER_URL}/en/case-studies)\n- [Studie A](${SERVER_URL}/cs/case-studies/a)`,
+      `## Případové studie / Case studies\n- [Případové studie](${SERVER_URL}/cs/case-studies)\n- [Case studies](${SERVER_URL}/en/case-studies)\n- [Studie A](${SERVER_URL}/cs/case-studies/a)`,
     )
     expect(text).toContain(
       `## Blog\n- [Blog](${SERVER_URL}/cs/blog)\n- [Blog](${SERVER_URL}/en/blog)\n- [Post](${SERVER_URL}/en/blog/p)`,
