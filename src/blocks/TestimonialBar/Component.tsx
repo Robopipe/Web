@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl'
 import React from 'react'
 
 import { CMSLink } from '@/components/CMSLink'
@@ -10,6 +11,7 @@ export const TestimonialBarComponent: React.FC<TestimonialBarBlock> = ({
   testimonials,
   link,
 }) => {
+  const tCommon = useTranslations('common')
   const items = (testimonials ?? []).filter(
     (t): t is Exclude<typeof t, number> => typeof t !== 'number',
   )
@@ -26,7 +28,7 @@ export const TestimonialBarComponent: React.FC<TestimonialBarBlock> = ({
           <figure className="mx-auto flex max-w-3xl flex-col items-center gap-6 text-center">
             {eyebrow && <Chip>{eyebrow}</Chip>}
             <blockquote className="font-heading text-[24px] leading-9 font-medium text-text-heading lg:text-[28px] lg:leading-10">
-              “{items[0].quote}”
+              {tCommon('quote', { text: items[0].quote })}
             </blockquote>
             <figcaption className="text-sm text-text-60">
               {[items[0].personRole, items[0].company].filter(Boolean).join(' · ') ||
@@ -50,7 +52,7 @@ export const TestimonialBarComponent: React.FC<TestimonialBarBlock> = ({
                 className="rounded-lg border border-border-12 bg-white p-8"
               >
                 <blockquote className="text-lg leading-relaxed text-text-90">
-                  “{testimonial.quote}”
+                  {tCommon('quote', { text: testimonial.quote })}
                 </blockquote>
                 <figcaption className="mt-6">
                   <p className="font-semibold text-text-heading">{testimonial.personName}</p>

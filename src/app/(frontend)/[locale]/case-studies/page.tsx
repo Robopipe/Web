@@ -90,7 +90,7 @@ export default async function CaseStudiesPage({ params }: Props) {
         <section className="container-site pb-16">
           <figure className="mx-auto flex max-w-3xl flex-col items-center gap-6 text-center">
             <blockquote className="font-heading text-[24px] leading-9 font-medium text-text-heading lg:text-[28px] lg:leading-10">
-              “{quote.quote}”
+              {tCommon('quote', { text: quote.quote })}
             </blockquote>
             <figcaption className="text-sm text-text-60">
               {[quote.personRole, quote.company].filter(Boolean).join(' · ') || quote.personName}

@@ -28,8 +28,8 @@ const SECTIONS: {
   { collection: 'pages', heading: 'Stránky / Pages' },
   {
     collection: 'case-studies',
-    heading: 'Případy užití / Use cases',
-    index: { path: '/case-studies', titles: { cs: 'Případy užití', en: 'Use cases' } },
+    heading: 'Případové studie / Case studies',
+    index: { path: '/case-studies', titles: { cs: 'Případové studie', en: 'Case studies' } },
   },
   {
     collection: 'posts',

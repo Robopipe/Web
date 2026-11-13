@@ -1,12 +1,12 @@
 {
   "renameLabels": {
     "cs": {
-      "from": "Případové studie",
-      "to": "Případy užití"
+      "from": "Případy užití",
+      "to": "Případové studie"
     },
     "en": {
-      "from": "Case studies",
-      "to": "Use cases"
+      "from": "Use cases",
+      "to": "Case studies"
     }
   },
   "removeFooterColumn": {

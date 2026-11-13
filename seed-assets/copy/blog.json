@@ -5,12 +5,12 @@
   },
   "hero": {
     "chip": "Blog",
-    "headline": "Machine vision notes from the factory floor.",
+    "headline": "Machine vision notes from the factory floor",
     "subline": "Guides, stories and engineering notes on running machine vision in production."
   },
   "newsletter": {
     "background": "dark",
-    "headline": "Get new posts in your inbox.",
+    "headline": "Get new posts by email",
     "subline": "One email a month. Production stories, no marketing fluff.",
     "emailPlaceholder": "you@company.com",
     "submitLabel": "Subscribe"
