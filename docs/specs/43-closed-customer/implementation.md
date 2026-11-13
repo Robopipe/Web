@@ -39,3 +39,11 @@ Neověřil jsem je v rozhraní Google Ads. Postup je podle kapitoly „Kroky v G
 
 - Rozhraní Google Ads a skutečný import souboru s novými sloupci.
 - E2E: 192 prošlo, 1 skip. 1 test (`seo-stage2` odkazy) selhal na 404 blogového článku, který v místní kopii databáze chybí. Změna se ho netýká.
+
+## Dodatek #46: hodnota uzavřeného zákazníka
+
+- Pole `leads.closedValue` („Closed value“, číslo, minimum 0) je v postranním panelu pod „Closed at“. Admin ho ukáže jen při zaškrtnutém `closedCustomer`.
+- Řádek „Uzavreny zakaznik“ má hodnotu `closedValue`. Prázdné pole dá výchozí `closedCustomerConversionValue` (25 000). Řádek poptávky má dál 5 000.
+- Migrace `20261113_090651_closed_value` přidá sloupec `leads.closed_value` bez výchozí hodnoty.
+- Ověřeno na místní instanci: hodnota 90 000 dá 90 000, prázdné pole dá 25 000, záporné číslo vrátí 400. Snímek: `docs/specs/46-closed-value/screens/lead-closed-value.png`.
+- V Google Ads není třeba nic měnit: akce už má „Use different values for each conversion“.
