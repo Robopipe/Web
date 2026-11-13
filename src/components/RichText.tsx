@@ -6,12 +6,14 @@ import {
 import type { SerializedEditorState } from '@payloadcms/richtext-lexical/lexical'
 import type {
   SerializedTableCellNode,
+  SerializedUploadNode,
   SerializedTableNode,
   SerializedTableRowNode,
 } from '@payloadcms/richtext-lexical'
 import React from 'react'
 
 import { lexicalPlainText } from '@/lib/readingTime'
+import type { Media } from '@/payload-types'
 
 type Props = {
   data: SerializedEditorState | null | undefined
@@ -137,9 +139,39 @@ export const tableConverters: JSXConverters<
   },
 }
 
+/**
+ * An uploaded video plays inline with the browser controls, never on its own.
+ * Images and other files keep the default Payload rendering.
+ */
+export const uploadConverter = (
+  fallback: JSXConverters['upload'],
+): JSXConverters<SerializedUploadNode> => ({
+  upload: (args) => {
+    const media = args.node.value as Media | number
+    if (typeof media !== 'object' || !media?.mimeType?.startsWith('video/') || !media.url) {
+      return typeof fallback === 'function' ? fallback(args) : null
+    }
+    const caption = (args.node.fields?.alt as string | undefined) || media.alt
+    return (
+      <figure className="my-8">
+        <video
+          className="w-full rounded-lg bg-surface-3"
+          controls
+          preload="metadata"
+          playsInline
+          src={media.url}
+          aria-label={caption || undefined}
+        />
+        {caption ? <figcaption>{caption}</figcaption> : null}
+      </figure>
+    )
+  },
+})
+
 const converters: JSXConvertersFunction = ({ defaultConverters }) => ({
   ...defaultConverters,
   ...tableConverters,
+  ...uploadConverter(defaultConverters.upload),
 })
 
 export const RichText: React.FC<Props> = ({ data, className }) => {
