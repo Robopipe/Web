@@ -17,7 +17,7 @@ export type LeadAttribution = NonNullable<Lead['attribution']>
 export type LeadForAds = Pick<Lead, 'email' | 'name' | 'attribution'>
 
 export type ExportLead = Pick<Lead, 'id' | 'email' | 'createdAt' | 'attribution'> &
-  Partial<Pick<Lead, 'closedCustomer' | 'closedAt'>>
+  Partial<Pick<Lead, 'closedCustomer' | 'closedAt' | 'closedValue'>>
 
 /** One Google Ads conversion action: exact name, value per conversion, ISO 4217 currency. */
 export type ConversionAction = { name: string; value: number; currency: string }
@@ -125,6 +125,7 @@ export const toExportRow = (lead: ExportLead, action: ConversionAction): ExportR
 /**
  * Second conversion for the same lead (issue #43). Only a ticked lead with a gclid and a close
  * time. The time is the close time. Its own Order ID, so Google Ads does not drop it as a copy.
+ * The value is the lead's closedValue when set (issue #46), else the default from the settings.
  */
 export const toClosedExportRow = (lead: ExportLead, action: ConversionAction): ExportRow | null => {
   if (lead.closedCustomer !== true || !lead.closedAt || !lead.attribution?.gclid) return null
@@ -132,6 +133,7 @@ export const toClosedExportRow = (lead: ExportLead, action: ConversionAction): E
     ...toExportRow(lead, action),
     'Order ID': `lead-${lead.id}-closed`,
     'Conversion Time': toConversionTime(lead.closedAt),
+    'Conversion Value': String(validValue(lead.closedValue) ? lead.closedValue : action.value),
   }
 }
 

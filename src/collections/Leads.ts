@@ -182,6 +182,18 @@ export const Leads: CollectionConfig = {
       },
       hooks: { beforeChange: [({ value, siblingData }) => closedAtOnChange(value, siblingData)] },
     },
+    {
+      name: 'closedValue',
+      type: 'number',
+      label: 'Closed value',
+      min: 0,
+      admin: {
+        position: 'sidebar',
+        condition: (_, siblingData) => siblingData?.closedCustomer === true,
+        description:
+          'Value of the "Uzavreny zakaznik" conversion in the currency from the site settings. Empty = the default value from the site settings (issue #46).',
+      },
+    },
   ],
   timestamps: true,
 }

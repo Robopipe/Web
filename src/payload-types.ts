@@ -1306,6 +1306,10 @@ export interface Lead {
    * Set automatically on the first tick. Conversion time of the closed-customer conversion.
    */
   closedAt?: string | null;
+  /**
+   * Value of the "Uzavreny zakaznik" conversion in the currency from the site settings. Empty = the default value from the site settings (issue #46).
+   */
+  closedValue?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -2197,6 +2201,7 @@ export interface LeadsSelect<T extends boolean = true> {
   status?: T;
   closedCustomer?: T;
   closedAt?: T;
+  closedValue?: T;
   updatedAt?: T;
   createdAt?: T;
 }
