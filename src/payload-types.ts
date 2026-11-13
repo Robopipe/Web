@@ -1298,6 +1298,14 @@ export interface Lead {
    */
   googleAdsExport?: boolean | null;
   status?: ('new' | 'contacted' | 'qualified' | 'closed') | null;
+  /**
+   * Tick when the lead becomes a customer. A lead with a gclid then goes to Google Ads as a second conversion (issue #43).
+   */
+  closedCustomer?: boolean | null;
+  /**
+   * Set automatically on the first tick. Conversion time of the closed-customer conversion.
+   */
+  closedAt?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -2187,6 +2195,8 @@ export interface LeadsSelect<T extends boolean = true> {
   testLead?: T;
   googleAdsExport?: T;
   status?: T;
+  closedCustomer?: T;
+  closedAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -2597,6 +2607,22 @@ export interface SiteSetting {
      * Exact name of the Google Ads conversion action for company leads. Goes to the "Conversion Name" column of /api/google-ads/company-leads.csv.
      */
     leadConversionName: string;
+    /**
+     * Value of one company lead in the export (issue #43).
+     */
+    leadConversionValue: number;
+    /**
+     * Exact name of the Google Ads conversion action for a closed customer. The export adds this row for a ticked lead with a gclid.
+     */
+    closedCustomerConversionName: string;
+    /**
+     * Value of a closed customer, added to the lead value. Lead + closed customer = total value.
+     */
+    closedCustomerConversionValue: number;
+    /**
+     * ISO 4217 code of both export values, e.g. CZK.
+     */
+    conversionCurrency: string;
   };
   defaultSeo?: {
     /**
@@ -2800,6 +2826,10 @@ export interface SiteSettingsSelect<T extends boolean = true> {
         googleAnalyticsId?: T;
         googleAdsId?: T;
         leadConversionName?: T;
+        leadConversionValue?: T;
+        closedCustomerConversionName?: T;
+        closedCustomerConversionValue?: T;
+        conversionCurrency?: T;
       };
   defaultSeo?:
     | T

@@ -52,6 +52,8 @@ const cookieJar =
   (name: string): string | undefined =>
     values[name]
 
+const LEAD_ACTION = { name: 'Firemni poptavka (import)', value: 5000, currency: 'CZK' }
+
 describe('leadEmail (criterion 4)', () => {
   it('a company domain and its subdomain are company emails', () => {
     expect(isBusinessEmail('novak@firma.cz')).toBe(true)
@@ -231,28 +233,34 @@ describe('export format (criteria 5, 6, 9)', () => {
   }
 
   it('writes the fixed header row and one row per lead', () => {
-    const csv = toCsv([toExportRow(exportLead, 'Firemni poptavka (import)')])
+    const csv = toCsv([toExportRow(exportLead, LEAD_ACTION)])
     expect(csv).toBe(
-      'Order ID,Conversion Name,Conversion Time,Google Click ID,GBRAID,WBRAID,Email,Ad User Data\n' +
-        `lead-412,Firemni poptavka (import),2026-11-12T09:14:03Z,Cj0KCQiA5rGuBhCnARIsAN11vgQ_example,,,${NOVAK_HASH},Granted\n`,
+      'Order ID,Conversion Name,Conversion Time,Google Click ID,GBRAID,WBRAID,Email,Ad User Data,Conversion Value,Conversion Currency\n' +
+        `lead-412,Firemni poptavka (import),2026-11-12T09:14:03Z,Cj0KCQiA5rGuBhCnARIsAN11vgQ_example,,,${NOVAK_HASH},Granted,5000,CZK\n`,
     )
     expect(toCsv([])).toBe(`${EXPORT_COLUMNS.join(',')}\n`)
   })
 
   it('takes the conversion name from the argument and quotes special characters', () => {
-    const row = toExportRow({ ...exportLead, attribution: {} }, 'Lead, "company"')
+    const row = toExportRow(
+      { ...exportLead, attribution: {} },
+      { ...LEAD_ACTION, name: 'Lead, "company"' },
+    )
     expect(row['Conversion Name']).toBe('Lead, "company"')
     expect(row['Google Click ID']).toBe('')
     expect(toCsv([row]).split('\n')[1]).toContain(',"Lead, ""company""",')
   })
 
   it('Conversion Time is UTC with Z and without milliseconds', () => {
-    const row = toExportRow({ ...exportLead, createdAt: '2026-03-29T01:30:00.999+02:00' }, 'x')
+    const row = toExportRow(
+      { ...exportLead, createdAt: '2026-03-29T01:30:00.999+02:00' },
+      LEAD_ACTION,
+    )
     expect(row['Conversion Time']).toBe('2026-03-28T23:30:00Z')
   })
 
   it('no column contains a readable email', () => {
-    const row = toExportRow(exportLead, 'x')
+    const row = toExportRow(exportLead, LEAD_ACTION)
     for (const value of Object.values(row)) expect(value).not.toContain('@')
   })
 })
@@ -379,7 +387,9 @@ describe('export route with the Local API (criteria 5 to 9, 13)', () => {
     try {
       const response = await GET(new Request(url, { headers: auth }))
       expect(response.status).toBe(500)
-      expect(await response.text()).toBe('Conversion name missing in site-settings.measurement')
+      expect(await response.text()).toBe(
+        'Conversion name, value or currency missing in site-settings.measurement',
+      )
     } finally {
       await db.drizzle.execute(
         sql`UPDATE site_settings SET measurement_lead_conversion_name = ${conversionName}`,
@@ -441,7 +451,7 @@ describe('tester findings (test-report.md B1 to B3)', () => {
           createdAt: NOW.toISOString(),
           attribution: { consentMarketing: true, gclid: fromUrl?.id ?? null },
         },
-        'Firemni poptavka (import)',
+        LEAD_ACTION,
       )
       for (const cell of toCsv([row]).split('\n')[1].split(',')) {
         expect(cell).not.toMatch(/^[=+@\t\r]/)
@@ -488,10 +498,10 @@ describe('round 2 (B1, B2, B5)', () => {
         createdAt: NOW.toISOString(),
         attribution: { consentMarketing: true, gclid: 'Cj0KCQiA-abc_DEF123' },
       },
-      'Firemni poptavka (import)',
+      LEAD_ACTION,
     )
     expect(toCsv([row]).split('\n')[1]).toBe(
-      `lead-7,Firemni poptavka (import),2026-11-12T09:14:03Z,Cj0KCQiA-abc_DEF123,,,${NOVAK_HASH},Granted`,
+      `lead-7,Firemni poptavka (import),2026-11-12T09:14:03Z,Cj0KCQiA-abc_DEF123,,,${NOVAK_HASH},Granted,5000,CZK`,
     )
     const formula = toCsv([{ ...row, GBRAID: '-1+1', WBRAID: '=1,2' }]).split('\n')[1]
     expect(formula).toContain(`,'-1+1,"'=1,2",`)
