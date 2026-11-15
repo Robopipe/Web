@@ -2,7 +2,7 @@ import { getPayload, type Payload } from 'payload'
 import { beforeAll, describe, expect, it } from 'vitest'
 
 import config from '@/payload.config'
-import { videoObjectLd, videosFromLayout } from '@/lib/jsonLd'
+import { isoUploadDate, videoObjectLd, videosFromLayout } from '@/lib/jsonLd'
 import { SERVER_URL } from '@/lib/paths'
 import { isoDuration, youTubeEmbedUrl, youTubeId, youTubeWatchUrl } from '@/lib/youtube'
 import type { Media, Page, Video } from '@/payload-types'
@@ -112,21 +112,74 @@ describe('isoDuration', () => {
   })
 })
 
+describe('isoUploadDate', () => {
+  it.each([
+    ['2026-11-11T00:00:00.000Z', '2026-11-11T00:00:00.000Z'],
+    ['2026-11-11T12:00:00.000Z', '2026-11-11T12:00:00.000Z'],
+    ['2026-11-11', '2026-11-11T00:00:00.000Z'],
+    ['  2026-11-11  ', '2026-11-11T00:00:00.000Z'],
+    ['2026-11-11T14:30:00+01:00', '2026-11-11T14:30:00+01:00'],
+    ['2026-11-11T14:30:00-05:00', '2026-11-11T14:30:00-05:00'],
+    ['2024-02-29', '2024-02-29T00:00:00.000Z'],
+  ])('formats %s as %s', (input, expected) => {
+    expect(isoUploadDate(input)).toBe(expected)
+  })
+
+  it('adds UTC timezone when an ISO datetime has no offset', () => {
+    const result = isoUploadDate('2026-11-11T14:30:00')
+    expect(result).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/)
+    expect(Date.parse(result!)).toBe(Date.parse('2026-11-11T14:30:00'))
+  })
+
+  it.each([
+    null,
+    undefined,
+    '',
+    '   ',
+    'not-a-date',
+    '2026-02-29',
+    '2026-02-30T00:00:00.000Z',
+    '2026-13-01',
+    '2026-11-11T25:00:00Z',
+    '1',
+  ])('returns undefined for %s', (input) => {
+    expect(isoUploadDate(input)).toBeUndefined()
+  })
+})
+
 describe('videoObjectLd', () => {
-  it('builds a VideoObject with absolute thumbnail, date, duration and YouTube URLs', () => {
+  it('builds a VideoObject with absolute thumbnail, ISO uploadDate, duration and YouTube URLs', () => {
     expect(videoObjectLd(video())).toEqual({
       '@context': 'https://schema.org',
       '@type': 'VideoObject',
       name: 'Kamerová kontrola kvality',
       description: 'Kamera vyfotí každý kus.',
       thumbnailUrl: `${SERVER_URL}/api/media/file/thumb.jpg`,
-      uploadDate: '2026-11-11',
+      uploadDate: '2026-11-11T12:00:00.000Z',
       duration: 'PT50S',
       embedUrl: `https://www.youtube.com/embed/${ID}`,
       url: `https://www.youtube.com/watch?v=${ID}`,
       inLanguage: 'cs-CZ',
       publisher: { '@id': `${SERVER_URL}/#organization` },
     })
+  })
+
+  it('normalises a date-only uploadDate and keeps explicit timezone offsets', () => {
+    expect(videoObjectLd(video({ uploadDate: '2026-11-11' }))?.uploadDate).toBe(
+      '2026-11-11T00:00:00.000Z',
+    )
+    expect(videoObjectLd(video({ uploadDate: '2026-11-11T14:30:00+01:00' }))?.uploadDate).toBe(
+      '2026-11-11T14:30:00+01:00',
+    )
+  })
+
+  it('omits uploadDate when the value is invalid or missing', () => {
+    const withInvalid = videoObjectLd(video({ uploadDate: 'invalid-date' }))
+    const withNull = videoObjectLd(video({ uploadDate: null as unknown as string }))
+    expect(withInvalid).not.toBeNull()
+    expect(withInvalid).not.toHaveProperty('uploadDate')
+    expect(withNull).not.toBeNull()
+    expect(withNull).not.toHaveProperty('uploadDate')
   })
 
   it('keeps an absolute bucket URL of the thumbnail', () => {
@@ -231,7 +284,7 @@ describe('applyServiceVideo with Payload', () => {
     await applyServiceVideo(payload)
   }, 120_000)
 
-  it('creates one video with Czech and English texts', async () => {
+  it('creates one video with Czech and English texts and an ISO uploadDate with timezone', async () => {
     const found = await payload.find({
       collection: 'videos',
       where: { url: { equals: copy.url } },
@@ -239,9 +292,21 @@ describe('applyServiceVideo with Payload', () => {
       depth: 0,
     })
     expect(found.totalDocs).toBe(1)
-    const doc = found.docs[0] as unknown as Record<string, Record<string, string>>
+    const doc = found.docs[0] as unknown as Record<string, unknown>
     expect(doc.title).toEqual({ cs: copy.cs.title, en: copy.en.title })
     expect(doc.playLabel).toEqual({ cs: copy.cs.playLabel, en: copy.en.playLabel })
+    expect(doc.uploadDate).toBe('2026-11-11T00:00:00.000Z')
+
+    const populated = await payload.find({
+      collection: 'pages',
+      where: { slug: { equals: copy.pages[0] } },
+      locale: 'cs',
+      draft: false,
+      depth: 2,
+      limit: 1,
+    })
+    const [ld] = videosFromLayout(populated.docs[0]?.layout).map(videoObjectLd)
+    expect(ld?.uploadDate).toBe('2026-11-11T00:00:00.000Z')
   })
 
   it('shows the video right before the FAQs on the five service pages, in both locales', async () => {

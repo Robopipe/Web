@@ -340,6 +340,32 @@ export const faqsFromLayout = (layout: Page['layout'] | null | undefined): FaqIt
   return [...seen.values()]
 }
 
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/
+const ISO_DATETIME =
+  /^(\d{4}-\d{2}-\d{2})T(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(Z|[+-](?:[01]\d|2[0-3]):[0-5]\d)?$/
+
+const isValidIsoDate = (datePart: string): boolean => {
+  const day = new Date(`${datePart}T00:00:00.000Z`)
+  return !Number.isNaN(day.getTime()) && day.toISOString().slice(0, 10) === datePart
+}
+
+/**
+ * Formats a video upload date as an ISO 8601 datetime with a timezone.
+ * Returns undefined when the value is empty or invalid.
+ */
+export const isoUploadDate = (value: string | null | undefined): string | undefined => {
+  const trimmed = value?.trim()
+  if (!trimmed) return undefined
+  if (ISO_DATE.test(trimmed)) {
+    return isValidIsoDate(trimmed) ? `${trimmed}T00:00:00.000Z` : undefined
+  }
+  const match = trimmed.match(ISO_DATETIME)
+  if (!match || !isValidIsoDate(match[1])) return undefined
+  const parsed = new Date(trimmed)
+  if (Number.isNaN(parsed.getTime())) return undefined
+  return match[2] ? trimmed : parsed.toISOString()
+}
+
 /**
  * VideoObject for a YouTube video shown with the `videoEmbed` block (issue #22).
  * The thumbnail is the preview image from this site. `embedUrl` is the standard
@@ -355,7 +381,7 @@ export const videoObjectLd = (video: Video): JsonLdObject | null => {
     name: video.title,
     description: video.description,
     thumbnailUrl: thumbnail.startsWith('/') ? absoluteUrl(thumbnail) : thumbnail,
-    uploadDate: video.uploadDate?.slice(0, 10),
+    uploadDate: isoUploadDate(video.uploadDate),
     duration: isoDuration(video.duration),
     embedUrl: `https://www.youtube.com/embed/${id}`,
     url: youTubeWatchUrl(id),
