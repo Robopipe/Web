@@ -97,7 +97,7 @@ for (const locale of ['cs', 'en'] as const) {
         expect(video).toMatchObject({
           name: texts.title,
           duration: 'PT50S',
-          uploadDate: '2026-11-11',
+          uploadDate: '2026-11-11T00:00:00.000Z',
           embedUrl: `https://www.youtube.com/embed/${VIDEO_ID}`,
           url: copy.url,
         })
