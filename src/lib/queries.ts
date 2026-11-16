@@ -2,7 +2,7 @@ import config from '@payload-config'
 import { getPayload } from 'payload'
 import { cache } from 'react'
 
-import { routing, type Locale } from '@/i18n/routing'
+import { locales, routing, type Locale } from '@/i18n/routing'
 import type { Media, Page } from '@/payload-types'
 
 import { ownPricingTable } from './jsonLd'
@@ -201,6 +201,45 @@ export const getLocalizedSlugs = async (
     if (typeof value === 'string' && value.length) out[loc as Locale] = value
   }
   return out
+}
+
+/**
+ * The slug in `locale` of the published document whose slug in another locale is
+ * `slug`, or null. A link such as /en/cenik or /cs/blog/cut-reject-rates names the
+ * right document with the slug of the wrong language (issue #53).
+ */
+export const getTranslatedSlug = async (
+  collection: 'pages' | 'posts' | 'case-studies',
+  slug: string,
+  locale: Locale,
+): Promise<string | null> => {
+  const payload = await getPayloadClient()
+  for (const other of locales) {
+    if (other === locale) continue
+    const result = await payload.find({
+      collection,
+      where: { slug: { equals: slug } },
+      locale: other,
+      fallbackLocale: false,
+      limit: 1,
+      depth: 0,
+      select: { slug: true },
+      ...PUBLIC_ONLY,
+    })
+    const doc = result.docs[0]
+    if (!doc) continue
+    const own = await payload.findByID({
+      collection,
+      id: doc.id,
+      locale,
+      fallbackLocale: false,
+      depth: 0,
+      select: { slug: true },
+      ...PUBLIC_ONLY,
+    })
+    if (own.slug && own.slug !== slug) return own.slug
+  }
+  return null
 }
 
 /**

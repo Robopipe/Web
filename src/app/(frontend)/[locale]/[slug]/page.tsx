@@ -23,7 +23,7 @@ import {
 import { buildMeta } from '@/lib/meta'
 import { localizedPaths, pathFor } from '@/lib/paths'
 import { getGlobals, getLocalizedSlugs, getPageBySlug, getPayloadClient } from '@/lib/queries'
-import { redirectOrNotFound } from '@/lib/redirects'
+import { redirectOrNotFound, redirectTranslatedSlug } from '@/lib/redirects'
 
 export const revalidate = 600
 
@@ -80,9 +80,13 @@ export default async function CMSPage({ params }: Props) {
   const { isEnabled: draft } = await draftMode()
   const page = await getPageBySlug(slug, locale, draft)
 
-  // Also match unprefixed entries: old-site URLs reach here with whichever
-  // locale prefix the middleware guessed (e.g. /old-page → /cs/old-page).
-  if (!page) return redirectOrNotFound([`/${locale}/${slug}`, `/${slug}`])
+  if (!page) {
+    // A slug of the other locale (/en/cenik) goes to this locale's slug (/en/pricing).
+    await redirectTranslatedSlug('pages', slug, locale)
+    // Also match unprefixed entries: old-site URLs reach here with whichever
+    // locale prefix the middleware guessed (e.g. /old-page → /cs/old-page).
+    return redirectOrNotFound([`/${locale}/${slug}`, `/${slug}`])
+  }
 
   const [t, { settings }] = await Promise.all([getTranslations('common'), getGlobals(locale)])
   const path = pathFor('pages', slug, locale)
