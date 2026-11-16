@@ -23,6 +23,7 @@ import {
   getPosts,
   getRelatedPosts,
 } from '@/lib/queries'
+import { redirectTranslatedSlug } from '@/lib/redirects'
 
 export const revalidate = 600
 
@@ -67,7 +68,11 @@ export default async function PostPage({ params }: Props) {
 
   const { isEnabled: draft } = await draftMode()
   const post = await getPostBySlug(slug, locale, draft)
-  if (!post) notFound()
+  if (!post) {
+    // A slug of the other locale (/en/blog/snizte-zmetkovitost) goes to this locale's slug.
+    await redirectTranslatedSlug('posts', slug, locale)
+    notFound()
+  }
 
   const t = await getTranslations('common')
   const tBlog = await getTranslations('blog')

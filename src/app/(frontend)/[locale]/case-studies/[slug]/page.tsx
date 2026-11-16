@@ -17,7 +17,7 @@ import { breadcrumbLd, caseStudyArticleLd, faqPageLd } from '@/lib/jsonLd'
 import { buildMeta } from '@/lib/meta'
 import { localizedPaths, pathFor } from '@/lib/paths'
 import { getCaseStudies, getCaseStudyBySlug, getGlobals, getLocalizedSlugs } from '@/lib/queries'
-import { redirectOrNotFound } from '@/lib/redirects'
+import { redirectOrNotFound, redirectTranslatedSlug } from '@/lib/redirects'
 import type { CaseStudy } from '@/payload-types'
 
 export const revalidate = 600
@@ -68,7 +68,10 @@ export default async function CaseStudyPage({ params }: Props) {
 
   const { isEnabled: draft } = await draftMode()
   const caseStudy = await getCaseStudyBySlug(slug, locale, draft)
-  if (!caseStudy) return redirectOrNotFound([`/${locale}/case-studies/${slug}`])
+  if (!caseStudy) {
+    await redirectTranslatedSlug('case-studies', slug, locale)
+    return redirectOrNotFound([`/${locale}/case-studies/${slug}`])
+  }
 
   const t = await getTranslations('caseStudies')
   const tCommon = await getTranslations('common')
