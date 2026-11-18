@@ -8,6 +8,7 @@ import {
   organizationLd,
   postalAddressLd,
   parsePrice,
+  productLd,
   serializeJsonLd,
   type FaqItem,
   type Pricing,
@@ -169,6 +170,17 @@ describe('Product offers from the pricing table', () => {
       },
     ])
     expect(offersFromPricing(null)).toEqual([])
+  })
+})
+
+describe('productLd brand (issue #55)', () => {
+  it('names the brand as a Brand object, not an @id reference', () => {
+    const ld = productLd({ name: 'Robopipe', page: { id: 1 } as Page, path: '/cs' })
+    const brand = ld.brand as Record<string, unknown>
+    expect(brand['@type']).toBe('Brand')
+    expect(brand.name).toBe('Robopipe')
+    expect(brand).not.toHaveProperty('@id')
+    expect(ld.manufacturer).toEqual({ '@id': `${SERVER_URL}/#organization` })
   })
 })
 

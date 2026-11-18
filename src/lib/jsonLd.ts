@@ -228,7 +228,8 @@ export const productLd = ({
     description: page.seo?.description,
     image: pageImage(page, fallbackImage),
     url: absoluteUrl(path),
-    brand: organizationRef,
+    // Google Merchant listings want a named Brand, not an @id reference (issue #55).
+    brand: { '@type': 'Brand', name },
     manufacturer: organizationRef,
     offers: offersFromPricing(pricing),
   })
