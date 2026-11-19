@@ -6,6 +6,7 @@ import { LeadForm } from '@/components/LeadForm'
 import { Media } from '@/components/Media'
 import { buttonClasses } from '@/components/ui'
 import type { Locale } from '@/i18n/routing'
+import { COMPANY_FACTS } from '@/lib/companyFacts'
 import { getGlobals } from '@/lib/queries'
 import type { ContactFormBlock } from '@/payload-types'
 
@@ -99,19 +100,33 @@ export const ContactFormComponent: React.FC<ContactFormBlock> = async ({
                     <Icon name="IcoHome" size={20} />
                   </span>
                   <div>
-                    <p className="text-sm font-semibold text-text-heading">{t('hqLabel')}</p>
+                    <p className="text-sm font-semibold text-text-heading">{t('officeLabel')}</p>
                     <p className="text-sm whitespace-pre-line text-text-60">{contact.address}</p>
                   </div>
                 </div>
               )}
-              {(company?.companyId || company?.registration) && (
-                <div className="space-y-1 text-xs leading-relaxed text-text-60">
-                  {company.companyId && (
-                    <p>
-                      {t('companyIdLabel')} {company.companyId}
+              {company?.companyId && (
+                <div className="flex items-start gap-4">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm bg-brand-tint text-brand-fg">
+                    <Icon name="IcoNote" size={20} />
+                  </span>
+                  <div>
+                    <p className="text-sm font-semibold text-text-heading">{t('billingLabel')}</p>
+                    <p className="text-sm whitespace-pre-line text-text-60">
+                      {[
+                        company.legalName,
+                        COMPANY_FACTS.billingAddress,
+                        `${t('companyIdLabel')} ${company.companyId}`,
+                      ]
+                        .filter(Boolean)
+                        .join('\n')}
                     </p>
-                  )}
-                  {company.registration && <p>{company.registration}</p>}
+                    {company.registration && (
+                      <p className="mt-1 text-xs leading-relaxed text-text-60">
+                        {company.registration}
+                      </p>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
