@@ -25,11 +25,23 @@ export const ContactFormComponent: React.FC<ContactFormBlock> = async ({
   return (
     <section className="container-site py-12 lg:py-16" id="contact">
       <div className={sidebar ? 'grid gap-8 lg:grid-cols-[1.2fr_1fr]' : 'mx-auto max-w-2xl'}>
-        <div className="rounded-lg border border-border-12 bg-white p-6 sm:p-8">
-          {heading && <h2 className="mb-6 text-2xl leading-8 tracking-[-0.01em]">{heading}</h2>}
-          <Suspense>
-            <LeadForm microcopy={microcopy} />
-          </Suspense>
+        <div className="flex flex-col gap-8">
+          <div className="rounded-lg border border-border-12 bg-white p-6 sm:p-8">
+            {heading && <h2 className="mb-6 text-2xl leading-8 tracking-[-0.01em]">{heading}</h2>}
+            <Suspense>
+              <LeadForm microcopy={microcopy} />
+            </Suspense>
+          </div>
+          {sidebar && contact?.mapImage && typeof contact.mapImage !== 'number' && (
+            <div className="relative h-[260px] overflow-hidden rounded-lg border border-border-12 lg:h-auto lg:min-h-[260px] lg:flex-1">
+              <Media
+                media={contact.mapImage}
+                fill
+                sizes="(min-width: 1024px) 55vw, 100vw"
+                className="object-cover"
+              />
+            </div>
+          )}
         </div>
 
         {sidebar && (
@@ -105,38 +117,29 @@ export const ContactFormComponent: React.FC<ContactFormBlock> = async ({
                   </div>
                 </div>
               )}
-              {company?.companyId && (
-                <div className="flex items-start gap-4">
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm bg-brand-tint text-brand-fg">
-                    <Icon name="IcoNote" size={20} />
-                  </span>
-                  <div>
-                    <p className="text-sm font-semibold text-text-heading">{t('billingLabel')}</p>
-                    <p className="text-sm whitespace-pre-line text-text-60">
-                      {[
-                        company.legalName,
-                        COMPANY_FACTS.billingAddress,
-                        `${t('companyIdLabel')} ${company.companyId}`,
-                      ]
-                        .filter(Boolean)
-                        .join('\n')}
-                    </p>
-                    {company.registration && (
-                      <p className="mt-1 text-xs leading-relaxed text-text-60">
-                        {company.registration}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              )}
             </div>
-            {contact?.mapImage && typeof contact.mapImage !== 'number' && (
-              <div className="h-[260px] overflow-hidden rounded-lg border border-border-12">
-                <Media
-                  media={contact.mapImage}
-                  size="card"
-                  className="h-full w-full object-cover"
-                />
+            {company?.companyId && (
+              <div className="flex items-start gap-4 rounded-lg border border-border-12 bg-white p-6 sm:p-8">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm bg-brand-tint text-brand-fg">
+                  <Icon name="IcoNote" size={20} />
+                </span>
+                <div>
+                  <p className="text-sm font-semibold text-text-heading">{t('billingLabel')}</p>
+                  <p className="text-sm whitespace-pre-line text-text-60">
+                    {[
+                      company.legalName,
+                      COMPANY_FACTS.billingAddress,
+                      `${t('companyIdLabel')} ${company.companyId}`,
+                    ]
+                      .filter(Boolean)
+                      .join('\n')}
+                  </p>
+                  {company.registration && (
+                    <p className="mt-1 text-xs leading-relaxed text-text-60">
+                      {company.registration}
+                    </p>
+                  )}
+                </div>
               </div>
             )}
           </div>
