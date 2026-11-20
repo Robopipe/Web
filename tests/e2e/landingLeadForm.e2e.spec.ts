@@ -237,6 +237,11 @@ test('a lead from a case study keeps the case study path as its source page', as
   const lead = await findLead(email)
   expect(lead?.sourcePage).toBe(path)
   expect(lead?.attribution).toMatchObject({ utmSource: 'test-65-cs', utmMedium: 'cpc' })
+
+  // Issue #67: "send another message" brings back an empty form.
+  await page.getByRole('button', { name: 'Odeslat další zprávu' }).click()
+  await expect(page.getByRole('status')).toHaveCount(0)
+  await expect(page.locator('#lead-name')).toHaveValue('')
 })
 
 test('the industry select has its own arrow at the text inset, vertically centred', async ({

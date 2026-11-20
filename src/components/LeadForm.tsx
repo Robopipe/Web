@@ -31,8 +31,8 @@ export const LeadForm: React.FC<Props> = ({ microcopy }) => {
   const [state, formAction, pending] = useActionState(submitLead, initialState)
   // Each submission returns a new state object. Re-renders and Strict Mode see the same one.
   const trackedState = useRef<LeadFormState | null>(null)
-  // Remount the form after a successful submission to reset it.
-  const [formKey, setFormKey] = React.useState(0)
+  // The success state that "send another" closed. The next submission returns a new state object.
+  const [dismissedState, setDismissedState] = React.useState<LeadFormState | null>(null)
   const [fieldErrors, setFieldErrors] = React.useState<{
     name?: boolean
     email?: boolean
@@ -76,7 +76,7 @@ export const LeadForm: React.FC<Props> = ({ microcopy }) => {
   const clearFieldError = (field: 'name' | 'email' | 'message') => () =>
     setFieldErrors((prev) => (prev[field] ? { ...prev, [field]: false } : prev))
 
-  if (state.status === 'success') {
+  if (state.status === 'success' && dismissedState !== state) {
     return (
       <div role="status" className="flex flex-col items-center gap-4 py-10 text-center">
         <span className="flex h-14 w-14 items-center justify-center rounded-full bg-brand-tint text-brand-fg">
@@ -93,7 +93,7 @@ export const LeadForm: React.FC<Props> = ({ microcopy }) => {
         <p className="max-w-sm text-sm text-text-60">{t('successText')}</p>
         <button
           type="button"
-          onClick={() => setFormKey((k) => k + 1)}
+          onClick={() => setDismissedState(state)}
           className="text-sm font-medium text-brand-fg hover:text-brand-fg-hover"
         >
           {t('sendAnother')}
@@ -103,7 +103,7 @@ export const LeadForm: React.FC<Props> = ({ microcopy }) => {
   }
 
   return (
-    <form key={formKey} action={submit} onSubmit={handleSubmit} className="space-y-4" noValidate>
+    <form action={submit} onSubmit={handleSubmit} className="space-y-4" noValidate>
       <input type="hidden" name="locale" value={locale} />
       <input type="hidden" name="sourcePage" value={pathname} />
       {searchParams.get('tier') && (
