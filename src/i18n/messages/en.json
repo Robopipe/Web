@@ -71,7 +71,7 @@
     "companyPlaceholder": "Your company",
     "email": "Work email",
     "emailPlaceholder": "you@company.com",
-    "phone": "Phone",
+    "phone": "Phone (optional)",
     "industry": "Industry (optional)",
     "message": "What should we inspect?",
     "messagePlaceholder": "Product, throughput, what goes wrong today…",
@@ -91,7 +91,6 @@
     "validation": {
       "nameRequired": "Please enter your name",
       "emailInvalid": "Please enter a valid email",
-      "phoneRequired": "Please enter your phone number",
       "messageRequired": "Please write us a message"
     },
     "companyIdLabel": "Company ID"

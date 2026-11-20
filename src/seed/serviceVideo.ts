@@ -5,7 +5,8 @@ import type { Locale } from '@/i18n/routing'
 import { youTubeId } from '@/lib/youtube'
 import type { Page, Video } from '@/payload-types'
 
-import { parseRemoteUrl, type SeoGeoClient } from './remoteClient'
+import type { SeoGeoClient } from './remoteClient'
+import { parseSeedArgs, type SeedArgs } from './seedArgs'
 import { isUploadOf } from './seoGeo'
 
 /**
@@ -58,41 +59,14 @@ export const withVideoBeforeFaq = (layout: Block[], block: Block): Block[] | nul
 export const SERVICE_VIDEO_USAGE =
   'Usage: pnpm seed:service-video [--dry-run] [--production] [--remote=<URL>]'
 
-export type ServiceVideoArgs = { dryRun: boolean; production: boolean; remote?: string }
+export type ServiceVideoArgs = SeedArgs
 
 /**
  * Reads the command line of seed:service-video. Any unknown argument stops the
  * run before it logs in or writes, so a typo such as --dryrun never writes.
  */
-export const parseServiceVideoArgs = (args: string[]): ServiceVideoArgs => {
-  const out: ServiceVideoArgs = { dryRun: false, production: false }
-  const seen = new Set<string>()
-  const fail = (message: string): never => {
-    throw new Error(`${message}\n${SERVICE_VIDEO_USAGE}`)
-  }
-  for (const arg of args) {
-    const [name, ...rest] = arg.split('=')
-    const value = rest.length ? rest.join('=') : undefined
-    if (seen.has(name)) fail(`${name} is given twice.`)
-    seen.add(name)
-    switch (name) {
-      case '--dry-run':
-      case '--production':
-        if (value !== undefined) fail(`${name} takes no value, not "${arg}".`)
-        if (name === '--dry-run') out.dryRun = true
-        else out.production = true
-        break
-      case '--remote':
-        if (!value) fail(`--remote needs a URL: --remote=https://robopipe.io, not "${arg}".`)
-        parseRemoteUrl(value!)
-        out.remote = value
-        break
-      default:
-        fail(`Unknown argument "${arg}".`)
-    }
-  }
-  return out
-}
+export const parseServiceVideoArgs = (args: string[]): ServiceVideoArgs =>
+  parseSeedArgs(args, SERVICE_VIDEO_USAGE)
 
 export const applyServiceVideo = async (
   client: SeoGeoClient,

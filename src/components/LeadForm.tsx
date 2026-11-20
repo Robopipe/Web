@@ -36,7 +36,6 @@ export const LeadForm: React.FC<Props> = ({ microcopy }) => {
   const [fieldErrors, setFieldErrors] = React.useState<{
     name?: boolean
     email?: boolean
-    phone?: boolean
     message?: boolean
   }>({})
 
@@ -57,11 +56,10 @@ export const LeadForm: React.FC<Props> = ({ microcopy }) => {
     const errors = {
       name: !String(data.get('name') ?? '').trim(),
       email: !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(data.get('email') ?? '').trim()),
-      phone: !String(data.get('phone') ?? '').trim(),
       message: !String(data.get('message') ?? '').trim(),
     }
     setFieldErrors(errors)
-    if (errors.name || errors.email || errors.phone || errors.message) event.preventDefault()
+    if (errors.name || errors.email || errors.message) event.preventDefault()
   }
 
   // The utm values and the referrer of the form page at submission (issue #61). Form data only,
@@ -75,7 +73,7 @@ export const LeadForm: React.FC<Props> = ({ microcopy }) => {
     formAction(data)
   }
 
-  const clearFieldError = (field: 'name' | 'email' | 'phone' | 'message') => () =>
+  const clearFieldError = (field: 'name' | 'email' | 'message') => () =>
     setFieldErrors((prev) => (prev[field] ? { ...prev, [field]: false } : prev))
 
   if (state.status === 'success') {
@@ -178,24 +176,16 @@ export const LeadForm: React.FC<Props> = ({ microcopy }) => {
         </div>
         <div>
           <label htmlFor="lead-phone" className={labelClasses}>
-            {t('phone')} *
+            {t('phone')}
           </label>
           <input
             id="lead-phone"
             name="phone"
             type="tel"
-            required
             maxLength={50}
             placeholder="+420"
             className={inputClasses}
-            aria-invalid={fieldErrors.phone || undefined}
-            onInput={clearFieldError('phone')}
           />
-          {fieldErrors.phone && (
-            <p role="alert" className="mt-1.5 text-sm text-danger">
-              {t('validation.phoneRequired')}
-            </p>
-          )}
         </div>
       </div>
 
@@ -203,14 +193,38 @@ export const LeadForm: React.FC<Props> = ({ microcopy }) => {
         <label htmlFor="lead-industry" className={labelClasses}>
           {t('industry')}
         </label>
-        <select id="lead-industry" name="industry" defaultValue="" className={inputClasses}>
-          <option value="" />
-          {INDUSTRIES.map((value) => (
-            <option key={value} value={value}>
-              {tIndustries(value)}
-            </option>
-          ))}
-        </select>
+        {/* The native arrow sits on the edge and differs per browser. The own arrow keeps
+            the right inset of the field text (3.5) and stays vertically centred. */}
+        <div className="relative">
+          <select
+            id="lead-industry"
+            name="industry"
+            defaultValue=""
+            className={`${inputClasses} appearance-none pr-10`}
+          >
+            <option value="" />
+            {INDUSTRIES.map((value) => (
+              <option key={value} value={value}>
+                {tIndustries(value)}
+              </option>
+            ))}
+          </select>
+          <svg
+            data-testid="lead-industry-chevron"
+            viewBox="0 0 16 16"
+            fill="none"
+            aria-hidden="true"
+            className="pointer-events-none absolute top-1/2 right-3.5 h-4 w-4 -translate-y-1/2 text-text-55"
+          >
+            <path
+              d="M4 6l4 4 4-4"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </div>
       </div>
 
       <div>
