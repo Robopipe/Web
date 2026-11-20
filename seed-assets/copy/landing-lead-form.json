@@ -1,5 +1,22 @@
 {
-  "pages": ["home", "kamerova-kontrola-kvality", "detekce-vad-na-vyrobni-lince"],
+  "pages": [
+    "home",
+    "kamerova-kontrola-kvality",
+    "detekce-vad-na-vyrobni-lince",
+    "obory",
+    "pocitani-kusu-kamerou",
+    "kontrola-etiket",
+    "kontrola-kompletnosti-baleni",
+    "automaticka-anotace",
+    "ceska-ai-kamera-pro-kontrolu-kvality",
+    "kamerova-kontrola-kvality-na-pronajem",
+    "kamerova-kontrola-do-mokreho-provozu",
+    "kamerova-kontrola-svaru-obalu",
+    "pocitani-kapsli-kamerou",
+    "kontrola-data-spotreby-a-sarze-kamerou",
+    "open-source-strojove-videni",
+    "ai-kamera-bezpecnost-skladu"
+  ],
   "cs": {
     "heading": "Pošlete nám poptávku",
     "microcopy": "První krok ke kontrole kvality, která běží 24/7."

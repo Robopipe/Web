@@ -11,7 +11,7 @@ import {
   withFormBeforeClosingCta,
 } from '@/seed/landingLeadForm'
 
-/** Issue #65: the lead form on the ad landing pages, phone optional. */
+/** Issue #65: the lead form on the landing pages, phone optional. */
 
 // submitLead reads the request headers and cookies. Each test sets its own.
 const request = vi.hoisted(() => ({ headers: {} as Record<string, string> }))
@@ -88,17 +88,62 @@ describe('applyLandingLeadForm with Payload', () => {
     })
   }
 
+  /** Pages this suite created because the local database does not have them. */
+  const fixtureIds: Page['id'][] = []
+
+  /**
+   * Some landing pages exist only in production, where editors made them in the admin.
+   * A missing page gets a minimal published stand-in with a hero and a closing CTA.
+   */
+  const addMissingPages = async () => {
+    for (const slug of copy.pages) {
+      if (await published(slug)) continue
+      const layout = (locale: 'cs' | 'en'): Block[] => [
+        { id: `fixture-65-hero-${slug}`, blockType: 'hero', heading: `${slug} ${locale}` } as Block,
+        { id: `fixture-65-cta-${slug}`, blockType: 'ctaBanner', heading: `CTA ${locale}` } as Block,
+      ]
+      const page = await payload.create({
+        collection: 'pages',
+        locale: 'cs',
+        data: { title: slug, slug, layout: layout('cs'), _status: 'published' },
+      })
+      await payload.update({
+        collection: 'pages',
+        id: page.id,
+        locale: 'en',
+        data: {
+          title: `${slug} en`,
+          slug: `${slug}-en`,
+          layout: layout('en'),
+          _status: 'published',
+        },
+      })
+      fixtureIds.push(page.id)
+    }
+  }
+
   beforeAll(async () => {
     payload = await getPayload({ config: await config })
+    await addMissingPages()
     await applyLandingLeadForm(payload)
-  }, 120_000)
+  }, 180_000)
 
-  it('names the three landing pages of the search campaign', () => {
-    expect(copy.pages).toEqual([
+  afterAll(async () => {
+    for (const id of fixtureIds) await payload.delete({ collection: 'pages', id })
+  })
+
+  it('names every landing page that sells a service or a solution', () => {
+    expect(copy.pages).toHaveLength(16)
+    expect(new Set(copy.pages).size).toBe(copy.pages.length)
+    expect(copy.pages.slice(0, 3)).toEqual([
       'home',
       'kamerova-kontrola-kvality',
       'detekce-vad-na-vyrobni-lince',
     ])
+    // These pages have their own form or enquiry path, or sell nothing.
+    for (const slug of ['kontakt', 'o-nas', 'cenik', 'ochrana-osobnich-udaju']) {
+      expect(copy.pages).not.toContain(slug)
+    }
   })
 
   it('shows one form without the sidebar before the closing CTA, in both locales', async () => {

@@ -6,11 +6,12 @@ import {
   type Page,
 } from '@playwright/test'
 
+import copy from '../../seed-assets/copy/landing-lead-form.json' with { type: 'json' }
 import { cleanupTestUser, seedTestUser, testUser } from '../helpers/seedUser'
 
 /**
- * Issue #65: the lead form on the landing pages of the Google Ads search campaign, phone
- * optional. Needs a seeded local database after `pnpm seed:landing-lead-form` and a server at
+ * Issue #65: the lead form on every landing page in seed-assets/copy/landing-lead-form.json,
+ * phone optional. Needs a seeded local database after `pnpm seed:landing-lead-form` and a server at
  * E2E_BASE_URL. The suite sets test measurement IDs, so the cookie banner shows, and puts the
  * old IDs back after the run. Test leads use a koala42.com email (testLead).
  */
@@ -19,10 +20,8 @@ const baseURL = process.env.E2E_BASE_URL || `http://localhost:${process.env.PORT
 const TEST_IDS = { googleAnalyticsId: 'G-TEST000000', googleAdsId: 'AW-000000000' }
 type MeasurementIds = typeof TEST_IDS
 
-const PAGES = {
-  cs: ['/cs', '/cs/kamerova-kontrola-kvality', '/cs/detekce-vad-na-vyrobni-lince'],
-  en: ['/en', '/en/camera-quality-inspection', '/en/defect-detection'],
-}
+/** Pages of the ad campaign. The measurement checks poll them. */
+const AD_PAGES = ['/cs', '/cs/kamerova-kontrola-kvality', '/cs/detekce-vad-na-vyrobni-lince']
 const HEADING = { cs: 'Pošlete nám poptávku', en: 'Send us a message' }
 const PHONE_LABEL = { cs: 'Telefon (nepovinné)', en: 'Phone (optional)' }
 
@@ -44,7 +43,7 @@ const setMeasurement = async (ids: MeasurementIds) => {
   })
   expect(response.status()).toBe(200)
   const present = Boolean(ids.googleAnalyticsId)
-  for (const url of PAGES.cs) {
+  for (const url of AD_PAGES) {
     await expect
       .poll(
         async () => (await (await session.get(url)).text()).includes(TEST_IDS.googleAnalyticsId),
@@ -120,10 +119,31 @@ test.beforeEach(async ({ page }) => {
   )
 })
 
-for (const locale of ['cs', 'en'] as const) {
-  for (const path of PAGES[locale]) {
-    test(`${path} shows one form without the sidebar, phone optional`, async ({ page }) => {
-      await page.goto(path)
+/**
+ * The path of a page in a locale, or undefined when the page is not published there. The copy
+ * file names pages by their Czech slug, so the lookup always uses the Czech locale. Most English
+ * slugs are different.
+ */
+const pagePath = async (slug: string, locale: 'cs' | 'en'): Promise<string | undefined> => {
+  const response = await session.get(
+    `/api/pages?depth=0&limit=1&locale=cs&where[slug][equals]=${slug}`,
+  )
+  const czech = ((await response.json()) as { docs: { id: number }[] }).docs[0]
+  if (!czech) return undefined
+  if (slug === 'home') return `/${locale}`
+  const doc = await (await session.get(`/api/pages/${czech.id}?depth=0&locale=${locale}`)).json()
+  return doc._status === 'published' && doc.slug ? `/${locale}/${doc.slug}` : undefined
+}
+
+for (const slug of copy.pages) {
+  for (const locale of ['cs', 'en'] as const) {
+    test(`${slug} (${locale}) shows one form without the sidebar, phone optional`, async ({
+      page,
+    }) => {
+      const path = await pagePath(slug, locale)
+      // Some landing pages exist only in production, where editors made them in the admin.
+      test.skip(!path, `page ${slug} is not published in the local database`)
+      await page.goto(path!)
       const section = page.locator('section#contact')
       await expect(section).toHaveCount(1)
       await expect(section.getByRole('heading', { name: HEADING[locale] })).toBeVisible()
@@ -136,6 +156,20 @@ for (const locale of ['cs', 'en'] as const) {
     })
   }
 }
+
+test('the industry select has its own arrow at the text inset, vertically centred', async ({
+  page,
+}) => {
+  await page.goto('/cs/kontrola-etiket')
+  const select = page.locator('#lead-industry')
+  const chevron = page.getByTestId('lead-industry-chevron')
+  await expect(select).toHaveCSS('appearance', 'none')
+  const field = (await select.boundingBox())!
+  const arrow = (await chevron.boundingBox())!
+  // 3.5 spacing units are 14 px, the left text inset of every field.
+  expect(Math.round(field.x + field.width - (arrow.x + arrow.width))).toBe(14)
+  expect(Math.abs(field.y + field.height / 2 - (arrow.y + arrow.height / 2))).toBeLessThan(1)
+})
 
 test('a lead without a phone from an ad click keeps utm, consent, click and the conversion', async ({
   page,

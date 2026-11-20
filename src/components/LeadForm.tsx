@@ -193,14 +193,38 @@ export const LeadForm: React.FC<Props> = ({ microcopy }) => {
         <label htmlFor="lead-industry" className={labelClasses}>
           {t('industry')}
         </label>
-        <select id="lead-industry" name="industry" defaultValue="" className={inputClasses}>
-          <option value="" />
-          {INDUSTRIES.map((value) => (
-            <option key={value} value={value}>
-              {tIndustries(value)}
-            </option>
-          ))}
-        </select>
+        {/* The native arrow sits on the edge and differs per browser. The own arrow keeps
+            the right inset of the field text (3.5) and stays vertically centred. */}
+        <div className="relative">
+          <select
+            id="lead-industry"
+            name="industry"
+            defaultValue=""
+            className={`${inputClasses} appearance-none pr-10`}
+          >
+            <option value="" />
+            {INDUSTRIES.map((value) => (
+              <option key={value} value={value}>
+                {tIndustries(value)}
+              </option>
+            ))}
+          </select>
+          <svg
+            data-testid="lead-industry-chevron"
+            viewBox="0 0 16 16"
+            fill="none"
+            aria-hidden="true"
+            className="pointer-events-none absolute top-1/2 right-3.5 h-4 w-4 -translate-y-1/2 text-text-55"
+          >
+            <path
+              d="M4 6l4 4 4-4"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </div>
       </div>
 
       <div>

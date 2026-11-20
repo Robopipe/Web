@@ -9,7 +9,7 @@ import { applyLandingLeadForm, parseLandingLeadFormArgs } from './landingLeadFor
 import { createRemoteClient, type SeoGeoClient } from './remoteClient'
 
 /**
- * CLI for the lead form on the ad landing pages (issue #65).
+ * CLI for the lead form on the landing pages (issue #65).
  *
  *   pnpm seed:landing-lead-form                     change the local database
  *   pnpm seed:landing-lead-form --dry-run           only list the planned changes

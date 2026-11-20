@@ -8,8 +8,10 @@ import type { SeoGeoClient } from './remoteClient'
 import { parseSeedArgs, type SeedArgs } from './seedArgs'
 
 /**
- * Content for issue #65: the lead form on the landing pages of the Google Ads
- * search campaign. A `contactForm` block without the sidebar before the closing
+ * Content for issue #65: the lead form on every landing page that sells a service
+ * or a solution. The list is in `seed-assets/copy/landing-lead-form.json`. Pages
+ * with their own form or enquiry path (contact, about us, pricing) are not in it.
+ * A `contactForm` block without the sidebar before the closing
  * CTA of each page, with the heading and microcopy of the contact page. Run
  * twice, it changes nothing the second time. Pages are written from their
  * published version and published.
