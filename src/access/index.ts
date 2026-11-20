@@ -1,8 +1,11 @@
-import type { Access } from 'payload'
+import type { Access, FieldAccess } from 'payload'
 
 export const anyone: Access = () => true
 
 export const authenticated: Access = ({ req: { user } }) => Boolean(user)
+
+/** Field-level twin of `authenticated`: the public REST/GraphQL response leaves the field out. */
+export const authenticatedField: FieldAccess = ({ req: { user } }) => Boolean(user)
 
 export const admins: Access = ({ req: { user } }) => user?.role === 'admin'
 

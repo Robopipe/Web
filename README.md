@@ -16,7 +16,7 @@ pnpm dev
 ```
 
 - Site: http://localhost:3000 (`/` redirects to the stored language choice, else by browser language, see below)
-- Admin: http://localhost:3000/admin — seeded login `admin@robopipe.io` / `admin`
+- Admin: http://localhost:3000/admin — seeded login `admin@robopipe.io` / `admin` (local database only, or the password from `SEED_ADMIN_PASSWORD`)
 
 Optional env: `RESEND_API_KEY` (lead notification emails; logged to console when unset), `GCS_BUCKET` + `GCS_CREDENTIALS` (media storage; local `./media` when unset).
 
@@ -32,7 +32,7 @@ Optional env: `RESEND_API_KEY` (lead notification emails; logged to console when
 - **Use cases** — case studies are shown as "Případy užití" / "Use cases" at the same URLs: listing `/{locale}/case-studies`, detail `/{locale}/case-studies/{slug}` with problem, solution, result, technique and FAQ sections (fields on the collection, empty sections are skipped).
 - **Memberships** — `site-settings.memberships` (e.g. Česká inovační platforma) feeds the footer, logo bands with `source: memberships` and `Organization.memberOf`.
 - **Speed on phones** (issue #30, `docs/specs/30-mobile-speed/`) — only Space Grotesk and Barlow are preloaded. Inter (figures only) loads weight 600 when a page needs it. `Media` always gives next/image a `sizes`: the container width by default, exact values from `src/lib/imageSizes.ts` in the blocks. The hero poster is an image under the video. The hero block has an optional `mobileVideo` for screens up to 767 px, and on Save-Data no video plays. The Google tag script loads when the browser is idle after `load`.
-- **Draft preview** — Payload live-preview + `/next/preview?secret=…` (draft mode), exit via `/next/exit-preview`.
+- **Draft preview** — Payload live-preview + `/next/preview?secret=…` (draft mode).
 
 ## Schema changes
 
@@ -148,4 +148,4 @@ The app ships as a Docker image (`Dockerfile`, Next.js `standalone` output) depl
 - **Single instance** — the lead/newsletter rate limits are in-memory and ISR caches on the container filesystem; run one replica.
 - **Analytics** — Google Analytics 4 and the Google Ads tag with a cookie banner (consent mode v2). The IDs are in the admin, *Site Settings → Measurement*, not in env vars. Empty fields = no Google tag, no banner. Fill them only after the privacy page describes the cookies (`pnpm seed:cookie-policy`, see below).
 - **Geo** — the locale-suggestion feature reads Vercel's `x-vercel-ip-country` header in `src/proxy.ts`, so it stays dormant on Coolify unless that header is provided (e.g. mapped from Cloudflare's `cf-ipcountry`).
-- **Seeding prod** (one-time): run `pnpm seed` locally with the production `DATABASE_URL` (expose the Postgres resource publicly for the duration) and the GCS variables exported, then redeploy so prerendered pages pick up the content.
+- **Seeding prod** (one-time): run `pnpm seed` locally with the production `DATABASE_URL` (expose the Postgres resource publicly for the duration), a strong `SEED_ADMIN_PASSWORD` and the GCS variables exported, then redeploy so prerendered pages pick up the content.
