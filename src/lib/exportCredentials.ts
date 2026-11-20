@@ -2,7 +2,15 @@
  * Login of the Google Ads export (issue #28). Server only: the file imports
  * `node:crypto`. The database keeps a salted scrypt hash, never the password.
  */
-import { createHash, randomBytes, scryptSync, timingSafeEqual } from 'node:crypto'
+import {
+  createHash,
+  randomBytes,
+  scrypt,
+  scryptSync,
+  timingSafeEqual,
+  type ScryptOptions,
+} from 'node:crypto'
+import { promisify } from 'node:util'
 
 export const EXPORT_PASSWORD_MIN_LENGTH = 24
 
@@ -10,6 +18,13 @@ export const EXPORT_PASSWORD_MIN_LENGTH = 24
 const SCRYPT = { N: 32768, r: 8, p: 1, maxmem: 64 * 1024 * 1024 }
 const KEY_LENGTH = 32
 const PREFIX = 'scrypt'
+// The async scrypt runs on the libuv thread pool, so a wrong password does not block other requests.
+const scryptAsync = promisify(scrypt) as (
+  password: string,
+  salt: Buffer,
+  keylen: number,
+  options: ScryptOptions,
+) => Promise<Buffer>
 
 /** Format: `scrypt$N$r$p$<salt base64>$<key base64>`. */
 export const hashExportPassword = (password: string): string => {
@@ -26,10 +41,10 @@ export const hashExportPassword = (password: string): string => {
 }
 
 /** False for a malformed hash, so a damaged value closes the export. */
-export const verifyExportPassword = (
+export const verifyExportPassword = async (
   password: string,
   stored: string | null | undefined,
-): boolean => {
+): Promise<boolean> => {
   const parts = (stored ?? '').split('$')
   if (parts.length !== 6 || parts[0] !== PREFIX) return false
   const [N, r, p] = parts.slice(1, 4).map(Number)
@@ -38,7 +53,7 @@ export const verifyExportPassword = (
   const expected = Buffer.from(parts[5], 'base64')
   if (salt.length === 0 || expected.length !== KEY_LENGTH) return false
   try {
-    const actual = scryptSync(password, salt, KEY_LENGTH, { N, r, p, maxmem: SCRYPT.maxmem })
+    const actual = await scryptAsync(password, salt, KEY_LENGTH, { N, r, p, maxmem: SCRYPT.maxmem })
     return timingSafeEqual(actual, expected)
   } catch {
     return false
@@ -52,11 +67,11 @@ const sha256 = (value: string): Buffer => createHash('sha256').update(value, 'ut
  * the answer is always false. The password check always runs, so the time does
  * not show whether the username matched.
  */
-export const checkExportLogin = (
+export const checkExportLogin = async (
   header: string | null | undefined,
   username: string | null | undefined,
   passwordHash: string | null | undefined,
-): boolean => {
+): Promise<boolean> => {
   if (!username || !passwordHash || !header) return false
   const match = /^Basic\s+(\S+)$/i.exec(header.trim())
   if (!match) return false
@@ -64,6 +79,6 @@ export const checkExportLogin = (
   const separator = decoded.indexOf(':')
   if (separator < 0) return false
   const userOk = timingSafeEqual(sha256(decoded.slice(0, separator)), sha256(username))
-  const passwordOk = verifyExportPassword(decoded.slice(separator + 1), passwordHash)
+  const passwordOk = await verifyExportPassword(decoded.slice(separator + 1), passwordHash)
   return userOk && passwordOk
 }

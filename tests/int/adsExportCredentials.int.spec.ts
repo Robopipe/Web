@@ -22,32 +22,45 @@ const basic = (value: string) => `Basic ${Buffer.from(value).toString('base64')}
 const csvUrl = 'http://localhost/api/google-ads/company-leads.csv'
 
 describe('exportCredentials helpers', () => {
-  it('hashes with a salt and verifies only the right password', () => {
+  it('hashes with a salt and verifies only the right password', async () => {
     const first = hashExportPassword(PASSWORD)
     const second = hashExportPassword(PASSWORD)
     expect(first).toMatch(/^scrypt\$32768\$8\$1\$[^$]+\$[^$]+$/)
     expect(first).not.toBe(second)
     expect(first).not.toContain(PASSWORD)
-    expect(verifyExportPassword(PASSWORD, first)).toBe(true)
-    expect(verifyExportPassword(`${PASSWORD}x`, first)).toBe(false)
-    expect(verifyExportPassword(PASSWORD, 'scrypt$1$1$1$$')).toBe(false)
-    expect(verifyExportPassword(PASSWORD, null)).toBe(false)
+    expect(await verifyExportPassword(PASSWORD, first)).toBe(true)
+    expect(await verifyExportPassword(`${PASSWORD}x`, first)).toBe(false)
+    expect(await verifyExportPassword(PASSWORD, 'scrypt$1$1$1$$')).toBe(false)
+    expect(await verifyExportPassword(PASSWORD, null)).toBe(false)
   })
 
-  it('checks the Basic header against the stored login', () => {
+  it('checks the Basic header against the stored login', async () => {
     const hash = hashExportPassword('s3cret:x-0123456789abcdefghij')
     expect(
-      checkExportLogin(basic('google-ads:s3cret:x-0123456789abcdefghij'), 'google-ads', hash),
+      await checkExportLogin(basic('google-ads:s3cret:x-0123456789abcdefghij'), 'google-ads', hash),
     ).toBe(true)
-    expect(checkExportLogin(basic('google-ads:wrong'), 'google-ads', hash)).toBe(false)
-    expect(checkExportLogin(basic('other:s3cret:x-0123456789abcdefghij'), 'google-ads', hash)).toBe(
-      false,
-    )
-    expect(checkExportLogin(basic('no-separator'), 'google-ads', hash)).toBe(false)
-    expect(checkExportLogin('Bearer abc', 'google-ads', hash)).toBe(false)
-    expect(checkExportLogin(null, 'google-ads', hash)).toBe(false)
-    expect(checkExportLogin(basic(':'), '', '')).toBe(false)
-    expect(checkExportLogin(basic('google-ads:'), 'google-ads', null)).toBe(false)
+    expect(await checkExportLogin(basic('google-ads:wrong'), 'google-ads', hash)).toBe(false)
+    expect(
+      await checkExportLogin(basic('other:s3cret:x-0123456789abcdefghij'), 'google-ads', hash),
+    ).toBe(false)
+    expect(await checkExportLogin(basic('no-separator'), 'google-ads', hash)).toBe(false)
+    expect(await checkExportLogin('Bearer abc', 'google-ads', hash)).toBe(false)
+    expect(await checkExportLogin(null, 'google-ads', hash)).toBe(false)
+    expect(await checkExportLogin(basic(':'), '', '')).toBe(false)
+    expect(await checkExportLogin(basic('google-ads:'), 'google-ads', null)).toBe(false)
+  })
+
+  it('verifies without blocking the event loop', async () => {
+    const hash = hashExportPassword(PASSWORD)
+    let done = false
+    const verified = verifyExportPassword(`${PASSWORD}x`, hash).then((ok) => {
+      done = true
+      return ok
+    })
+    // A timer runs while scrypt works on the thread pool. scryptSync would finish first.
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    expect(done).toBe(false)
+    expect(await verified).toBe(false)
   })
 })
 
@@ -164,7 +177,7 @@ describe('global google-ads-export', () => {
         overrideAccess: true,
       }),
     ).rejects.toThrow()
-    expect(verifyExportPassword(PASSWORD, (await storedRow()).password_hash)).toBe(true)
+    expect(await verifyExportPassword(PASSWORD, (await storedRow()).password_hash)).toBe(true)
   })
 
   it('route: 401 without login, 401 with a wrong password, 200 with the right one', async () => {

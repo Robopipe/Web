@@ -27,7 +27,7 @@ export const GET = async (request: Request) => {
     overrideAccess: true,
     showHiddenFields: true,
   })
-  const authorized = checkExportLogin(
+  const authorized = await checkExportLogin(
     request.headers.get('authorization'),
     login.username,
     login.passwordHash,
