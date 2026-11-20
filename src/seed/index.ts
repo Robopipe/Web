@@ -6,6 +6,7 @@ import path from 'node:path'
 import { getPayload, type Payload } from 'payload'
 
 import type { IconName } from '@/components/icons'
+import { isLocalDatabaseUrl } from '@/lib/dbGuard'
 
 import { COOKIE_POLICY, HOSTING_SENTENCE, LEAD_SOURCE_SENTENCE } from './cookiePolicy'
 import { MEDIA_ALT_CS } from './csCopyFixes'
@@ -94,14 +95,18 @@ const seed = async (): Promise<void> => {
 
   payload.logger.info('Seeding…')
 
-  // --- Admin user (dev credentials; change in real environments) ---
+  // --- Admin user: the default password 'admin' only on a local database ---
   const users = await payload.find({ collection: 'users', limit: 1 })
   if (!users.docs.length) {
+    const password = process.env.SEED_ADMIN_PASSWORD
+    if (!password && !isLocalDatabaseUrl(process.env.DATABASE_URL)) {
+      throw new Error('Set SEED_ADMIN_PASSWORD to seed a remote database.')
+    }
     await payload.create({
       collection: 'users',
       data: {
         email: 'admin@robopipe.io',
-        password: 'admin',
+        password: password || 'admin',
         name: 'Admin',
         role: 'admin',
       },
@@ -2107,7 +2112,7 @@ Under the GDPR you have the right to access, correct, delete and port your data,
     )
   }
 
-  payload.logger.info('Seed complete. Admin login: admin@robopipe.io / admin')
+  payload.logger.info('Seed complete. Admin login: admin@robopipe.io')
   process.exit(0)
 }
 
