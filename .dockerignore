@@ -6,6 +6,8 @@ node_modules
 !.env.example
 media
 seed-assets
+# The case study page imports this file, so `next build` needs it in the image build.
+!seed-assets/copy/landing-lead-form.json
 Dockerfile
 docker-compose.yml
 README.md
