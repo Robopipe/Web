@@ -9,8 +9,17 @@ import {
   isGoogleAdsLead,
   type LeadAttribution,
 } from '@/lib/googleAds'
+import {
+  SOURCE_COOKIE,
+  leadSourceFields,
+  parseLanding,
+  sourceFromForm,
+  type LeadSourceFields,
+} from '@/lib/leadSource'
 import { createLeadWithAttribution } from '@/lib/leadStore'
+import type { Lead } from '@/payload-types'
 import { safeErrorFields } from '@/lib/logSafe'
+import { SERVER_URL } from '@/lib/paths'
 import { getPayloadClient } from '@/lib/queries'
 
 const leadSchema = z.object({
@@ -54,6 +63,30 @@ const isRateLimited = (ip: string): boolean => {
   return false
 }
 
+/** Hosts of this site. A referrer from one of them is not a source (issue #61). */
+const ownHosts = (headerList: Headers): string[] => {
+  const hosts = [headerList.get('x-forwarded-host'), headerList.get('host')]
+  try {
+    hosts.push(new URL(SERVER_URL).hostname)
+  } catch {
+    // A broken SERVER_URL leaves only the request hosts.
+  }
+  return hosts.flatMap((host) => (host ? host.split(',').map((one) => one.trim()) : []))
+}
+
+/** Lines for the notification email. None when the lead has no source. */
+const sourceLines = (source: Lead['attribution']): string[] =>
+  [
+    source?.utmSource && `utm_source: ${source.utmSource}`,
+    source?.utmMedium && `utm_medium: ${source.utmMedium}`,
+    source?.utmCampaign && `utm_campaign: ${source.utmCampaign}`,
+    source?.utmTerm && `utm_term: ${source.utmTerm}`,
+    source?.utmContent && `utm_content: ${source.utmContent}`,
+    source?.referrer && `Referrer: ${source.referrer}`,
+    source?.sourceFrom &&
+      `Source from: ${source.sourceFrom === 'landing' ? `first landing ${source.landedAt ?? ''}`.trim() : 'form page'}`,
+  ].filter((line): line is string => Boolean(line))
+
 export async function submitLead(_prev: LeadFormState, formData: FormData): Promise<LeadFormState> {
   const parsed = leadSchema.safeParse(Object.fromEntries(formData))
   if (!parsed.success) {
@@ -84,6 +117,24 @@ export async function submitLead(_prev: LeadFormState, formData: FormData): Prom
       payload.logger.warn({ ...safeErrorFields(attributionError), msg: 'Lead attribution failed' })
     }
 
+    // Visitor source (issue #61): first landing from rp_source with analytics consent wins,
+    // the form page is the fallback. Measurement never stops the lead.
+    let source: LeadSourceFields = {}
+    try {
+      const hosts = ownHosts(headerList)
+      const store = await cookies()
+      const landing = attribution.consentAnalytics
+        ? parseLanding(store.get(SOURCE_COOKIE)?.value, hosts, new Date())
+        : null
+      source = leadSourceFields(
+        landing,
+        sourceFromForm((name) => formData.get(name), hosts),
+      )
+    } catch (sourceError) {
+      payload.logger.warn({ ...safeErrorFields(sourceError), msg: 'Lead source failed' })
+    }
+    attribution = { ...attribution, ...source }
+
     const stored = await createLeadWithAttribution(payload, lead, attribution)
 
     const settings = await payload.findGlobal({ slug: 'site-settings', depth: 0 })
@@ -102,6 +153,7 @@ export async function submitLead(_prev: LeadFormState, formData: FormData): Prom
             lead.tier && `Pricing tier: ${lead.tier}`,
             `Locale: ${lead.locale}`,
             lead.sourcePage && `Page: ${lead.sourcePage}`,
+            ...sourceLines(stored.attribution),
             '',
             lead.message,
           ]

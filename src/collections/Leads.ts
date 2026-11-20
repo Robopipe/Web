@@ -3,6 +3,7 @@ import type { CollectionConfig } from 'payload'
 import { authenticated, nobody } from '@/access'
 import { closedAtOnChange, isGoogleAdsLead, type LeadForAds } from '@/lib/googleAds'
 import { isBusinessEmail, isTestLead } from '@/lib/leadEmail'
+import { REFERRER_MAX_LENGTH, UTM_MAX_LENGTH } from '@/lib/leadSource'
 
 export const Leads: CollectionConfig = {
   slug: 'leads',
@@ -85,7 +86,7 @@ export const Leads: CollectionConfig = {
       admin: {
         position: 'sidebar',
         description:
-          'Ad click and cookie consent at the time of submission. Set by the form, read-only.',
+          'Ad click, cookie consent and visitor source at the time of submission. Set by the form, read-only.',
       },
       // Local API with overrideAccess (the form action) still writes.
       access: { create: () => false, update: () => false },
@@ -107,6 +108,71 @@ export const Leads: CollectionConfig = {
         { name: 'wbraid', type: 'text', admin: { readOnly: true } },
         {
           name: 'clickedAt',
+          type: 'date',
+          admin: { readOnly: true, date: { pickerAppearance: 'dayAndTime' } },
+        },
+        // Visitor source (issue #61). Cleaned in src/lib/leadSource.ts before the save.
+        {
+          name: 'utmSource',
+          label: 'utm_source',
+          type: 'text',
+          maxLength: UTM_MAX_LENGTH,
+          admin: { readOnly: true },
+        },
+        {
+          name: 'utmMedium',
+          label: 'utm_medium',
+          type: 'text',
+          maxLength: UTM_MAX_LENGTH,
+          admin: { readOnly: true },
+        },
+        {
+          name: 'utmCampaign',
+          label: 'utm_campaign',
+          type: 'text',
+          maxLength: UTM_MAX_LENGTH,
+          admin: { readOnly: true },
+        },
+        {
+          name: 'utmTerm',
+          label: 'utm_term',
+          type: 'text',
+          maxLength: UTM_MAX_LENGTH,
+          admin: { readOnly: true },
+        },
+        {
+          name: 'utmContent',
+          label: 'utm_content',
+          type: 'text',
+          maxLength: UTM_MAX_LENGTH,
+          admin: { readOnly: true },
+        },
+        {
+          name: 'referrer',
+          type: 'text',
+          maxLength: REFERRER_MAX_LENGTH,
+          admin: {
+            readOnly: true,
+            description: 'Page on another site that sent the visitor. Without the query string.',
+          },
+        },
+        {
+          name: 'sourceFrom',
+          label: 'Source from',
+          type: 'select',
+          options: [
+            { label: 'First landing (cookie rp_source)', value: 'landing' },
+            { label: 'Form page', value: 'formPage' },
+          ],
+          admin: {
+            readOnly: true,
+            description:
+              'First landing needs analytics consent and wins. Without it, the address of the form page.',
+          },
+        },
+        {
+          name: 'landedAt',
+          label: 'First landing at',
           type: 'date',
           admin: { readOnly: true, date: { pickerAppearance: 'dayAndTime' } },
         },

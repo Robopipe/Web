@@ -1275,7 +1275,7 @@ export interface Lead {
    */
   sourcePage?: string | null;
   /**
-   * Ad click and cookie consent at the time of submission. Set by the form, read-only.
+   * Ad click, cookie consent and visitor source at the time of submission. Set by the form, read-only.
    */
   attribution?: {
     consentAnalytics?: boolean | null;
@@ -1284,6 +1284,20 @@ export interface Lead {
     gbraid?: string | null;
     wbraid?: string | null;
     clickedAt?: string | null;
+    utmSource?: string | null;
+    utmMedium?: string | null;
+    utmCampaign?: string | null;
+    utmTerm?: string | null;
+    utmContent?: string | null;
+    /**
+     * Page on another site that sent the visitor. Without the query string.
+     */
+    referrer?: string | null;
+    /**
+     * First landing needs analytics consent and wins. Without it, the address of the form page.
+     */
+    sourceFrom?: ('landing' | 'formPage') | null;
+    landedAt?: string | null;
   };
   /**
    * Email domain is not a public mail service.
@@ -2194,6 +2208,14 @@ export interface LeadsSelect<T extends boolean = true> {
         gbraid?: T;
         wbraid?: T;
         clickedAt?: T;
+        utmSource?: T;
+        utmMedium?: T;
+        utmCampaign?: T;
+        utmTerm?: T;
+        utmContent?: T;
+        referrer?: T;
+        sourceFrom?: T;
+        landedAt?: T;
       };
   businessEmail?: T;
   testLead?: T;

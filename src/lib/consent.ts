@@ -64,11 +64,11 @@ export const toConsentMode = (choice: ConsentChoice | null): ConsentModeState =>
 /**
  * Cookies that Google tags set for each category: `_ga`, `_ga_*`, `_gid` and `_gat*` for
  * analytics, `_gcl_*` and `_gac_*` for marketing. GA4 linked with Google Ads stores the ad
- * click in `_gac_*`, and `ad_storage` controls it. Marketing also covers our own `rp_click`
- * (issue #26).
+ * click in `_gac_*`, and `ad_storage` controls it. Analytics also covers our own `rp_source`
+ * (issue #61), marketing our own `rp_click` (issue #26).
  */
 export const GOOGLE_COOKIES: Record<ConsentCategory, RegExp> = {
-  analytics: /^(_ga|_ga_.+|_gid|_gat.*)$/,
+  analytics: /^(_ga|_ga_.+|_gid|_gat.*|rp_source)$/,
   marketing: /^(_gcl_.+|_gac_.+|rp_click)$/,
 }
 

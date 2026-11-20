@@ -7,6 +7,7 @@ import React, { useActionState, useEffect, useRef } from 'react'
 import { submitLead, type LeadFormState } from '@/actions/submitLead'
 import type { Locale } from '@/i18n/routing'
 import { sendAdsUserData, trackEvent } from '@/lib/analytics'
+import { appendPageSource } from '@/lib/leadSource'
 
 const initialState: LeadFormState = { status: 'idle' }
 
@@ -63,6 +64,17 @@ export const LeadForm: React.FC<Props> = ({ microcopy }) => {
     if (errors.name || errors.email || errors.phone || errors.message) event.preventDefault()
   }
 
+  // The utm values and the referrer of the form page at submission (issue #61). Form data only,
+  // nothing stored on the device.
+  const submit = (data: FormData) => {
+    try {
+      appendPageSource(data, location.search, document.referrer, [location.hostname])
+    } catch {
+      // Measurement never stops the lead.
+    }
+    formAction(data)
+  }
+
   const clearFieldError = (field: 'name' | 'email' | 'phone' | 'message') => () =>
     setFieldErrors((prev) => (prev[field] ? { ...prev, [field]: false } : prev))
 
@@ -93,13 +105,7 @@ export const LeadForm: React.FC<Props> = ({ microcopy }) => {
   }
 
   return (
-    <form
-      key={formKey}
-      action={formAction}
-      onSubmit={handleSubmit}
-      className="space-y-4"
-      noValidate
-    >
+    <form key={formKey} action={submit} onSubmit={handleSubmit} className="space-y-4" noValidate>
       <input type="hidden" name="locale" value={locale} />
       <input type="hidden" name="sourcePage" value={pathname} />
       {searchParams.get('tier') && (

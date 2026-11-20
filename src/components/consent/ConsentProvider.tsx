@@ -14,6 +14,7 @@ import React, {
 import type { Locale } from '@/i18n/routing'
 import { clearGoogleCookies, initGoogleTag, trackEvent, updateGoogleConsent } from '@/lib/analytics'
 import { clickIdFromSearch, persistClickId, type ClickId } from '@/lib/clickId'
+import { landingFromPage, persistLanding, type LandingSource } from '@/lib/leadSource'
 import { readCookie, writeCookie } from '@/lib/clientCookies'
 import {
   CONSENT_COOKIE,
@@ -68,6 +69,8 @@ export const ConsentProvider: React.FC<Props> = ({ analyticsId, adsId, children 
   // The ad click ID from the landing URL (issue #26). Without marketing consent it lives
   // only in page memory. The provider sits in the locale layout, so it survives navigation.
   const pendingClick = useRef<ClickId | null>(null)
+  // The same for the utm values and the referrer of the landing (issue #61), with analytics consent.
+  const pendingLanding = useRef<LandingSource | null>(null)
 
   useEffect(() => {
     if (!enabled) return
@@ -76,6 +79,13 @@ export const ConsentProvider: React.FC<Props> = ({ analyticsId, adsId, children 
     if (stored?.marketing && pendingClick.current) {
       persistClickId(pendingClick.current)
       pendingClick.current = null
+    }
+    pendingLanding.current = landingFromPage(location.search, document.referrer, [
+      location.hostname,
+    ])
+    if (stored?.analytics && pendingLanding.current) {
+      persistLanding(pendingLanding.current)
+      pendingLanding.current = null
     }
     // Reading the cookie (an external system) on mount — the sanctioned use of an effect.
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -97,6 +107,10 @@ export const ConsentProvider: React.FC<Props> = ({ analyticsId, adsId, children 
     if (next.marketing && pendingClick.current) {
       persistClickId(pendingClick.current)
       pendingClick.current = null
+    }
+    if (next.analytics && pendingLanding.current) {
+      persistLanding(pendingLanding.current)
+      pendingLanding.current = null
     }
     setChoice(next)
   }, [])
