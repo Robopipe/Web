@@ -26,11 +26,31 @@ export const AD_CONVERSION_PARAGRAPH: Record<Locale, string> = {
   en: 'When you come from our Google Ads ad and consent to marketing, we store the click ID in the cookie rp_click for 90 days. When you send an inquiry from a company email address and you consent to marketing, we give Google a hash of the email (SHA-256), the time you sent it and the click ID, if we have it. This also applies when you did not come from an ad. We also store the click ID and your cookie choice with the inquiry. Google uses this data to find out which ad brought the inquiry. We never give Google the readable email. Without consent to marketing, we give Google nothing.',
 }
 
+/**
+ * Campaign tags and the referring page that every inquiry stores (issue #61, #63). This sentence
+ * goes at the end of the "Contact form" paragraph, after a space. No asterisks: see `mdToLexical`.
+ */
+export const LEAD_SOURCE_SENTENCE: Record<Locale, string> = {
+  cs: 'K poptávce vždy, i bez souhlasu s cookies, uložíme značky kampaně z adresy stránky (utm_source, utm_medium, utm_campaign, utm_term, utm_content). Uložíme i doménu a cestu odkazující stránky (bez parametrů za otazníkem), obojí přečteme při odeslání a do zařízení nic neukládáme.',
+  en: 'On submission, even without cookie consent, we always read and store page address campaign tags (utm_source, utm_medium, utm_campaign, utm_term, utm_content). We also store the referring domain and path (without parameters after the question mark) and store nothing on your device.',
+}
+
+/**
+ * The first-party cookie rp_source (issue #61, #63). It goes right after the Google Analytics
+ * paragraph. No asterisks: see `mdToLexical`.
+ */
+export const SOURCE_COOKIE_PARAGRAPH: Record<Locale, string> = {
+  cs: 'S vaším souhlasem s analytikou uloží web první přistání do naší vlastní cookie rp_source na 90 dní. Tato cookie obsahuje značky kampaně, adresu odkazující stránky (doménu a cestu) a čas přistání. Když odešlete poptávku, uložíme údaje z rp_source k poptávce, abychom věděli, který kanál poptávku přinesl. Google cookie rp_source nedostává a bez vašeho souhlasu s analytikou tato cookie nevznikne.',
+  en: 'With your consent to analytics, the website stores the first landing in our own cookie rp_source for 90 days. This cookie contains campaign tags, the referring page address (domain and path) and the landing time. When you send an inquiry, we store the details from rp_source with the inquiry to know which channel brought it. Google does not receive rp_source, and without your consent to analytics the website does not create this cookie.',
+}
+
 /** Replaces the old "Analytics" paragraph, which said the site sets no cookies. */
 export const COOKIE_POLICY: Record<Locale, string> = {
   cs: `**Cookies a měření.** Web používá cookies jen s vaším souhlasem. Nezbytná cookie rp_consent uloží vaši volbu na 6 měsíců.
 
 S vaším souhlasem s analytikou používáme Google Analytics. Měříme, které stránky lidé čtou a odkud přišli. Google ukládá cookies _ga a _ga_* až na 2 roky.
+
+${SOURCE_COOKIE_PARAGRAPH.cs}
 
 S vaším souhlasem s marketingem používáme značku Google Ads. Měříme výsledky reklam a ukazujeme naše reklamy na jiných webech. Google ukládá cookies _gcl_* až na 90 dní. Po kliknutí na reklamu ukládá také cookies s předponou _gac_.
 
@@ -46,6 +66,8 @@ Volbu kdykoli změníte odkazem „Nastavení cookies“ v patičce webu.`,
   en: `**Cookies and measurement.** This site uses cookies only with your consent. The necessary cookie rp_consent stores your choice for 6 months.
 
 With your consent to analytics, we use Google Analytics. We measure which pages people read and where they came from. Google stores the cookies _ga and _ga_* for up to 2 years.
+
+${SOURCE_COOKIE_PARAGRAPH.en}
 
 With your consent to marketing, we use the Google Ads tag. We measure ad results and show our ads on other sites. Google stores the cookies _gcl_* for up to 90 days. After a click on an ad, it also stores cookies with the prefix _gac_.
 
@@ -82,6 +104,19 @@ const AD_CONVERSION_LABEL: Record<Locale, string> = {
   cs: 'Když přijdete z naší reklamy Google Ads',
   en: 'When you come from our Google Ads ad',
 }
+/**
+ * First words of the Google Analytics paragraph. The rp_source paragraph goes after it.
+ * Longer than "With your consent to analytics": the rp_source paragraph starts the same way.
+ */
+const ANALYTICS_LABEL: Record<Locale, string> = {
+  cs: 'S vaším souhlasem s analytikou používáme',
+  en: 'With your consent to analytics, we use',
+}
+/** First words of the "Contact form" paragraph. The lead source sentence goes at its end. */
+const CONTACT_FORM_LABEL: Record<Locale, string> = {
+  cs: 'Kontaktní formulář.',
+  en: 'Contact form.',
+}
 /** First words of the last cookie paragraph. The YouTube paragraph goes before it. */
 const SETTINGS_LABEL: Record<Locale, string> = {
   cs: 'Volbu kdykoli změníte',
@@ -100,11 +135,26 @@ type LexicalNode = RichText['root']['children'][number] & {
 const plainText = (node: LexicalNode): string =>
   node.text ?? (node.children ?? []).map(plainText).join('')
 
+/**
+ * Adds a sentence after a space at the end of a paragraph. A plain last text node gets the
+ * sentence in the same node, as `mdToLexical` would make it. Otherwise a new plain node follows.
+ */
+const appendSentence = (paragraph: LexicalNode, sentence: string): LexicalNode => {
+  const nodes = [...(paragraph.children ?? [])]
+  const last = nodes.at(-1) as (LexicalNode & { format?: number }) | undefined
+  if (last?.text !== undefined && !last.format) {
+    nodes[nodes.length - 1] = { ...last, text: `${last.text.trimEnd()} ${sentence}` } as LexicalNode
+  } else {
+    nodes.push({ type: 'text', text: ` ${sentence}`, version: 1 } as unknown as LexicalNode)
+  }
+  return { ...paragraph, children: nodes } as LexicalNode
+}
+
 export type CookiePolicyResult = { content: RichText; changes: string[]; missing: string[] }
 
 /**
- * Pure part: puts the cookie paragraphs in place of the old "Analytics" paragraph and
- * swaps the Vercel sentence. Runs again without a change (idempotent).
+ * Pure part: puts the cookie paragraphs in place of the old "Analytics" paragraph, adds the
+ * newer paragraphs and the lead source sentence, and swaps the Vercel sentence. Runs again without a change (idempotent).
  */
 export const applyCookiePolicyToContent = (
   content: RichText,
@@ -156,6 +206,34 @@ export const applyCookiePolicyToContent = (
       children.splice(index + 1, 0, adConversion)
       changes.push(`ad conversion paragraph after "${MARKETING_LABEL[locale]}"`)
     }
+  }
+
+  // A page from #21 to #26 gets the rp_source paragraph (issue #63) after the Google Analytics one.
+  // A page that got the full cookie text above already has it.
+  if (
+    children.some((node) => plainText(node).startsWith(NEW_LABEL[locale])) &&
+    !children.some((node) => plainText(node) === SOURCE_COOKIE_PARAGRAPH[locale])
+  ) {
+    const sourceCookie = cookieNodes.find(
+      (node) => plainText(node) === SOURCE_COOKIE_PARAGRAPH[locale],
+    )
+    const index = children.findIndex((node) => plainText(node).startsWith(ANALYTICS_LABEL[locale]))
+    if (!sourceCookie) missing.push('rp_source paragraph in the cookie text')
+    else if (index === -1) missing.push(`paragraph "${ANALYTICS_LABEL[locale]}"`)
+    else {
+      children.splice(index + 1, 0, sourceCookie)
+      changes.push(`rp_source paragraph after "${ANALYTICS_LABEL[locale]}"`)
+    }
+  }
+
+  // The "Contact form" paragraph gets the lead source sentence (issue #63) at its end.
+  const contactForm = children.findIndex((node) =>
+    plainText(node).startsWith(CONTACT_FORM_LABEL[locale]),
+  )
+  if (contactForm === -1) missing.push(`paragraph "${CONTACT_FORM_LABEL[locale]}"`)
+  else if (!plainText(children[contactForm]).includes(LEAD_SOURCE_SENTENCE[locale])) {
+    children[contactForm] = appendSentence(children[contactForm], LEAD_SOURCE_SENTENCE[locale])
+    changes.push(`lead source sentence at the end of "${CONTACT_FORM_LABEL[locale]}"`)
   }
 
   const replaceHosting = (node: LexicalNode): LexicalNode => {
