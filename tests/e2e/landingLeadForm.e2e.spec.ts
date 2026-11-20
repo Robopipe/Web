@@ -13,7 +13,8 @@ import { cleanupTestUser, seedTestUser, testUser } from '../helpers/seedUser'
  * Issue #65: the lead form on every landing page in seed-assets/copy/landing-lead-form.json,
  * phone optional. Needs a seeded local database after `pnpm seed:landing-lead-form` and a server at
  * E2E_BASE_URL. The suite sets test measurement IDs, so the cookie banner shows, and puts the
- * old IDs back after the run. Test leads use a koala42.com email (testLead).
+ * old IDs back after the run. Test leads use a koala42.com email (testLead). Every case study
+ * shows the form from its template. Without a local case study, the suite makes one and deletes it.
  */
 
 const baseURL = process.env.E2E_BASE_URL || `http://localhost:${process.env.PORT || '3000'}`
@@ -29,6 +30,8 @@ let session: APIRequestContext
 let token: string
 let originalIds: MeasurementIds
 const leadEmails: string[] = []
+/** Id of a case study that the suite made because the local database had none. */
+let fixtureCaseStudyId: number | undefined
 
 const authHeaders = () => ({ Authorization: `JWT ${token}` })
 
@@ -107,6 +110,9 @@ test.afterAll(async () => {
       headers: authHeaders(),
     })
   }
+  if (fixtureCaseStudyId !== undefined) {
+    await session.delete(`/api/case-studies/${fixtureCaseStudyId}`, { headers: authHeaders() })
+  }
   await setMeasurement(originalIds)
   await session.dispose()
   await cleanupTestUser()
@@ -156,6 +162,82 @@ for (const slug of copy.pages) {
     })
   }
 }
+
+/** Paths of one published case study in both locales. Makes a minimal one when none exists. */
+const caseStudyPaths = async (): Promise<Record<'cs' | 'en', string>> => {
+  const list = async () =>
+    (
+      (await (await session.get('/api/case-studies?depth=0&limit=1&locale=cs')).json()) as {
+        docs: { id: number }[]
+      }
+    ).docs[0]
+  let first = await list()
+  if (!first) {
+    const created = await session.post('/api/case-studies?locale=cs', {
+      headers: authHeaders(),
+      data: { title: 'TEST E2E 65', slug: 'test-e2e-65', customer: 'TEST', _status: 'published' },
+    })
+    expect(created.status()).toBe(201)
+    fixtureCaseStudyId = ((await created.json()) as { doc: { id: number } }).doc.id
+    await session.patch(`/api/case-studies/${fixtureCaseStudyId}?locale=en`, {
+      headers: authHeaders(),
+      data: { title: 'TEST E2E 65', slug: 'test-e2e-65-en', _status: 'published' },
+    })
+    first = await list()
+  }
+  const slugIn = async (locale: 'cs' | 'en') =>
+    (
+      (await (
+        await session.get(`/api/case-studies/${first!.id}?depth=0&locale=${locale}`)
+      ).json()) as {
+        slug: string
+      }
+    ).slug
+  return {
+    cs: `/cs/case-studies/${await slugIn('cs')}`,
+    en: `/en/case-studies/${await slugIn('en')}`,
+  }
+}
+
+for (const locale of ['cs', 'en'] as const) {
+  test(`a case study (${locale}) shows one form without the sidebar before the closing CTA`, async ({
+    page,
+  }) => {
+    const path = (await caseStudyPaths())[locale]
+    await page.goto(path)
+    const section = page.locator('section#contact')
+    await expect(section).toHaveCount(1)
+    await expect(section.getByRole('heading', { name: HEADING[locale] })).toBeVisible()
+    await expect(page.locator('form #lead-name')).toHaveCount(1)
+    await expect(page.locator('#lead-phone')).not.toHaveAttribute('required')
+    await expect(page.locator('label[for="lead-phone"]')).toHaveText(PHONE_LABEL[locale])
+    await expect(section.locator('a[href^="mailto:"]')).toHaveCount(0)
+    // The form sits after the article and before the dark CTA section.
+    await expect(page.locator('article + section#contact + section.bg-surface-dark')).toHaveCount(1)
+  })
+}
+
+test('the case study list and the industries page have no form', async ({ page }) => {
+  for (const path of ['/cs/case-studies', '/en/case-studies', '/cs/obory']) {
+    await page.goto(path)
+    await expect(page.locator('section#contact'), path).toHaveCount(0)
+  }
+})
+
+test('a lead from a case study keeps the case study path as its source page', async ({ page }) => {
+  const path = (await caseStudyPaths()).cs
+  const email = `e2e-65-cs-${Date.now()}@koala42.com`
+  leadEmails.push(email)
+  await page.goto(`${path}?utm_source=test-65-cs&utm_medium=cpc`)
+  await page.locator('#lead-name').fill('TEST E2E case study 65')
+  await page.locator('#lead-email').fill(email)
+  await page.locator('#lead-message').fill('Test of the case study form (issue #65).')
+  await page.locator('form button[type="submit"]').click()
+  await expect(page.getByRole('status')).toBeVisible()
+  const lead = await findLead(email)
+  expect(lead?.sourcePage).toBe(path)
+  expect(lead?.attribution).toMatchObject({ utmSource: 'test-65-cs', utmMedium: 'cpc' })
+})
 
 test('the industry select has its own arrow at the text inset, vertically centred', async ({
   page,

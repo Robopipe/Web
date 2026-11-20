@@ -38,22 +38,28 @@ Skript běží stejně jako `seed:service-video`. Druhý běh nic nemění. Str�
 
 ### Pages with the form
 
-Filip asked for the form on every published page that sells a service or a solution. The list is in `seed-assets/copy/landing-lead-form.json` (Czech slugs). It has 15 pages. Filip removed the home page from the list on 2026-11-20: the form is for industry, service and narrow search pages only. The production list comes from `https://robopipe.io/api/pages?limit=200&depth=0&locale=cs` on 2026-11-20.
+Filip asked for the form on the pages of the "Řešení" and "Další úlohy" groups in the site footer, and on every case study. The page list is in `seed-assets/copy/landing-lead-form.json` (Czech slugs). It has 14 pages. On 2026-11-20 Filip removed the home page and `obory` from the list. The production list comes from `https://robopipe.io/api/pages?limit=200&depth=0&locale=cs` on 2026-11-20.
 
 - Services: `kamerova-kontrola-kvality` (7), `detekce-vad-na-vyrobni-lince` (8).
-- Industries: `obory` (3).
 - Use cases: `pocitani-kusu-kamerou` (9), `kontrola-etiket` (10), `kontrola-kompletnosti-baleni` (11), `automaticka-anotace` (12).
 - Narrow search pages, made in the admin in production only: `ceska-ai-kamera-pro-kontrolu-kvality` (14), `kamerova-kontrola-kvality-na-pronajem` (15), `kamerova-kontrola-do-mokreho-provozu` (16), `kamerova-kontrola-svaru-obalu` (17), `pocitani-kapsli-kamerou` (18), `kontrola-data-spotreby-a-sarze-kamerou` (19), `open-source-strojove-videni` (20), `ai-kamera-bezpecnost-skladu` (21).
 
 Pages without the form:
 
 - `home` (5): Filip does not want the form on the home page.
+- `obory` (3): Filip does not want the form on the industries page. Production never had it, because the script did not run there.
 - `kontakt` (1) and `o-nas` (13) already have a `contactForm` block.
 - `cenik` (2) has its own enquiry path. Each pricing tier links to `/cs/kontakt?tier=...`.
 - `ochrana-osobnich-udaju` (4) is a legal page.
 - Blog posts and the login are not in the `pages` collection.
 
 A new landing page needs its slug in the JSON file. Then run the script again.
+
+### Case studies
+
+Case studies are the `case-studies` collection. They have no blocks, so the script does not touch them. The case study template (`src/app/(frontend)/[locale]/case-studies/[slug]/page.tsx`) renders `ContactFormComponent` with `showSidebar: false` between the article and the closing dark CTA. The heading and microcopy come from the same JSON file, in the page locale. The form shows on every case study in both locales, but not on the `/case-studies` list. No schema change and no migration.
+
+The lead source works as on the other pages. `LeadForm` is a client component. It sends the browser path (`usePathname`) as `sourcePage`, for example `/cs/case-studies/<slug>`. It also sends the utm parameters and the referrer of the page. `submitLead` prefers the first landing from the `rp_source` cookie (`sourceFrom: landing`) and falls back to the form page (`sourceFrom: formPage`).
 
 ### Industry select arrow
 

@@ -4,6 +4,7 @@ import { draftMode } from 'next/headers'
 import Link from 'next/link'
 import React from 'react'
 
+import { ContactFormComponent } from '@/blocks/ContactForm/Component'
 import { FAQList } from '@/blocks/FAQAccordion/Component'
 import { CaseStudyMetrics } from '@/components/CaseStudyMetrics'
 import { JsonLd } from '@/components/JsonLd'
@@ -19,6 +20,9 @@ import { localizedPaths, pathFor } from '@/lib/paths'
 import { getCaseStudies, getCaseStudyBySlug, getGlobals, getLocalizedSlugs } from '@/lib/queries'
 import { redirectOrNotFound, redirectTranslatedSlug } from '@/lib/redirects'
 import type { CaseStudy } from '@/payload-types'
+
+// The same heading and microcopy as the lead form on the landing pages (issue #65).
+import leadFormCopy from '../../../../../../seed-assets/copy/landing-lead-form.json'
 
 export const revalidate = 600
 
@@ -153,6 +157,14 @@ export default async function CaseStudyPage({ params }: Props) {
           )}
         </div>
       </article>
+
+      {/* Lead form without the sidebar, as on the landing pages (issue #65). */}
+      <ContactFormComponent
+        blockType="contactForm"
+        heading={leadFormCopy[locale].heading}
+        microcopy={leadFormCopy[locale].microcopy}
+        showSidebar={false}
+      />
 
       <section className="bg-surface-dark">
         <div className="container-site flex flex-col items-center gap-6 py-16 text-center lg:py-18">
