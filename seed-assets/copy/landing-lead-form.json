@@ -1,0 +1,11 @@
+{
+  "pages": ["home", "kamerova-kontrola-kvality", "detekce-vad-na-vyrobni-lince"],
+  "cs": {
+    "heading": "Pošlete nám poptávku",
+    "microcopy": "První krok ke kontrole kvality, která běží 24/7."
+  },
+  "en": {
+    "heading": "Send us a message",
+    "microcopy": "Your first step to 24/7 visual inspection."
+  }
+}

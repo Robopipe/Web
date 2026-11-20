@@ -26,7 +26,7 @@ const leadSchema = z.object({
   name: z.string().trim().min(1).max(200),
   email: z.string().trim().email().max(320),
   company: z.string().trim().max(200).optional(),
-  phone: z.string().trim().min(1).max(50),
+  phone: z.string().trim().max(50).optional(),
   message: z.string().trim().min(1).max(5000),
   industry: z
     .enum(['food', 'pharma', 'retail', 'logistics', 'other'])

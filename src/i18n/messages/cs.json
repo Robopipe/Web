@@ -71,7 +71,7 @@
     "companyPlaceholder": "Vaše společnost",
     "email": "Pracovní e-mail",
     "emailPlaceholder": "jana@spolecnost.cz",
-    "phone": "Telefon",
+    "phone": "Telefon (nepovinné)",
     "industry": "Odvětví (nepovinné)",
     "message": "Co máme kontrolovat?",
     "messagePlaceholder": "Produkt, takt linky, co se dnes kazí…",
@@ -91,7 +91,6 @@
     "validation": {
       "nameRequired": "Zadejte prosím jméno",
       "emailInvalid": "Zadejte prosím platný e-mail",
-      "phoneRequired": "Zadejte prosím telefonní číslo",
       "messageRequired": "Napište nám prosím zprávu"
     },
     "companyIdLabel": "IČO"
