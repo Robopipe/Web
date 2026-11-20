@@ -7,7 +7,7 @@ import { getPayload, type Payload } from 'payload'
 
 import type { IconName } from '@/components/icons'
 
-import { COOKIE_POLICY, HOSTING_SENTENCE } from './cookiePolicy'
+import { COOKIE_POLICY, HOSTING_SENTENCE, LEAD_SOURCE_SENTENCE } from './cookiePolicy'
 import { MEDIA_ALT_CS } from './csCopyFixes'
 import { mdToLexical } from './lexical'
 import { applySeoGeo } from './seoGeo'
@@ -423,18 +423,14 @@ const seed = async (): Promise<void> => {
         slug: 'mg-servis-kontrola-baleni',
         excerpt:
           'Zákazníci vracejí každý kus, který není stoprocentní — a ruční kontrola je drahá a stejně nikdy nezachytí všechno. Robopipe proto kontroluje každé balení: těsnost svaru, fazole správně zabalené ve slanině i to, že se do obalu nedostal žádný cizí předmět.',
-        metrics: [
-          ['5', 'různých kontrol na balení'],
-        ],
+        metrics: [['5', 'různých kontrol na balení']],
       },
       en: {
         title: 'Packaging quality checked 100% — without the cost of manual inspection.',
         slug: 'mg-servis-packaging-checks',
         excerpt:
           "Customers return products that aren't 100% — and human quality checks are expensive and never catch everything. Robopipe inspects every pack: seal tightness, beans properly wrapped in bacon, and no foreign objects inside the packaging.",
-        metrics: [
-          ['5', 'different checks per pack'],
-        ],
+        metrics: [['5', 'different checks per pack']],
       },
     },
   ]
@@ -1437,7 +1433,7 @@ const seed = async (): Promise<void> => {
 
 ## Jaké údaje zpracováváme
 
-**Kontaktní formulář.** Když odešlete poptávku nebo si objednáte demo, uložíme údaje, které nám sdělíte — jméno, společnost, pracovní e-mail, telefon, odvětví a vaši zprávu — abychom vám mohli odpovědět a připravit nabídku. Právním základem je jednání o smlouvě a náš oprávněný zájem na vyřízení poptávky.
+**Kontaktní formulář.** Když odešlete poptávku nebo si objednáte demo, uložíme údaje, které nám sdělíte — jméno, společnost, pracovní e-mail, telefon, odvětví a vaši zprávu — abychom vám mohli odpovědět a připravit nabídku. Právním základem je jednání o smlouvě a náš oprávněný zájem na vyřízení poptávky. ${LEAD_SOURCE_SENTENCE.cs}
 
 **Newsletter.** Pokud se přihlásíte k odběru, uchováváme vaši e-mailovou adresu, abychom vám občas poslali nové články. Odhlásit se můžete kdykoli odpovědí na kterýkoli e-mail.
 
@@ -1459,7 +1455,7 @@ Podle GDPR máte právo na přístup ke svým údajům, jejich opravu, výmaz, p
 
 ## What we process
 
-**Contact form.** When you send an inquiry or book a demo, we store the details you submit — name, company, work email, phone, industry and your message — so we can reply and prepare a proposal. The legal basis is pre-contract negotiation and our legitimate interest in handling your inquiry.
+**Contact form.** When you send an inquiry or book a demo, we store the details you submit — name, company, work email, phone, industry and your message — so we can reply and prepare a proposal. The legal basis is pre-contract negotiation and our legitimate interest in handling your inquiry. ${LEAD_SOURCE_SENTENCE.en}
 
 **Newsletter.** If you subscribe, we keep your email address to send you occasional new posts. You can unsubscribe at any time by replying to any email.
 
