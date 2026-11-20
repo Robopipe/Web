@@ -133,15 +133,15 @@ describe('applyLandingLeadForm with Payload', () => {
   })
 
   it('names every landing page that sells a service or a solution', () => {
-    expect(copy.pages).toHaveLength(16)
+    expect(copy.pages).toHaveLength(15)
     expect(new Set(copy.pages).size).toBe(copy.pages.length)
-    expect(copy.pages.slice(0, 3)).toEqual([
-      'home',
+    expect(copy.pages.slice(0, 2)).toEqual([
       'kamerova-kontrola-kvality',
       'detekce-vad-na-vyrobni-lince',
     ])
-    // These pages have their own form or enquiry path, or sell nothing.
-    for (const slug of ['kontakt', 'o-nas', 'cenik', 'ochrana-osobnich-udaju']) {
+    // The home page has no form (Filip, 2026-11-20). The other pages have their own form or
+    // enquiry path, or sell nothing.
+    for (const slug of ['home', 'kontakt', 'o-nas', 'cenik', 'ochrana-osobnich-udaju']) {
       expect(copy.pages).not.toContain(slug)
     }
   })

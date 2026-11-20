@@ -38,15 +38,16 @@ Skript běží stejně jako `seed:service-video`. Druhý běh nic nemění. Str�
 
 ### Pages with the form
 
-Filip asked for the form on every published page that sells a service or a solution. The list is in `seed-assets/copy/landing-lead-form.json` (Czech slugs). It has 16 pages. The production list comes from `https://robopipe.io/api/pages?limit=200&depth=0&locale=cs` on 2026-11-20.
+Filip asked for the form on every published page that sells a service or a solution. The list is in `seed-assets/copy/landing-lead-form.json` (Czech slugs). It has 15 pages. Filip removed the home page from the list on 2026-11-20: the form is for industry, service and narrow search pages only. The production list comes from `https://robopipe.io/api/pages?limit=200&depth=0&locale=cs` on 2026-11-20.
 
-- Home and services: `home` (5), `kamerova-kontrola-kvality` (7), `detekce-vad-na-vyrobni-lince` (8).
+- Services: `kamerova-kontrola-kvality` (7), `detekce-vad-na-vyrobni-lince` (8).
 - Industries: `obory` (3).
 - Use cases: `pocitani-kusu-kamerou` (9), `kontrola-etiket` (10), `kontrola-kompletnosti-baleni` (11), `automaticka-anotace` (12).
 - Narrow search pages, made in the admin in production only: `ceska-ai-kamera-pro-kontrolu-kvality` (14), `kamerova-kontrola-kvality-na-pronajem` (15), `kamerova-kontrola-do-mokreho-provozu` (16), `kamerova-kontrola-svaru-obalu` (17), `pocitani-kapsli-kamerou` (18), `kontrola-data-spotreby-a-sarze-kamerou` (19), `open-source-strojove-videni` (20), `ai-kamera-bezpecnost-skladu` (21).
 
 Pages without the form:
 
+- `home` (5): Filip does not want the form on the home page.
 - `kontakt` (1) and `o-nas` (13) already have a `contactForm` block.
 - `cenik` (2) has its own enquiry path. Each pricing tier links to `/cs/kontakt?tier=...`.
 - `ochrana-osobnich-udaju` (4) is a legal page.
