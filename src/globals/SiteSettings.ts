@@ -1,6 +1,6 @@
 import type { GlobalConfig } from 'payload'
 
-import { anyone, authenticated } from '@/access'
+import { anyone, authenticated, authenticatedField } from '@/access'
 import { revalidateGlobal } from '@/hooks/revalidate'
 import { KEY_PATTERN, KEY_PATH } from '@/lib/indexNow'
 
@@ -24,6 +24,7 @@ export const SiteSettings: GlobalConfig = {
     {
       name: 'leadNotificationEmail',
       type: 'email',
+      access: { read: authenticatedField },
       admin: { description: 'Sales inbox that receives new lead notifications.' },
     },
     {
@@ -207,6 +208,7 @@ export const SiteSettings: GlobalConfig = {
         {
           name: 'leadConversionValue',
           type: 'number',
+          access: { read: authenticatedField },
           required: true,
           min: 0,
           defaultValue: 5000,
@@ -225,6 +227,7 @@ export const SiteSettings: GlobalConfig = {
         {
           name: 'closedCustomerConversionValue',
           type: 'number',
+          access: { read: authenticatedField },
           required: true,
           min: 0,
           defaultValue: 25000,

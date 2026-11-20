@@ -1,6 +1,8 @@
+import { hasLocale } from 'next-intl'
 import { draftMode } from 'next/headers'
 import { redirect } from 'next/navigation'
 
+import { routing } from '@/i18n/routing'
 import { pathFor, type PreviewCollection } from '@/lib/paths'
 
 const collections: PreviewCollection[] = ['pages', 'posts']
@@ -19,6 +21,9 @@ export async function GET(req: Request): Promise<Response> {
 
   const slug = searchParams.get('slug') || 'home'
   const locale = searchParams.get('locale') || 'cs'
+  if (!hasLocale(routing.locales, locale)) {
+    return new Response('Unknown locale', { status: 400 })
+  }
 
   const dm = await draftMode()
   dm.enable()
