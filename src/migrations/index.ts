@@ -16,6 +16,7 @@ import * as migration_20261112_084552_hero_mobile_video from './20261112_084552_
 import * as migration_20261112_194530_indexnow_key from './20261112_194530_indexnow_key';
 import * as migration_20261113_081752_closed_customer from './20261113_081752_closed_customer';
 import * as migration_20261113_090651_closed_value from './20261113_090651_closed_value';
+import * as migration_20261120_085941_lead_source from './20261120_085941_lead_source';
 
 export const migrations = [
   {
@@ -106,6 +107,11 @@ export const migrations = [
   {
     up: migration_20261113_090651_closed_value.up,
     down: migration_20261113_090651_closed_value.down,
-    name: '20261113_090651_closed_value'
+    name: '20261113_090651_closed_value',
+  },
+  {
+    up: migration_20261120_085941_lead_source.up,
+    down: migration_20261120_085941_lead_source.down,
+    name: '20261120_085941_lead_source'
   },
 ];
